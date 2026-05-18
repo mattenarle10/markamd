@@ -22,9 +22,9 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             args: ""
-          # - os: ubuntu-22.04                  (added in v1.1.1 — Linux branch)
-          #   target: x86_64-unknown-linux-gnu
-          #   args: ""
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            args: ""
 
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
@@ -59,6 +59,18 @@ jobs:
           key: ${{ matrix.os }}-cargo-${{ hashFiles('src-tauri/Cargo.lock') }}
           restore-keys: |
             ${{ matrix.os }}-cargo-
+
+      - name: install linux build deps
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libsoup-3.0-dev \
+            libjavascriptcoregtk-4.1-dev
 
       - name: install dependencies
         run: bun install
@@ -108,7 +120,7 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: "marka.md ${{ github.ref_name }}"
           releaseBody: |
-            🐙 **marka.md ${{ github.ref_name }}** — now on **macOS + Windows**. (Linux landing in v1.1.1.)
+            🐙 **marka.md ${{ github.ref_name }}** — now on **macOS · Windows · Linux** 🎉
 
             ## install
 
@@ -118,7 +130,12 @@ jobs:
             ### Windows
             download `marka.md_*-setup.exe` → run.
 
-            Windows SmartScreen may show "Windows protected your PC". Click **More info** → **Run anyway**. marka.md is free + open source — we don't sign Windows builds (paid certs aren't worth it for a free MIT project). Same one-time dance some macOS users did pre-notarization; nothing scary going on. The full source is on GitHub if you want to inspect or build it yourself.
+            Windows SmartScreen may show "Windows protected your PC". Click **More info** → **Run anyway**. marka.md is free + open source — we don't sign Windows builds (paid certs aren't worth it for a free MIT project). Full source on GitHub if you want to inspect or build it yourself.
+
+            ### Linux (x86_64)
+            download `marka.md_*.AppImage` → `chmod +x marka.md_*.AppImage` → run. self-contained, no install needed.
+
+            or grab `marka.md_*_amd64.deb` if you're on Debian/Ubuntu: `sudo dpkg -i marka.md_*_amd64.deb`.
 
             ## what's in this release
 
