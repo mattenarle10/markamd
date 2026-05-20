@@ -39,14 +39,6 @@ async function renderMermaidBlocks(root: HTMLElement, theme: "default" | "dark")
     mermaidInitializedTheme = theme;
   }
 
-  // Mermaid leaves temporary <svg id="${id}-svg"> + measurement <div id="d${id}-svg">
-  // nodes in document.body after each render(). When the host pre is unmounted
-  // (save/reading-mode/source-change), those orphans linger and can collide with
-  // the next render. Purge them before re-rendering.
-  document.body
-    .querySelectorAll('svg[id^="mdv-mermaid-"], div[id^="dmdv-mermaid-"]')
-    .forEach((n) => n.remove());
-
   for (const pre of blocks) {
     const code = pre.querySelector("code")?.textContent ?? "";
     const id = pre.id || `mdv-mermaid-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
