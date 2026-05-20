@@ -137,6 +137,16 @@ export function Preview({ source }: PreviewProps) {
 
   const html = useMemo(() => renderMarkdown(source, theme), [source, theme, ready]);
 
+  // Imperatively set innerHTML — React's dangerouslySetInnerHTML re-applies the
+  // string on each parent re-render even when the value is unchanged, which
+  // wipes mermaid's post-render DOM mutations (and shiki's decorate-codeblock
+  // wrappers). Setting innerHTML in a useEffect that only fires when `html`
+  // actually changes preserves mermaid SVGs across save / saveStatus updates.
+  useEffect(() => {
+    if (!articleRef.current) return;
+    articleRef.current.innerHTML = html;
+  }, [html]);
+
   useEffect(() => {
     if (!articleRef.current) return;
     return decorateCodeBlocks(articleRef.current);
@@ -174,7 +184,6 @@ export function Preview({ source }: PreviewProps) {
         ref={articleRef}
         className="mdv-prose"
         data-theme={theme}
-        dangerouslySetInnerHTML={{ __html: html }}
       />
     </div>
   );
