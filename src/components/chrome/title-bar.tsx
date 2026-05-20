@@ -60,6 +60,22 @@ export function TitleBar({
   const { opacity, on: transparent, set: setTransparency } = useTransparency();
   const [menuOpen, setMenuOpen] = useState(false);
   const themeAnchorRef = useRef<HTMLDivElement>(null);
+  // hover-to-preview-theme: a tiny debounce avoids ping-pong as the cursor
+  // slides past menu items. Holding still over a theme for ~60ms applies it.
+  const hoverTimer = useRef<number | null>(null);
+  const applyThemeOnHover = (value: ThemeMode) => {
+    if (hoverTimer.current !== null) window.clearTimeout(hoverTimer.current);
+    hoverTimer.current = window.setTimeout(() => {
+      setMode(value);
+      hoverTimer.current = null;
+    }, 60);
+  };
+  const cancelHoverApply = () => {
+    if (hoverTimer.current !== null) {
+      window.clearTimeout(hoverTimer.current);
+      hoverTimer.current = null;
+    }
+  };
 
   // ActiveIcon is the resolved theme's icon (single source of truth: THEME_CHOICES).
   // Avoids drift when adding new themes — add one entry to THEME_CHOICES, done.
@@ -138,7 +154,13 @@ export function TitleBar({
                     key={c.value}
                     type="button"
                     className={`mdv-menu__item${active ? " is-active" : ""}`}
+                    onMouseEnter={() => applyThemeOnHover(c.value)}
+                    onMouseLeave={cancelHoverApply}
+                    onFocus={() => applyThemeOnHover(c.value)}
+                    onBlur={cancelHoverApply}
                     onClick={() => {
+                      // click commits immediately + closes menu
+                      cancelHoverApply();
                       setMode(c.value);
                       setMenuOpen(false);
                     }}
