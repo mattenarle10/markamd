@@ -13,7 +13,7 @@ import {
   Sun,
 } from "lucide-react";
 import { Button, Icon, Popover } from "@/components/primitives";
-import { useThemeMode, useTransparency, type ThemeMode } from "@/lib";
+import { startWindowDrag, useThemeMode, useTransparency, type ThemeMode } from "@/lib";
 
 type TitleBarProps = {
   fileName?: string;
@@ -66,7 +66,7 @@ export function TitleBar({
             : Coffee;
 
   return (
-    <header className="mdv-titlebar" data-tauri-drag-region>
+    <header className="mdv-titlebar" data-tauri-drag-region onMouseDown={startWindowDrag}>
       <div className="mdv-titlebar__lead" data-tauri-drag-region />
 
       <div className="mdv-titlebar__center" data-tauri-drag-region>

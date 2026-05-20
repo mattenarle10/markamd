@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FolderOpen, Search, X } from "lucide-react";
 import { Button, Icon } from "@/components/primitives";
-import { basename, dirname, walkMarkdownFiles, type FileEntry, type FlatFileEntry } from "@/lib";
+import { basename, dirname, startWindowDrag, walkMarkdownFiles, type FileEntry, type FlatFileEntry } from "@/lib";
 import emptyTowerUrl from "@/assets/mascot/empty-m.png";
 import { FileTree, type NewEntry } from "./file-tree";
 
@@ -129,7 +129,7 @@ export function Sidebar({
       aria-hidden={!open}
     >
       <div className="mdv-sidebar__inner" style={{ width: `${width}px` }}>
-        <header className="mdv-sidebar__header" data-tauri-drag-region>
+        <header className="mdv-sidebar__header" data-tauri-drag-region onMouseDown={startWindowDrag}>
           <span className={`mdv-sidebar__title${rootPath ? "" : " is-empty"}`}>
             {rootPath ? basename(rootPath) : "no folder"}
           </span>

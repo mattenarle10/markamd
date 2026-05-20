@@ -12,6 +12,7 @@ export {
 export { STORAGE_KEYS, type StorageKey } from "./storage";
 export { buildCommands, type Command, type CommandActions } from "./commands";
 export { estimateTokens, formatTokens } from "./bundle";
+export { startWindowDrag } from "./window-drag";
 export {
   pickFolder,
   pickMarkdownFile,

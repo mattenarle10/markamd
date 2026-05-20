@@ -1,6 +1,6 @@
 import { CircleHelp } from "lucide-react";
 import { Button, Icon } from "@/components/primitives";
-import { formatTokens } from "@/lib";
+import { formatTokens, startWindowDrag } from "@/lib";
 
 type StatusBarProps = {
   fileName?: string;
@@ -19,7 +19,7 @@ export function StatusBar({
   onShowHelp,
 }: StatusBarProps) {
   return (
-    <footer className="mdv-statusbar" data-tauri-drag-region>
+    <footer className="mdv-statusbar" data-tauri-drag-region onMouseDown={startWindowDrag}>
       <div className="mdv-statusbar__group" data-tauri-drag-region>
         <span data-tauri-drag-region>{fileName ?? "untitled"}</span>
       </div>

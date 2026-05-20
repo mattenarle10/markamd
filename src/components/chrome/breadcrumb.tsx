@@ -1,5 +1,6 @@
 import { Check, ChevronRight, Copy, FilePlus2, FileText, FolderOpen, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Button, Icon } from "@/components/primitives";
+import { startWindowDrag } from "@/lib";
 import exciteUrl from "@/assets/mascot/excite.png";
 
 export type SaveStatus = "idle" | "dirty" | "saving" | "saved";
@@ -55,7 +56,7 @@ export function Breadcrumb({
   const label = statusLabel(saveStatus);
 
   return (
-    <div className="mdv-breadcrumb" data-tauri-drag-region>
+    <div className="mdv-breadcrumb" data-tauri-drag-region onMouseDown={startWindowDrag}>
       <Button
         data-tooltip={sidebarOpen ? "hide sidebar (⌘B)" : "show sidebar (⌘B)"}
         aria-label={sidebarOpen ? "hide sidebar" : "show sidebar"}
