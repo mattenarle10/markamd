@@ -38,6 +38,37 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v6
+        with:
+          # need full history + tags so we can derive a per-release commit list
+          # via `git log <prev_tag>..<this_tag>` for the changelog.
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: compute changelog since previous tag
+        id: changelog
+        shell: bash
+        run: |
+          set -e
+          # find the most recent tag BEFORE the one we're building. `git tag --sort`
+          # gives semver-ordered tags; we filter out the current ref and pick the next.
+          PREV_TAG=$(git tag --sort=-version:refname | grep -v "^${{ github.ref_name }}$" | head -1 || true)
+          if [ -z "$PREV_TAG" ]; then
+            COMMITS="- first public release 🐙"
+            DIFF_URL=""
+          else
+            COMMITS=$(git log "$PREV_TAG..${{ github.ref_name }}" --pretty=format:'- %s' --no-merges --reverse)
+            if [ -z "$COMMITS" ]; then
+              COMMITS="- (no commit changes since $PREV_TAG — version bump only)"
+            fi
+            DIFF_URL="full diff: https://github.com/mattenarle10/markamd/compare/$PREV_TAG...${{ github.ref_name }}"
+          fi
+          echo "PREV_TAG=$PREV_TAG" >> "$GITHUB_OUTPUT"
+          {
+            echo "COMMITS<<COMMITS_EOF"
+            echo "$COMMITS"
+            echo "COMMITS_EOF"
+            echo "DIFF_URL=$DIFF_URL"
+          } >> "$GITHUB_OUTPUT"
 
       - name: setup bun
         uses: oven-sh/setup-bun@v2
@@ -120,39 +151,29 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: "marka.md ${{ github.ref_name }}"
           releaseBody: |
-            🐙 **marka.md ${{ github.ref_name }}** — now on **macOS · Windows · Linux** 🎉
+            🐙 **marka.md ${{ github.ref_name }}** — macOS · Windows · Linux
 
-            ## install
+            ## what changed
 
-            ### macOS (notarized + auto-updating)
-            download `marka.md.dmg` → drag **marka.md.app** into `/Applications` → open.
+            ${{ steps.changelog.outputs.COMMITS }}
 
-            ### Windows
-            download `marka.md_*-setup.exe` → run.
-
-            Windows SmartScreen may show "Windows protected your PC". Click **More info** → **Run anyway**. marka.md is free + open source — we don't sign Windows builds (paid certs aren't worth it for a free MIT project). Full source on GitHub if you want to inspect or build it yourself.
-
-            ### Linux (x86_64) — pick your flavor 🐧
-
-            - **`marka.md_*.AppImage`** — works on any distro: `chmod +x marka.md_*.AppImage` → run. self-contained, no install.
-            - **`marka.md_*_amd64.deb`** — Debian / Ubuntu / Mint / Pop!_OS: `sudo dpkg -i marka.md_*_amd64.deb`
-            - **`marka.md-*.x86_64.rpm`** — Fedora / RHEL / Rocky / openSUSE: `sudo dnf install marka.md-*.x86_64.rpm`
-
-            ## what's in this release
-
-            see the always-fresh changelog → https://markamd.vercel.app/changelog
-
-            ## thanks 🐙
-
-            if marka.md is useful, **[star the repo](https://github.com/mattenarle10/markamd)** — helps a lot.
-
-            questions / feedback / bugs → [open an issue](https://github.com/mattenarle10/markamd/issues)
-
-            — matt enarle · [mattenarle.com](https://mattenarle.com)
+            ${{ steps.changelog.outputs.DIFF_URL }}
 
             ---
 
-            full diff: https://github.com/mattenarle10/markamd/compare/v1.0.2...${{ github.ref_name }}
+            ## install
+
+            **macOS** (notarized + auto-updating): `marka.md.dmg` → drag to `/Applications`
+            **Windows**: `marka.md_*-setup.exe` → run (SmartScreen → "More info" → "Run anyway")
+            **Linux** 🐧: pick `.AppImage` (any distro), `.deb` (Debian/Ubuntu), or `.rpm` (Fedora/RHEL)
+
+            existing users on auto-update get this on next launch.
+
+            ## links
+
+            • [all releases](https://markamd.vercel.app/changelog) · [site](https://markamd.vercel.app) · [feedback](https://markamd.vercel.app/feedback) · [star the repo ⭐](https://github.com/mattenarle10/markamd)
+
+            — matt enarle · [mattenarle.com](https://mattenarle.com)
           # publish as a DRAFT so the matrix runners can both upload artifacts
           # (including their per-platform latest.json entries) without racing
           # to overwrite each other on the same live release. the publish-release
