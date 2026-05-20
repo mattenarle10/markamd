@@ -18,6 +18,7 @@ export { IS_MAC, IS_WINDOWS, IS_LINUX, displayKey, shortcutLabel } from "./platf
 export {
   pickFolder,
   pickMarkdownFile,
+  pickSaveMarkdown,
   listFolder,
   walkMarkdownFiles,
   readMarkdown,

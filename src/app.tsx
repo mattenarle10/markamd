@@ -40,6 +40,7 @@ import {
   moveEntry,
   pickFolder,
   pickMarkdownFile,
+  pickSaveMarkdown,
   readMarkdown,
   removeEntry,
   renameEntry,
@@ -237,6 +238,18 @@ export function App() {
       img { max-width: 100%; height: auto; border-radius: 6px; break-inside: avoid; }
       pre code { background: transparent; padding: 0; font-size: inherit; border-radius: 0; }
       pre.shiki, pre.shiki * { font-family: inherit; }
+      /* PDF is a "document" — force catppuccin-latte palette regardless of
+         the user's active app theme. shiki emits --shiki-latte vars inline on
+         every span (multi-theme mode), so we just pick that variant for print.
+         Without this rule, spans would fall back to inherited body color
+         (looks like plain monospace text — no syntax colors). */
+      .shiki, .shiki span {
+        background-color: transparent !important;
+        color: var(--shiki-latte) !important;
+        font-style: var(--shiki-latte-font-style, inherit) !important;
+        font-weight: var(--shiki-latte-font-weight, inherit) !important;
+        text-decoration: var(--shiki-latte-text-decoration, inherit) !important;
+      }
       blockquote {
         border-left: 3px solid var(--paccent);
         padding-left: 16px;
@@ -418,6 +431,25 @@ export function App() {
     },
     [],
   );
+
+  // Save As — opens the native save dialog and writes the buffer to the
+  // chosen path. Used by:
+  //   - ⌘S when the current buffer is untitled (no activePath) — previously
+  //     this was a no-op on all platforms (the bug arijit4 reported in #17
+  //     and Matt confirmed on macOS)
+  //   - ⌘⇧S explicitly, to "save a copy" of an existing file to a new location
+  const saveAs = useCallback(async () => {
+    // suggest a default location: <rootPath>/untitled.md if a folder is open,
+    // else just "untitled.md" (dialog will land in the OS default folder)
+    const defaultPath = activePath
+      ?? (rootPath ? joinPath(rootPath, "untitled.md") : "untitled.md");
+    const target = await pickSaveMarkdown(defaultPath);
+    if (!target) return; // user cancelled — keep buffer dirty, no error
+    await saveNow(target, source);
+    setActivePath(target);
+    // refresh sidebar in case the file landed inside the currently-open root
+    bumpTree();
+  }, [activePath, rootPath, source, saveNow, setActivePath]);
 
   // refs to source + savedContent so handleExternalChange has stable identity.
   // without this, every keystroke recreates the callback → useFileWatcher's
@@ -873,9 +905,18 @@ export function App() {
       },
       "mod+s": (e: KeyboardEvent) => {
         e.preventDefault();
-        if (activePath && source !== savedContent) {
-          void saveNow(activePath, source);
+        if (activePath) {
+          // existing file — only write if dirty
+          if (source !== savedContent) void saveNow(activePath, source);
+        } else {
+          // untitled buffer — open native save dialog (resolves #17 save half + macOS parity)
+          void saveAs();
         }
+      },
+      "mod+shift+s": (e: KeyboardEvent) => {
+        e.preventDefault();
+        // explicit "save as" — works on both untitled and existing buffers
+        void saveAs();
       },
       "mod+n": (e: KeyboardEvent) => {
         e.preventDefault();
@@ -928,6 +969,7 @@ export function App() {
       source,
       savedContent,
       saveNow,
+      saveAs,
       handleOpenFile,
       handleOpenFolder,
       handleNewFile,

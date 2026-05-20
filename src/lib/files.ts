@@ -1,4 +1,4 @@
-import { open } from "@tauri-apps/plugin-dialog";
+import { open, save } from "@tauri-apps/plugin-dialog";
 import { readDir, readFile, readTextFile, writeTextFile, exists, stat, rename, mkdir, remove } from "@tauri-apps/plugin-fs";
 
 export type FileEntry = {
@@ -25,6 +25,20 @@ export async function pickMarkdownFile(): Promise<string | null> {
   });
   if (typeof result === "string") return result;
   return null;
+}
+
+/**
+ * Native "Save As" dialog. Returns the chosen path or null on cancel.
+ * Used when the current buffer has no `activePath` yet (new untitled file)
+ * or when user explicitly wants to save-as to a new location.
+ */
+export async function pickSaveMarkdown(defaultPath?: string): Promise<string | null> {
+  const result = await save({
+    title: "save markdown",
+    defaultPath,
+    filters: [{ name: "markdown", extensions: ["md", "markdown", "mdx"] }],
+  });
+  return result ?? null;
 }
 
 const MARKDOWN_EXT = /\.(md|markdown|mdx)$/i;
