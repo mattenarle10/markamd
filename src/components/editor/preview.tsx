@@ -42,12 +42,14 @@ async function renderMermaidBlocks(root: HTMLElement, theme: "default" | "dark")
   for (const pre of blocks) {
     const code = pre.querySelector("code")?.textContent ?? "";
     const id = pre.id || `mdv-mermaid-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    console.debug("[marka.md/mermaid] rendering", { id, theme, codeLen: code.length, codePreview: code.slice(0, 60) });
     try {
       const { svg } = await mermaid.render(`${id}-svg`, code);
       pre.innerHTML = svg;
       pre.classList.add("is-rendered");
+      console.debug("[marka.md/mermaid] ✓ rendered", id);
     } catch (err) {
-      console.error("marka.md: mermaid render failed", err);
+      console.error("[marka.md/mermaid] ✗ render failed", { id, err, code: code.slice(0, 200) });
       // safe fallback — build with textContent, never innerHTML on user input
       pre.replaceChildren();
       const codeEl = document.createElement("code");
