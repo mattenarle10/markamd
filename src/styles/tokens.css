@@ -30,16 +30,16 @@
   color-scheme: light;
 }
 
-/* catppuccin frappé */
+/* catppuccin frappé — soft cool dark, mauve signature (distinct from macchiato's peach) */
 :root[data-theme="frappe"] {
-  --bg: #303446;
+  --bg: #303446;            /* base */
   --bg-rgb: 48, 52, 70;
-  --fg: #c6d0f5;
-  --muted: #838ba7;
-  --border: #414559;
-  --accent: #ef9f76;
-  --surface: #292c3c;
-  --surface-hover: #414559;
+  --fg: #c6d0f5;            /* text */
+  --muted: #737994;         /* overlay0 — official spec (was incorrectly overlay1) */
+  --border: #414559;        /* surface0 */
+  --accent: #ca9ee6;        /* mauve — distinct cool-purple */
+  --surface: #292c3c;       /* mantle */
+  --surface-hover: #51576d; /* surface1 */
   --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
   color-scheme: dark;
 }
@@ -101,6 +101,20 @@
   color-scheme: dark;
 }
 
+/* ayu mirage — warm dark, orange-red signature */
+:root[data-theme="ayu"] {
+  --bg: #1f2430;            /* common.bg */
+  --bg-rgb: 31, 36, 48;
+  --fg: #cbccc6;            /* common.fg */
+  --muted: #707a8c;         /* ui.fg — readable on dark bg */
+  --border: #33415e;        /* ui.line */
+  --accent: #ffa759;        /* common.accent — warm orange */
+  --surface: #191e2a;       /* editor.gutter */
+  --surface-hover: #2d3343; /* ui.selection.bg */
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  color-scheme: dark;
+}
+
 /* rose pine — soho-vibes dark (base + rose) */
 :root[data-theme="rose-pine"] {
   --bg: #191724;            /* base */
@@ -142,13 +156,8 @@
   }
 }
 
-/* OPT-IN transparency: applied only when user enables it */
+/* OPT-IN transparency. --user-opacity is set by theme.ts when slider < 100.
+   Default 0.74 if attribute is on but JS didn't set a value (rare race). */
 :root[data-transparency="on"] {
-  --bg: rgba(var(--bg-rgb), 0.74);
-}
-/* light themes need higher opacity for readability over bright wallpapers */
-:root[data-transparency="on"][data-theme="latte"],
-:root[data-transparency="on"][data-theme="light"],
-:root[data-transparency="on"][data-theme="matcha"] {
-  --bg: rgba(var(--bg-rgb), 0.92);
+  --bg: rgba(var(--bg-rgb), var(--user-opacity, 0.74));
 }

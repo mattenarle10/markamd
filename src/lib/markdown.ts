@@ -14,6 +14,7 @@ const THEMES = {
   matcha: "vitesse-light",
   kanagawa: "kanagawa-wave",
   "rose-pine": "rose-pine",
+  ayu: "ayu-dark",
 } as const;
 
 let highlighterPromise: Promise<Highlighter> | null = null;
@@ -22,15 +23,7 @@ let highlighter: Highlighter | null = null;
 function getHighlighter(): Promise<Highlighter> {
   if (!highlighterPromise) {
     highlighterPromise = createHighlighter({
-      themes: [
-        THEMES.latte,
-        THEMES.frappe,
-        THEMES.macchiato,
-        THEMES.mocha,
-        THEMES.matcha,
-        THEMES.kanagawa,
-        THEMES["rose-pine"],
-      ],
+      themes: Object.values(THEMES),
       langs: LANGS,
     })
       .then((h) => {

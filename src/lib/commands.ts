@@ -208,11 +208,11 @@ export function buildCommands(actions: CommandActions): Command[] {
     ),
     {
       id: "transparency-on",
-      label: "transparency: on",
-      hint: "macOS vibrancy through the window",
+      label: "transparency: on (74%)",
+      hint: "macOS vibrancy through the window — adjust opacity in theme menu",
       icon: Sparkles,
       category: "theme",
-      action: () => setTransparency(true),
+      action: () => setTransparency(74),
     },
     {
       id: "transparency-off",
@@ -220,7 +220,7 @@ export function buildCommands(actions: CommandActions): Command[] {
       hint: "solid window background",
       icon: Sparkles,
       category: "theme",
-      action: () => setTransparency(false),
+      action: () => setTransparency(100),
     },
     {
       id: "help",

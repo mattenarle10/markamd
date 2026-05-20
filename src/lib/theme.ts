@@ -1,7 +1,15 @@
 import { useSyncExternalStore } from "react";
 import { STORAGE_KEYS } from "./storage";
 
-export type Theme = "latte" | "frappe" | "macchiato" | "mocha" | "matcha" | "kanagawa" | "rose-pine";
+export type Theme =
+  | "latte"
+  | "frappe"
+  | "macchiato"
+  | "mocha"
+  | "matcha"
+  | "kanagawa"
+  | "rose-pine"
+  | "ayu";
 export type ThemeMode = "system" | Theme;
 
 const VALID: ReadonlyArray<ThemeMode> = [
@@ -13,6 +21,7 @@ const VALID: ReadonlyArray<ThemeMode> = [
   "matcha",
   "kanagawa",
   "rose-pine",
+  "ayu",
 ];
 
 const STORAGE_KEY = STORAGE_KEYS.themeMode;
@@ -73,29 +82,46 @@ function subscribeTransparency(fn: () => void): () => void {
 }
 
 const TRANSPARENCY_KEY = STORAGE_KEYS.transparency;
+const TRANSPARENCY_OFF = 100;
+const TRANSPARENCY_DEFAULT_ON = 74;
 
-function readTransparency(): boolean {
-  if (typeof window === "undefined") return false;
+// Opacity is a 0-100 integer. 100 = fully opaque (off). <100 = transparency on
+// at that opacity. Migrates legacy "on"/"off" string values from prior versions.
+function readTransparencyOpacity(): number {
+  if (typeof window === "undefined") return TRANSPARENCY_OFF;
   try {
-    return window.localStorage.getItem(TRANSPARENCY_KEY) === "on";
+    const v = window.localStorage.getItem(TRANSPARENCY_KEY);
+    if (v === null) return TRANSPARENCY_OFF;
+    if (v === "on") return TRANSPARENCY_DEFAULT_ON;
+    if (v === "off") return TRANSPARENCY_OFF;
+    const n = Number.parseInt(v, 10);
+    if (Number.isFinite(n) && n >= 0 && n <= 100) return n;
+    return TRANSPARENCY_OFF;
   } catch {
-    return false;
+    return TRANSPARENCY_OFF;
   }
 }
 
-function applyTransparency(on: boolean): void {
+function applyTransparencyOpacity(opacity: number): void {
   if (typeof document === "undefined") return;
-  if (on) document.documentElement.setAttribute("data-transparency", "on");
-  else document.documentElement.removeAttribute("data-transparency");
+  const clamped = Math.max(0, Math.min(100, Math.round(opacity)));
+  if (clamped >= TRANSPARENCY_OFF) {
+    document.documentElement.removeAttribute("data-transparency");
+    document.documentElement.style.removeProperty("--user-opacity");
+  } else {
+    document.documentElement.setAttribute("data-transparency", "on");
+    document.documentElement.style.setProperty("--user-opacity", String(clamped / 100));
+  }
 }
 
-export function setTransparency(on: boolean): void {
+export function setTransparency(opacity: number): void {
+  const clamped = Math.max(0, Math.min(100, Math.round(opacity)));
   try {
-    window.localStorage.setItem(TRANSPARENCY_KEY, on ? "on" : "off");
+    window.localStorage.setItem(TRANSPARENCY_KEY, String(clamped));
   } catch {
     // ignore
   }
-  applyTransparency(on);
+  applyTransparencyOpacity(clamped);
   transparencyListeners.forEach((fn) => fn());
 }
 
@@ -107,7 +133,7 @@ declare global {
 if (typeof window !== "undefined" && !globalThis.__markaThemeInit) {
   globalThis.__markaThemeInit = true;
   apply(readMode());
-  applyTransparency(readTransparency());
+  applyTransparencyOpacity(readTransparencyOpacity());
   const mq = window.matchMedia(MQ);
   mq.addEventListener("change", () => {
     if (readMode() === "system") {
@@ -130,9 +156,19 @@ export function useThemeMode(): { mode: ThemeMode; resolved: Theme; setMode: (m:
   return { mode, resolved: resolve(mode), setMode: setThemeMode };
 }
 
-export function useTransparency(): { on: boolean; set: (v: boolean) => void } {
-  const on = useSyncExternalStore(subscribeTransparency, readTransparency, () => false);
-  return { on, set: setTransparency };
+export function useTransparency(): {
+  /** opacity 0-100. 100 = fully opaque (off). <100 = transparency on. */
+  opacity: number;
+  /** convenience boolean: true when transparency is active (opacity < 100). */
+  on: boolean;
+  set: (opacity: number) => void;
+} {
+  const opacity = useSyncExternalStore(
+    subscribeTransparency,
+    readTransparencyOpacity,
+    () => TRANSPARENCY_OFF,
+  );
+  return { opacity, on: opacity < TRANSPARENCY_OFF, set: setTransparency };
 }
 
 export function useTheme(): Theme {

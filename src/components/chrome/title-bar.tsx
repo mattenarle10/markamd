@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import {
   BookOpen,
   Check,
+  Cloud,
   Coffee,
   Copy,
   FileDown,
@@ -12,6 +13,7 @@ import {
   Moon,
   Sparkles,
   Sun,
+  Sunset,
   Waves,
 } from "lucide-react";
 import { Button, Icon, Popover } from "@/components/primitives";
@@ -36,11 +38,12 @@ const THEME_CHOICES: ThemeChoice[] = [
   { value: "system", label: "system", icon: Monitor },
   { value: "latte", label: "latte", icon: Sun },
   { value: "matcha", label: "matcha", icon: Leaf },
-  { value: "frappe", label: "frappé", icon: Coffee },
+  { value: "frappe", label: "frappé", icon: Cloud },
   { value: "macchiato", label: "macchiato", icon: Coffee },
   { value: "mocha", label: "mocha", icon: Moon },
   { value: "kanagawa", label: "kanagawa", icon: Waves },
   { value: "rose-pine", label: "rose pine", icon: Flower2 },
+  { value: "ayu", label: "ayu", icon: Sunset },
 ];
 
 export function TitleBar({
@@ -54,24 +57,16 @@ export function TitleBar({
   onExportPdf,
 }: TitleBarProps) {
   const { mode, resolved, setMode } = useThemeMode();
-  const { on: transparent, set: setTransparent } = useTransparency();
+  const { opacity, on: transparent, set: setTransparency } = useTransparency();
   const [menuOpen, setMenuOpen] = useState(false);
   const themeAnchorRef = useRef<HTMLDivElement>(null);
 
+  // ActiveIcon is the resolved theme's icon (single source of truth: THEME_CHOICES).
+  // Avoids drift when adding new themes — add one entry to THEME_CHOICES, done.
   const ActiveIcon =
     mode === "system"
       ? Monitor
-      : resolved === "latte"
-        ? Sun
-        : resolved === "matcha"
-          ? Leaf
-          : resolved === "mocha"
-            ? Moon
-            : resolved === "kanagawa"
-              ? Waves
-              : resolved === "rose-pine"
-                ? Flower2
-                : Coffee;
+      : (THEME_CHOICES.find((c) => c.value === resolved)?.icon ?? Coffee);
 
   return (
     <header className="mdv-titlebar" data-tauri-drag-region onMouseDown={startWindowDrag}>
@@ -163,19 +158,31 @@ export function TitleBar({
                 );
               })}
               <div className="mdv-menu__divider" aria-hidden />
-              <button
-                type="button"
-                className={`mdv-menu__item${transparent ? " is-active" : ""}`}
-                onClick={() => setTransparent(!transparent)}
-                role="menuitemcheckbox"
-                aria-checked={transparent}
-              >
-                <span className="mdv-menu__item-icon">
+              <div className={`mdv-menu__slider${transparent ? " is-active" : ""}`}>
+                <span className="mdv-menu__slider-icon" aria-hidden>
                   <Icon icon={Sparkles} size={14} strokeWidth={1.5} />
                 </span>
-                <span className="mdv-menu__item-label">transparency</span>
-                <span className={`mdv-menu__switch${transparent ? " is-on" : ""}`} aria-hidden />
-              </button>
+                <span className="mdv-menu__slider-label">transparency</span>
+                <span className="mdv-menu__slider-value" aria-hidden>
+                  {opacity >= 100 ? "off" : `${100 - opacity}%`}
+                </span>
+                <input
+                  type="range"
+                  className="mdv-menu__slider-input"
+                  min={0}
+                  max={100}
+                  step={1}
+                  /* invert: slider RIGHT = more transparent (lower opacity)
+                     so the value-label "% transparent" maps left→right cleanly. */
+                  value={100 - opacity}
+                  onChange={(e) => setTransparency(100 - Number(e.target.value))}
+                  aria-label="window transparency"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={100 - opacity}
+                  aria-valuetext={`${100 - opacity} percent transparent`}
+                />
+              </div>
             </div>
           </Popover>
         </div>
