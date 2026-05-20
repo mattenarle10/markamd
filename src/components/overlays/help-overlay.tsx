@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Sparkles, X } from "lucide-react";
-import { Button, Icon, Kbd, Overlay } from "@/components/primitives";
+import { Button, Icon, Kbd, Overlay, Shortcut } from "@/components/primitives";
+import { shortcutLabel } from "@/lib";
 import writeUrl from "@/assets/mascot/write.png";
 
 type HelpOverlayProps = {
@@ -9,7 +10,7 @@ type HelpOverlayProps = {
   onReplayTutorial?: () => void;
 };
 
-type Row = { keys: string[]; label: string };
+type Row = { keys: string; label: string };
 
 type Group = { title: string; rows: Row[] };
 
@@ -17,41 +18,41 @@ const GROUPS: Group[] = [
   {
     title: "file",
     rows: [
-      { keys: ["⌘", "⇧", "O"], label: "open a folder of notes" },
-      { keys: ["⌘", "O"], label: "open a single .md file" },
-      { keys: ["⌘", "N"], label: "new untitled buffer" },
-      { keys: ["⌘", "S"], label: "save current file" },
-      { keys: ["⌘", "⌥", "Z"], label: "undo last sidebar file action" },
+      { keys: "⌘+⇧+O", label: "open a folder of notes" },
+      { keys: "⌘+O", label: "open a single .md file" },
+      { keys: "⌘+N", label: "new untitled buffer" },
+      { keys: "⌘+S", label: "save current file" },
+      { keys: "⌘+⌥+Z", label: "undo last sidebar file action" },
     ],
   },
   {
     title: "view",
     rows: [
-      { keys: ["⌘", "K"], label: "open command palette" },
-      { keys: ["⌘", "B"], label: "show / hide sidebar" },
-      { keys: ["⌘", "."], label: "toggle reading mode" },
-      { keys: ["⌃", "⌘", "F"], label: "toggle fullscreen" },
+      { keys: "⌘+K", label: "open command palette" },
+      { keys: "⌘+B", label: "show / hide sidebar" },
+      { keys: "⌘+.", label: "toggle reading mode" },
+      { keys: "⌃+⌘+F", label: "toggle fullscreen" },
     ],
   },
   {
     title: "edit",
     rows: [
-      { keys: ["⌘", "F"], label: "find / replace in editor" },
-      { keys: ["⌘", "G"], label: "find next match" },
+      { keys: "⌘+F", label: "find / replace in editor" },
+      { keys: "⌘+G", label: "find next match" },
     ],
   },
   {
     title: "share",
     rows: [
-      { keys: ["⌘", "⇧", "C"], label: "copy markdown to clipboard" },
-      { keys: ["⌘", "P"], label: "export to pdf" },
+      { keys: "⌘+⇧+C", label: "copy markdown to clipboard" },
+      { keys: "⌘+P", label: "export to pdf" },
     ],
   },
   {
     title: "help",
     rows: [
-      { keys: ["⌘", "/"], label: "open this help" },
-      { keys: ["esc"], label: "close any popup / overlay" },
+      { keys: "⌘+/", label: "open this help" },
+      { keys: "esc", label: "close any popup / overlay" },
     ],
   },
 ];
@@ -116,9 +117,11 @@ export function HelpOverlay({ open, onClose, onReplayTutorial }: HelpOverlayProp
                   {g.rows.map((s) => (
                     <li key={s.label} className="mdv-help__row">
                       <span className="mdv-help__keys">
-                        {s.keys.map((k, i) => (
-                          <Kbd key={`${s.label}-${i}`}>{k}</Kbd>
-                        ))}
+                        {s.keys.includes("+") ? (
+                          <Shortcut keys={s.keys} />
+                        ) : (
+                          <Kbd>{s.keys}</Kbd>
+                        )}
                       </span>
                       <span className="mdv-help__label">{s.label}</span>
                     </li>
@@ -133,7 +136,7 @@ export function HelpOverlay({ open, onClose, onReplayTutorial }: HelpOverlayProp
           <h3 className="mdv-help__h">tips</h3>
           <ul className="mdv-help__tips">
             {TIPS.map((tip) => (
-              <li key={tip}>{tip}</li>
+              <li key={tip}>{shortcutLabel(tip)}</li>
             ))}
           </ul>
         </section>

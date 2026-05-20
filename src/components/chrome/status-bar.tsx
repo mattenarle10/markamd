@@ -1,6 +1,6 @@
 import { CircleHelp } from "lucide-react";
 import { Button, Icon } from "@/components/primitives";
-import { formatTokens, startWindowDrag } from "@/lib";
+import { formatTokens, shortcutLabel, startWindowDrag } from "@/lib";
 
 type StatusBarProps = {
   fileName?: string;
@@ -33,7 +33,7 @@ export function StatusBar({
         <span>{minutes} min read</span>
         <Button
           className="mdv-statusbar__help"
-          data-tooltip="how to use (⌘/)"
+          data-tooltip={shortcutLabel("how to use (⌘/)")}
           aria-label="how to use"
           onClick={onShowHelp}
           icon={<Icon icon={CircleHelp} size={12} strokeWidth={1.5} />}

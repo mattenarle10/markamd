@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { STORAGE_KEYS } from "./storage";
 
-export type Theme = "latte" | "frappe" | "macchiato" | "mocha" | "matcha";
+export type Theme = "latte" | "frappe" | "macchiato" | "mocha" | "matcha" | "kanagawa" | "rose-pine";
 export type ThemeMode = "system" | Theme;
 
 const VALID: ReadonlyArray<ThemeMode> = [
@@ -11,6 +11,8 @@ const VALID: ReadonlyArray<ThemeMode> = [
   "macchiato",
   "mocha",
   "matcha",
+  "kanagawa",
+  "rose-pine",
 ];
 
 const STORAGE_KEY = STORAGE_KEYS.themeMode;

@@ -1,6 +1,6 @@
 import { Check, ChevronRight, Copy, FilePlus2, FileText, FolderOpen, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Button, Icon } from "@/components/primitives";
-import { startWindowDrag } from "@/lib";
+import { shortcutLabel, startWindowDrag } from "@/lib";
 import exciteUrl from "@/assets/mascot/excite.png";
 
 export type SaveStatus = "idle" | "dirty" | "saving" | "saved";
@@ -58,7 +58,7 @@ export function Breadcrumb({
   return (
     <div className="mdv-breadcrumb" data-tauri-drag-region onMouseDown={startWindowDrag}>
       <Button
-        data-tooltip={sidebarOpen ? "hide sidebar (⌘B)" : "show sidebar (⌘B)"}
+        data-tooltip={shortcutLabel(sidebarOpen ? "hide sidebar (⌘B)" : "show sidebar (⌘B)")}
         aria-label={sidebarOpen ? "hide sidebar" : "show sidebar"}
         onClick={onToggleSidebar}
         icon={
@@ -120,7 +120,7 @@ export function Breadcrumb({
           <button
             type="button"
             className={`mdv-copybtn${copyPulse ? " is-copied" : ""}`}
-            data-tooltip={copyPulse ? "copied!" : "copy markdown (⌘⇧C)"}
+            data-tooltip={copyPulse ? "copied!" : shortcutLabel("copy markdown (⌘⇧C)")}
             aria-label={copyPulse ? "copied" : "copy markdown"}
             onClick={onCopyMarkdown}
           >
@@ -133,19 +133,19 @@ export function Breadcrumb({
           </button>
         ) : null}
         <Button
-          data-tooltip="new file (⌘N)"
+          data-tooltip={shortcutLabel("new file (⌘N)")}
           aria-label="new file"
           onClick={onNewFile}
           icon={<Icon icon={FilePlus2} size={13} strokeWidth={1.5} />}
         />
         <Button
-          data-tooltip="open file (⌘O)"
+          data-tooltip={shortcutLabel("open file (⌘O)")}
           aria-label="open file"
           onClick={onOpenFile}
           icon={<Icon icon={FileText} size={13} strokeWidth={1.5} />}
         />
         <Button
-          data-tooltip="open folder (⌘⇧O)"
+          data-tooltip={shortcutLabel("open folder (⌘⇧O)")}
           aria-label="open folder"
           onClick={onOpenFolder}
           icon={<Icon icon={FolderOpen} size={13} strokeWidth={1.5} />}

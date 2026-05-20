@@ -87,6 +87,34 @@
   color-scheme: dark;
 }
 
+/* kanagawa — ink-wash dark (sumiInk + crystalBlue) */
+:root[data-theme="kanagawa"] {
+  --bg: #1f1f28;            /* sumiInk1 — wave base */
+  --bg-rgb: 31, 31, 40;
+  --fg: #dcd7ba;            /* fujiWhite — warm cream */
+  --muted: #727169;         /* fujiGray */
+  --border: #363646;        /* sumiInk3 — subtle divider */
+  --accent: #7e9cd8;        /* crystalBlue — iconic */
+  --surface: #2a2a37;       /* sumiInk2 */
+  --surface-hover: #363646; /* sumiInk3 */
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  color-scheme: dark;
+}
+
+/* rose pine — soho-vibes dark (base + rose) */
+:root[data-theme="rose-pine"] {
+  --bg: #191724;            /* base */
+  --bg-rgb: 25, 23, 36;
+  --fg: #e0def4;            /* text */
+  --muted: #6e6a86;         /* muted */
+  --border: #26233a;        /* overlay */
+  --accent: #ebbcba;        /* rose — signature pink */
+  --surface: #1f1d2e;       /* surface */
+  --surface-hover: #26233a; /* overlay */
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.28);
+  color-scheme: dark;
+}
+
 /* fallback when no data-theme yet (system check before JS) */
 :root:not([data-theme]) {
   --bg: #eff1f5;

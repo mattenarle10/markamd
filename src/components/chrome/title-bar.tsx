@@ -5,15 +5,17 @@ import {
   Coffee,
   Copy,
   FileDown,
+  Flower2,
   Leaf,
   Minimize2,
   Monitor,
   Moon,
   Sparkles,
   Sun,
+  Waves,
 } from "lucide-react";
 import { Button, Icon, Popover } from "@/components/primitives";
-import { startWindowDrag, useThemeMode, useTransparency, type ThemeMode } from "@/lib";
+import { shortcutLabel, startWindowDrag, useThemeMode, useTransparency, type ThemeMode } from "@/lib";
 
 type TitleBarProps = {
   fileName?: string;
@@ -37,6 +39,8 @@ const THEME_CHOICES: ThemeChoice[] = [
   { value: "frappe", label: "frappé", icon: Coffee },
   { value: "macchiato", label: "macchiato", icon: Coffee },
   { value: "mocha", label: "mocha", icon: Moon },
+  { value: "kanagawa", label: "kanagawa", icon: Waves },
+  { value: "rose-pine", label: "rose pine", icon: Flower2 },
 ];
 
 export function TitleBar({
@@ -63,7 +67,11 @@ export function TitleBar({
           ? Leaf
           : resolved === "mocha"
             ? Moon
-            : Coffee;
+            : resolved === "kanagawa"
+              ? Waves
+              : resolved === "rose-pine"
+                ? Flower2
+                : Coffee;
 
   return (
     <header className="mdv-titlebar" data-tauri-drag-region onMouseDown={startWindowDrag}>
@@ -87,7 +95,7 @@ export function TitleBar({
           <button
             type="button"
             className={`mdv-copybtn${copyPulse ? " is-copied" : ""}`}
-            data-tooltip={copyPulse ? "copied!" : "copy markdown (⌘⇧C)"}
+            data-tooltip={copyPulse ? "copied!" : shortcutLabel("copy markdown (⌘⇧C)")}
             aria-label={copyPulse ? "copied" : "copy markdown"}
             onClick={onCopyMarkdown}
           >
@@ -101,7 +109,7 @@ export function TitleBar({
         ) : null}
         {readingMode && onExportPdf ? (
           <Button
-            data-tooltip="export to pdf (⌘P)"
+            data-tooltip={shortcutLabel("export to pdf (⌘P)")}
             aria-label="export to pdf"
             onClick={onExportPdf}
             icon={<Icon icon={FileDown} size={13} strokeWidth={1.5} />}
@@ -109,7 +117,7 @@ export function TitleBar({
         ) : null}
         {onToggleReading ? (
           <Button
-            data-tooltip={readingMode ? "exit reading (esc)" : "reading mode (⌘.)"}
+            data-tooltip={readingMode ? "exit reading (esc)" : shortcutLabel("reading mode (⌘.)")}
             aria-label={readingMode ? "exit reading mode" : "reading mode"}
             aria-pressed={readingMode}
             onClick={onToggleReading}

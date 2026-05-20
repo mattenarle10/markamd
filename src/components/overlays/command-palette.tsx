@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon, Kbd, Overlay } from "@/components/primitives";
+import { shortcutLabel } from "@/lib";
 import { CATEGORY_LABELS, CATEGORY_ORDER, type Command, type CommandCategory } from "@/lib/commands";
 
 export type { Command };
@@ -159,7 +160,7 @@ export function CommandPalette({ open, onClose, commands }: CommandPaletteProps)
                   {cmd.label}
                   {cmd.hint ? <span className="mdv-palette__hint"> · {cmd.hint}</span> : null}
                 </span>
-                {cmd.shortcut ? <Kbd className="mdv-kbd--muted">{cmd.shortcut}</Kbd> : null}
+                {cmd.shortcut ? <Kbd className="mdv-kbd--muted">{shortcutLabel(cmd.shortcut)}</Kbd> : null}
               </li>
             );
           })

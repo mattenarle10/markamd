@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight, FolderOpen, Sparkles } from "lucide-react";
-import { Button, Icon, Kbd, Overlay } from "@/components/primitives";
+import { Button, Icon, Kbd, Overlay, Shortcut } from "@/components/primitives";
 import logoUrl from "@/assets/mascot/mdview-transpa-bg.png";
 import notebookUrl from "@/assets/mascot/notebook.png";
 import penUrl from "@/assets/mascot/pen.png";
@@ -35,7 +35,7 @@ const SLIDES: Slide[] = [
     title: "your context library",
     body: (
       <>
-        press <Kbd>⌘</Kbd><Kbd>⇧</Kbd><Kbd>O</Kbd> to load a folder of <code>.md</code> notes. the sidebar becomes your library — tap the 🔍 to search across every file in the tree.
+        press <Shortcut keys="⌘+⇧+O" /> to load a folder of <code>.md</code> notes. the sidebar becomes your library — tap the 🔍 to search across every file in the tree.
       </>
     ),
   },
@@ -44,7 +44,7 @@ const SLIDES: Slide[] = [
     title: "write side by side",
     body: (
       <>
-        type on the left, watch it render on the right. code blocks + mermaid diagrams — all live. <Kbd>⌘</Kbd><Kbd>S</Kbd> to save when ready.
+        type on the left, watch it render on the right. code blocks + mermaid diagrams — all live. <Shortcut keys="⌘+S" /> to save when ready.
       </>
     ),
   },
@@ -53,7 +53,7 @@ const SLIDES: Slide[] = [
     title: "read, then share",
     body: (
       <>
-        <Kbd>⌘</Kbd><Kbd>.</Kbd> flips to calm reading mode for proofing. when it looks right, <Kbd>⌘</Kbd><Kbd>⇧</Kbd><Kbd>C</Kbd> copies the markdown — paste into any ai chat or agent.
+        <Shortcut keys="⌘+." /> flips to calm reading mode for proofing. when it looks right, <Shortcut keys="⌘+⇧+C" /> copies the markdown — paste into any ai chat or agent.
       </>
     ),
   },
@@ -62,7 +62,7 @@ const SLIDES: Slide[] = [
     title: "you're set",
     body: (
       <>
-        <Kbd>⌘</Kbd><Kbd>K</Kbd> for all commands. <Kbd>⌘</Kbd><Kbd>/</Kbd> for help. happy writing.
+        <Shortcut keys="⌘+K" /> for all commands. <Shortcut keys="⌘+/" /> for help. happy writing.
       </>
     ),
   },
@@ -178,7 +178,7 @@ export function WelcomeOverlay({ open, onClose, onOpenFolder }: WelcomeOverlayPr
         <div className="mdv-welcome__hint">
           {isLast ? (
             <>
-              <Kbd>⌘</Kbd><Kbd>⇧</Kbd><Kbd>O</Kbd> <span>open a folder</span>
+              <Shortcut keys="⌘+⇧+O" /> <span>open a folder</span>
               <span className="mdv-welcome__hint-sep">·</span>
               <Kbd>↵</Kbd> <span>or click</span>
               <span className="mdv-welcome__hint-sep">·</span>
