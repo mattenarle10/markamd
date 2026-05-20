@@ -64,13 +64,10 @@ const md = new MarkdownIt({
     try {
       return highlighter.codeToHtml(code, {
         lang: language,
-        themes: {
-          latte: THEMES.latte,
-          frappe: THEMES.frappe,
-          macchiato: THEMES.macchiato,
-          mocha: THEMES.mocha,
-          matcha: THEMES.matcha,
-        },
+        // pass full THEMES map so EVERY registered theme gets a css-var variant
+        // (kanagawa / rose-pine / ayu were missing before, so code blocks fell
+        // back to no-color when active theme didn't have a variant).
+        themes: THEMES,
         defaultColor: false,
       });
     } catch {

@@ -189,6 +189,30 @@
   text-decoration: var(--shiki-matcha-text-decoration, inherit) !important;
 }
 
+.mdv-prose[data-theme="kanagawa"] .shiki,
+.mdv-prose[data-theme="kanagawa"] .shiki span {
+  color: var(--shiki-kanagawa) !important;
+  font-style: var(--shiki-kanagawa-font-style, inherit) !important;
+  font-weight: var(--shiki-kanagawa-font-weight, inherit) !important;
+  text-decoration: var(--shiki-kanagawa-text-decoration, inherit) !important;
+}
+
+.mdv-prose[data-theme="rose-pine"] .shiki,
+.mdv-prose[data-theme="rose-pine"] .shiki span {
+  color: var(--shiki-rose-pine) !important;
+  font-style: var(--shiki-rose-pine-font-style, inherit) !important;
+  font-weight: var(--shiki-rose-pine-font-weight, inherit) !important;
+  text-decoration: var(--shiki-rose-pine-text-decoration, inherit) !important;
+}
+
+.mdv-prose[data-theme="ayu"] .shiki,
+.mdv-prose[data-theme="ayu"] .shiki span {
+  color: var(--shiki-ayu) !important;
+  font-style: var(--shiki-ayu-font-style, inherit) !important;
+  font-weight: var(--shiki-ayu-font-weight, inherit) !important;
+  text-decoration: var(--shiki-ayu-text-decoration, inherit) !important;
+}
+
 /* mermaid diagram container */
 .mdv-mermaid {
   display: flex;
