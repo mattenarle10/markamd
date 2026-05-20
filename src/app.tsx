@@ -361,6 +361,8 @@ export function App() {
   // tiny "just copied!" pulse for the breadcrumb copy button + ambient toast
   const [copyPulse, setCopyPulse] = useState(false);
   const [copyToast, setCopyToast] = useState(false);
+  // toast shown after a successful save-as so the user knows where the file landed
+  const [saveAsToast, setSaveAsToast] = useState<string | null>(null);
   const copyMarkdown = useCallback(async () => {
     if (!source) return;
     try {
@@ -449,6 +451,9 @@ export function App() {
     setActivePath(target);
     // refresh sidebar in case the file landed inside the currently-open root
     bumpTree();
+    // toast so user knows where the file landed
+    setSaveAsToast(`saved to ${basename(target)}`);
+    window.setTimeout(() => setSaveAsToast(null), 2400);
   }, [activePath, rootPath, source, saveNow, setActivePath]);
 
   // refs to source + savedContent so handleExternalChange has stable identity.
@@ -1137,6 +1142,13 @@ export function App() {
         message="copied to clipboard · paste anywhere"
         variant="info"
         onDismiss={() => setCopyToast(false)}
+      />
+
+      <Toast
+        open={saveAsToast != null && loadError == null}
+        message={saveAsToast ?? ""}
+        variant="info"
+        onDismiss={() => setSaveAsToast(null)}
       />
 
       <Toast
