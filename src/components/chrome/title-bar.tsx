@@ -17,7 +17,7 @@ import {
   Waves,
 } from "lucide-react";
 import { Button, Icon, Popover } from "@/components/primitives";
-import { shortcutLabel, startWindowDrag, useThemeMode, useTransparency, type ThemeMode } from "@/lib";
+import { getSystemTheme, previewTheme, shortcutLabel, startWindowDrag, useThemeMode, useTransparency, type Theme, type ThemeMode } from "@/lib";
 
 type TitleBarProps = {
   fileName?: string;
@@ -60,21 +60,25 @@ export function TitleBar({
   const { opacity, on: transparent, set: setTransparency } = useTransparency();
   const [menuOpen, setMenuOpen] = useState(false);
   const themeAnchorRef = useRef<HTMLDivElement>(null);
-  // hover-to-preview-theme: a tiny debounce avoids ping-pong as the cursor
-  // slides past menu items. Holding still over a theme for ~60ms applies it.
+  // hover = preview only (DOM-level, no storage write).
+  // mouse-leave or menu close = revert to stored theme.
+  // click = commit (setMode → writes storage + applies).
   const hoverTimer = useRef<number | null>(null);
-  const applyThemeOnHover = (value: ThemeMode) => {
+  const resolveThemeForPreview = (value: ThemeMode): Theme =>
+    value === "system" ? getSystemTheme() : value;
+  const previewOnHover = (value: ThemeMode) => {
     if (hoverTimer.current !== null) window.clearTimeout(hoverTimer.current);
     hoverTimer.current = window.setTimeout(() => {
-      setMode(value);
+      previewTheme(resolveThemeForPreview(value));
       hoverTimer.current = null;
     }, 60);
   };
-  const cancelHoverApply = () => {
+  const cancelPreview = () => {
     if (hoverTimer.current !== null) {
       window.clearTimeout(hoverTimer.current);
       hoverTimer.current = null;
     }
+    previewTheme(null);
   };
 
   // ActiveIcon is the resolved theme's icon (single source of truth: THEME_CHOICES).
@@ -144,7 +148,14 @@ export function TitleBar({
             onClick={() => setMenuOpen((v) => !v)}
             icon={<Icon icon={ActiveIcon} size={14} strokeWidth={1.5} />}
           />
-          <Popover open={menuOpen} onClose={() => setMenuOpen(false)} anchorRef={themeAnchorRef}>
+          <Popover
+            open={menuOpen}
+            onClose={() => {
+              cancelPreview();
+              setMenuOpen(false);
+            }}
+            anchorRef={themeAnchorRef}
+          >
             <div className="mdv-menu">
               <div className="mdv-menu__label">theme</div>
               {THEME_CHOICES.map((c) => {
@@ -154,13 +165,13 @@ export function TitleBar({
                     key={c.value}
                     type="button"
                     className={`mdv-menu__item${active ? " is-active" : ""}`}
-                    onMouseEnter={() => applyThemeOnHover(c.value)}
-                    onMouseLeave={cancelHoverApply}
-                    onFocus={() => applyThemeOnHover(c.value)}
-                    onBlur={cancelHoverApply}
+                    onMouseEnter={() => previewOnHover(c.value)}
+                    onMouseLeave={cancelPreview}
+                    onFocus={() => previewOnHover(c.value)}
+                    onBlur={cancelPreview}
                     onClick={() => {
                       // click commits immediately + closes menu
-                      cancelHoverApply();
+                      cancelPreview();
                       setMode(c.value);
                       setMenuOpen(false);
                     }}

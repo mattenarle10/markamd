@@ -67,6 +67,21 @@ export function setThemeMode(mode: ThemeMode): void {
   modeListeners.forEach((fn) => fn());
 }
 
+/**
+ * Visual-only theme preview — does NOT touch localStorage or fire listeners.
+ * Used by the theme menu's hover behavior: hover previews, click commits via
+ * setThemeMode. Pass `null` to revert to the user's stored mode.
+ */
+export function previewTheme(theme: Theme | null): void {
+  if (typeof document === "undefined") return;
+  if (theme === null) {
+    // revert to whatever's persisted
+    apply(readMode());
+    return;
+  }
+  document.documentElement.setAttribute("data-theme", theme);
+}
+
 function subscribeMode(fn: () => void): () => void {
   modeListeners.add(fn);
   return () => {

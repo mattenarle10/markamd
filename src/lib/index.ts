@@ -6,6 +6,7 @@ export {
   setThemeMode,
   setTransparency,
   getSystemTheme,
+  previewTheme,
   type Theme,
   type ThemeMode,
 } from "./theme";
