@@ -1,0 +1,29 @@
+/* Ghostty-style window transparency.
+   When user opts in (slider < 100), ALL chrome surfaces become transparent so
+   the single rgba background on .mdv-app + the native macOS NSVisualEffect
+   vibrancy show through uniformly. Without this, each chrome row stacks its
+   own rgba layer on top of the shell, producing the "only 2 panes look
+   transparent" effect.
+
+   .mdv-app keeps its var(--bg) (which becomes rgba when transparency is on).
+   Surface popovers (menu, popover, palette) intentionally keep --surface so
+   they remain readable on top of the translucent background. */
+
+:root[data-transparency="on"] .mdv-titlebar,
+:root[data-transparency="on"] .mdv-breadcrumb,
+:root[data-transparency="on"] .mdv-statusbar,
+:root[data-transparency="on"] .mdv-sidebar,
+:root[data-transparency="on"] .mdv-sidebar__inner,
+:root[data-transparency="on"] .mdv-editor,
+:root[data-transparency="on"] .mdv-editor .cm-editor,
+:root[data-transparency="on"] .mdv-editor .cm-gutters,
+:root[data-transparency="on"] .mdv-editor .cm-scroller,
+:root[data-transparency="on"] .mdv-preview,
+:root[data-transparency="on"] .mdv-prose {
+  background: transparent !important;
+}
+
+/* preserve hover feedback on translucent surfaces — rgba lets the blur show through */
+:root[data-transparency="on"] .mdv-sidebar__row:hover {
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+}

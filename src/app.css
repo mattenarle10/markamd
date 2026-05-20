@@ -1,6 +1,7 @@
 @import "./styles/shared/menu.css";
 @import "./styles/shared/kbd.css";
 @import "./styles/shared/toast.css";
+@import "./styles/shared/transparency.css";
 @import "./styles/chrome/titlebar.css";
 @import "./styles/chrome/breadcrumb.css";
 @import "./styles/chrome/statusbar.css";
