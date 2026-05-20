@@ -61,7 +61,8 @@ export function TitleBar({
   const [menuOpen, setMenuOpen] = useState(false);
   const themeAnchorRef = useRef<HTMLDivElement>(null);
   // hover = preview only (DOM-level, no storage write).
-  // mouse-leave or menu close = revert to stored theme.
+  // moving between items keeps the preview (no flash).
+  // mouse-leave the ENTIRE menu OR popover close = revert to stored.
   // click = commit (setMode → writes storage + applies).
   const hoverTimer = useRef<number | null>(null);
   const resolveThemeForPreview = (value: ThemeMode): Theme =>
@@ -73,11 +74,16 @@ export function TitleBar({
       hoverTimer.current = null;
     }, 60);
   };
-  const cancelPreview = () => {
+  const cancelHoverTimer = () => {
+    // cancel a PENDING preview without reverting — used when cursor leaves an
+    // item but is still inside the menu (moving to another item).
     if (hoverTimer.current !== null) {
       window.clearTimeout(hoverTimer.current);
       hoverTimer.current = null;
     }
+  };
+  const cancelPreview = () => {
+    cancelHoverTimer();
     previewTheme(null);
   };
 
@@ -156,7 +162,7 @@ export function TitleBar({
             }}
             anchorRef={themeAnchorRef}
           >
-            <div className="mdv-menu">
+            <div className="mdv-menu" onMouseLeave={cancelPreview}>
               <div className="mdv-menu__label">theme</div>
               {THEME_CHOICES.map((c) => {
                 const active = mode === c.value;
@@ -166,9 +172,9 @@ export function TitleBar({
                     type="button"
                     className={`mdv-menu__item${active ? " is-active" : ""}`}
                     onMouseEnter={() => previewOnHover(c.value)}
-                    onMouseLeave={cancelPreview}
+                    onMouseLeave={cancelHoverTimer}
                     onFocus={() => previewOnHover(c.value)}
-                    onBlur={cancelPreview}
+                    onBlur={cancelHoverTimer}
                     onClick={() => {
                       // click commits immediately + closes menu
                       cancelPreview();
