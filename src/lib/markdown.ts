@@ -11,7 +11,29 @@ function mermaidId(): string {
   return `mdv-mermaid-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-const LANGS = ["markdown", "ts", "tsx", "js", "jsx", "json", "rust", "bash", "css", "html", "python", "go"];
+// expanded language list — covers the long tail of code blocks users actually
+// paste from their AI context (resolves #18: c/java/cpp were missing).
+// Shiki lazy-loads grammars; listing more here just registers them eagerly.
+const LANGS = [
+  // existing
+  "markdown", "ts", "tsx", "js", "jsx", "json", "rust", "bash", "css", "html", "python", "go",
+  // systems / compiled
+  "c", "cpp", "csharp", "objective-c",
+  // jvm / .net
+  "java", "kotlin", "scala", "groovy",
+  // mobile / swift
+  "swift",
+  // scripting
+  "ruby", "php", "lua", "perl", "r", "elixir", "haskell",
+  // data / config
+  "sql", "yaml", "toml", "xml", "ini",
+  // shell / devops
+  "shellscript", "powershell", "dockerfile", "makefile", "nginx",
+  // diff / vcs
+  "diff", "git-commit",
+  // misc commonly-pasted
+  "graphql", "protobuf", "regex", "vim", "jsonc",
+];
 const THEMES = {
   latte: "catppuccin-latte",
   frappe: "catppuccin-frappe",
