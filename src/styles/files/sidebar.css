@@ -374,7 +374,7 @@
 
 .mdv-context-menu .mdv-menu__item {
   width: 100%;
-  padding: 5px 9px;
+  padding: 4px 9px;
   background: transparent;
   border: 0;
   cursor: pointer;
@@ -393,7 +393,13 @@
 }
 
 .mdv-context-menu .mdv-menu__divider {
-  margin: 3px 4px;
+  margin: 2px 6px;
+}
+
+/* destructive action (delete) — accent red only on hover so it doesn't shout */
+.mdv-context-menu .mdv-menu__item--destructive:hover {
+  background: color-mix(in srgb, #ef4444 12%, transparent);
+  color: #ef4444;
 }
 
 .mdv-context-menu .mdv-menu__item-hint {

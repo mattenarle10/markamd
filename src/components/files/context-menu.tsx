@@ -9,6 +9,8 @@ export type ContextMenuItem =
       onSelect: () => void;
       disabled?: boolean;
       hint?: string;
+      /** style as destructive (red on hover) — for delete + similar */
+      destructive?: boolean;
     }
   | "divider";
 
@@ -76,7 +78,7 @@ export function ContextMenu({ open, x, y, items, onClose }: ContextMenuProps) {
             key={`${item.label}-${i}`}
             type="button"
             role="menuitem"
-            className="mdv-menu__item"
+            className={`mdv-menu__item${item.destructive ? " mdv-menu__item--destructive" : ""}`}
             disabled={item.disabled}
             onClick={() => {
               if (item.disabled) return;

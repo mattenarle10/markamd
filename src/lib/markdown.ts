@@ -3,7 +3,13 @@ import taskLists from "markdown-it-task-lists";
 import { createHighlighter, type Highlighter } from "shiki";
 import type { Theme } from "./theme";
 
-let mermaidCounter = 0;
+// random suffix per mermaid block — avoids id collisions when html re-renders
+// (which happens on save, reading-mode toggle, theme switch). Mermaid creates
+// a temporary <svg id="${id}-svg"> in document.body and tearing down the old
+// pre while the new render uses the same id was causing silent failures.
+function mermaidId(): string {
+  return `mdv-mermaid-${Math.random().toString(36).slice(2, 10)}`;
+}
 
 const LANGS = ["markdown", "ts", "tsx", "js", "jsx", "json", "rust", "bash", "css", "html", "python", "go"];
 const THEMES = {
@@ -51,7 +57,7 @@ const md = new MarkdownIt({
   highlight: (code, lang) => {
     // mermaid blocks bypass shiki — Preview component renders them as svg
     if (lang === "mermaid") {
-      const id = `mdv-mermaid-${++mermaidCounter}`;
+      const id = mermaidId();
       const encoded = code
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")

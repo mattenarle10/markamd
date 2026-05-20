@@ -683,13 +683,39 @@ export function App() {
     }
     items.push("divider");
     items.push({
-      label: "delete",
-      disabled: true,
-      hint: "soon",
-      onSelect: () => {},
+      label: isDir ? "delete folder" : "delete",
+      destructive: true,
+      onSelect: () => {
+        const name = basename(path);
+        const msg = isDir
+          ? `delete folder "${name}" and everything inside it?\n\nthis cannot be undone.`
+          : `delete "${name}"?\n\nthis cannot be undone.`;
+        if (!window.confirm(msg)) return;
+        void (async () => {
+          try {
+            await removeEntry(path, isDir);
+            // if the deleted file was active, clear the editor
+            if (!isDir && activePath === path) {
+              setActivePath(null);
+              setSource(DEMO_MARKDOWN);
+              setSavedContent(DEMO_MARKDOWN);
+            }
+            // if the deleted folder contained the active file, clear too
+            if (isDir && activePath && activePath.startsWith(path + "/")) {
+              setActivePath(null);
+              setSource(DEMO_MARKDOWN);
+              setSavedContent(DEMO_MARKDOWN);
+            }
+            bumpTree();
+          } catch (err) {
+            console.error("marka.md: delete failed", err);
+            setLoadError({ message: `couldn't delete: ${String(err)}` });
+          }
+        })();
+      },
     });
     return items;
-  }, [contextMenu]);
+  }, [contextMenu, activePath, setActivePath, bumpTree]);
 
   // OS "Open With → marka.md" from Finder — Rust emits marka:open-file
   useEffect(() => {
