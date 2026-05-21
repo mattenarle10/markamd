@@ -259,6 +259,15 @@ export function App() {
       hr { border: none; border-top: 1px solid var(--pborder); margin: 2em 0; }
       ul, ol { padding-left: 24px; }
       li { margin: 0.25em 0; }
+      /* task lists in PDF — hide bullet, checkbox is the marker (#21) */
+      .task-list-item { list-style: none; margin-left: -1.4em; }
+      .task-list-item input[type="checkbox"] {
+        margin-right: 0.5em;
+        accent-color: var(--paccent);
+        width: 0.95em;
+        height: 0.95em;
+        vertical-align: -0.1em;
+      }
       table { border-collapse: collapse; width: 100%; }
       th, td { border: 1px solid var(--pborder); padding: 8px 12px; text-align: left; vertical-align: top; }
       th { background: rgba(0, 0, 0, 0.03); font-weight: 600; }

@@ -279,6 +279,22 @@
   margin-top: 0.25em;
 }
 
+/* task-list rows (markdown-it-task-lists) — hide the bullet so the checkbox is
+   the visual marker. Without this, both a • and a checkbox render, which looks
+   broken. (#21) */
+.mdv-prose .task-list-item {
+  list-style: none;
+  margin-left: -1.4em;
+}
+.mdv-prose .task-list-item input[type="checkbox"] {
+  margin-right: 0.5em;
+  accent-color: var(--accent);
+  width: 0.95em;
+  height: 0.95em;
+  vertical-align: -0.1em;
+  cursor: default;
+}
+
 .mdv-prose hr {
   border: 0;
   border-top: 1px solid var(--border);
