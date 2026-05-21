@@ -27,11 +27,7 @@ export async function pickMarkdownFile(): Promise<string | null> {
   return null;
 }
 
-/**
- * Native "Save As" dialog. Returns the chosen path or null on cancel.
- * Used when the current buffer has no `activePath` yet (new untitled file)
- * or when user explicitly wants to save-as to a new location.
- */
+/** Native "Save As" dialog. Returns path or null on cancel. */
 export async function pickSaveMarkdown(defaultPath?: string): Promise<string | null> {
   const result = await save({
     title: "save markdown",

@@ -133,11 +133,9 @@ button:focus-visible {
   background: color-mix(in srgb, var(--accent) 32%, transparent) !important;
 }
 
-/* print-to-pdf — body.mdv-print is added before window.print() so the
-   on-screen DOM is reshaped *before* the webview snapshots for the print
-   dialog. WKWebView often renders the live screen layout (not @media print)
-   into the PDF, so the class-based variant is the reliable path. The
-   @media print block stays as a belt-and-suspenders for stock browsers. */
+/* print-to-pdf — body.mdv-print is added before window.print() so the DOM is
+   reshaped *before* the webview snapshots. WKWebView often renders the live
+   screen layout (not @media print) into the PDF; class-based is the reliable path. */
 body.mdv-print .mdv-titlebar,
 body.mdv-print .mdv-breadcrumb,
 body.mdv-print .mdv-statusbar,

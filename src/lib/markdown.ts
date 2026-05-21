@@ -3,17 +3,12 @@ import taskLists from "markdown-it-task-lists";
 import { createHighlighter, type Highlighter } from "shiki";
 import type { Theme } from "./theme";
 
-// random suffix per mermaid block — avoids id collisions when html re-renders
-// (which happens on save, reading-mode toggle, theme switch). Mermaid creates
-// a temporary <svg id="${id}-svg"> in document.body and tearing down the old
-// pre while the new render uses the same id was causing silent failures.
+// random suffix per render — mermaid id reuse across re-renders silently fails.
 function mermaidId(): string {
   return `mdv-mermaid-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-// expanded language list — covers the long tail of code blocks users actually
-// paste from their AI context (resolves #18: c/java/cpp were missing).
-// Shiki lazy-loads grammars; listing more here just registers them eagerly.
+// shiki lazy-loads grammars; registering all here for eager load.
 const LANGS = [
   // existing
   "markdown", "ts", "tsx", "js", "jsx", "json", "rust", "bash", "css", "html", "python", "go",
@@ -92,9 +87,7 @@ const md = new MarkdownIt({
     try {
       return highlighter.codeToHtml(code, {
         lang: language,
-        // pass full THEMES map so EVERY registered theme gets a css-var variant
-        // (kanagawa / rose-pine / ayu were missing before, so code blocks fell
-        // back to no-color when active theme didn't have a variant).
+        // pass all themes so every variant gets a css-var; defaultColor:false uses them.
         themes: THEMES,
         defaultColor: false,
       });

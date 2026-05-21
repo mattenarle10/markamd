@@ -346,9 +346,7 @@ export function App() {
   const toggleReadingMode = useCallback(() => setReadingMode((v) => !v), []);
   const exitReadingMode = useCallback(() => setReadingMode(false), []);
 
-  // ⌘F find in reading mode (v1.2.0). Codemirror handles its own ⌘F in editor
-  // mode; we only bind the shortcut while reading is active. proseRef captures
-  // the rendered article element so the find component can walk text nodes.
+  // ⌘F only bound while reading — CM owns it in editor mode.
   const [findOpen, setFindOpen] = useState(false);
   const [proseEl, setProseEl] = useState<HTMLElement | null>(null);
   useEffect(() => {
@@ -364,8 +362,6 @@ export function App() {
     return () => window.cancelAnimationFrame(id);
   }, [readingMode]);
 
-  // external-edit watcher (v1.2.0): poll the active file's mtime and offer to
-  // reload when it changes outside marka.md (vim, vscode, etc).
   const [externalReloadToast, setExternalReloadToast] = useState(false);
   const [externalConflict, setExternalConflict] = useState<string | null>(null);
 
@@ -445,12 +441,6 @@ export function App() {
     [],
   );
 
-  // Save As — opens the native save dialog and writes the buffer to the
-  // chosen path. Used by:
-  //   - ⌘S when the current buffer is untitled (no activePath) — previously
-  //     this was a no-op on all platforms (the bug arijit4 reported in #17
-  //     and Matt confirmed on macOS)
-  //   - ⌘⇧S explicitly, to "save a copy" of an existing file to a new location
   const saveAs = useCallback(async () => {
     // suggest a default location: <rootPath>/untitled.md if a folder is open,
     // else just "untitled.md" (dialog will land in the OS default folder)
@@ -467,10 +457,7 @@ export function App() {
     window.setTimeout(() => setSaveAsToast(null), 2400);
   }, [activePath, rootPath, source, saveNow, setActivePath]);
 
-  // refs to source + savedContent so handleExternalChange has stable identity.
-  // without this, every keystroke recreates the callback → useFileWatcher's
-  // effect tears down + restarts the 2s interval, adding a stat() call per
-  // keystroke and risking missed external edits during the restart window.
+  // stable refs so handleExternalChange identity doesn't fluctuate with keystrokes.
   const sourceRef = useRef(source);
   const savedRef = useRef(savedContent);
   useEffect(() => {
@@ -480,10 +467,7 @@ export function App() {
     savedRef.current = savedContent;
   }, [savedContent]);
 
-  // external-change handler: re-read the file when its mtime ticks. if user
-  // has no unsaved changes, silently reload + show a brief toast. if they DO
-  // have dirty edits, surface a conflict toast and let them choose.
-  // Stable dep set ([activePath]) — watcher only rebinds when file changes.
+  // stable dep set — watcher only rebinds when active file changes.
   const handleExternalChange = useCallback(async () => {
     if (!activePath) return;
     try {
@@ -504,12 +488,7 @@ export function App() {
   }, [activePath]);
   useFileWatcher(activePath, handleExternalChange);
 
-  // session restore (#22) — on app mount, if a file was open in the previous
-  // session, load it. uses the persisted `activePath` from usePersistedState
-  // (STORAGE_KEYS.lastFile). gracefully falls back to demo content if the file
-  // was deleted between sessions.
-  // mount-only on purpose — we do NOT re-fire when activePath changes, because
-  // that's normal file-switching during a session (handled by loadFile already).
+  // mount-only: restore last open file from persisted activePath. eslint-disable below is intentional.
   useEffect(() => {
     if (!activePath) return; // no persisted file → demo content stays
     let cancelled = false;
@@ -713,10 +692,7 @@ export function App() {
     }
   }, [activePath, bumpTree, setActivePath]);
 
-  // ⌘⌥Z (macOS) / Ctrl+Alt+Z (Windows/Linux) global keybinding for file-op undo
-  // (doesn't clash with editor ⌘Z / Ctrl+Z). Option/Alt modifies the produced
-  // character on macOS (⌥Z = Ω), so we match on e.code which reflects the
-  // physical key independent of modifiers.
+  // ⌥Z produces Ω on macOS — match e.code, not e.key.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey;
@@ -850,10 +826,8 @@ export function App() {
     }
   }, []);
 
-  // OS file drops via HTML5 (Tauri's dragDropEnabled is OFF so the OS-level
-  // intercept doesn't fight with the in-app sidebar drag-and-drop).
-  // counter pattern: nested elements fire dragenter/leave multiple times, so we
-  // increment on enter and decrement on leave. only show overlay when count > 0.
+  // OS drop. dragDropEnabled is OFF so Tauri doesn't intercept. counter guards
+  // nested dragenter/leave firing multiple times.
   useEffect(() => {
     let enterCount = 0;
 
@@ -1218,8 +1192,6 @@ export function App() {
         onDismiss={() => setUpdateUpToDate(false)}
       />
 
-      {/* external-edit watcher: silent reload toast when file changed on disk
-          and we had no unsaved local changes. */}
       <Toast
         open={externalReloadToast && loadError == null}
         message="file changed externally · reloaded"
@@ -1227,8 +1199,6 @@ export function App() {
         onDismiss={() => setExternalReloadToast(false)}
       />
 
-      {/* external-edit watcher: conflict toast when external change collides
-          with dirty local edits. user picks which version wins. */}
       <Toast
         open={externalConflict != null && loadError == null}
         message="this file changed externally · your unsaved edits would be lost"

@@ -2,14 +2,8 @@ import { useEffect } from "react";
 import { stat } from "@tauri-apps/plugin-fs";
 
 /**
- * Polls the file's mtime every 2s while the window is focused, fires onChange()
- * when the mtime ticks. Stops automatically on path change, unmount, or when
- * the window loses focus (resumes on refocus with an immediate check).
- *
- * Simple polling beats a full FS-watch plugin here because:
- *   - markdown files are small + reads are cheap
- *   - we already need user-focused polling (window blur = pause)
- *   - no new rust deps
+ * Polls mtime every 2s. Pauses on blur, resumes on focus.
+ * Picked over tauri-plugin-fs-watch: md files are cheap, no new rust deps.
  */
 export function useFileWatcher(path: string | null, onChange: () => void): void {
   useEffect(() => {

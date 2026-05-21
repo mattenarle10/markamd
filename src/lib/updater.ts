@@ -6,11 +6,7 @@ export type UpdateCheckResult =
   | { status: "none" }
   | { status: "error"; message: string };
 
-/**
- * Talks to the Tauri updater (which fetches latest.json from GitHub
- * Releases and verifies the signature against the pubkey baked into the
- * app). Safe to call multiple times.
- */
+/** Checks GitHub Releases via Tauri updater; idempotent. */
 export async function checkForUpdate(): Promise<UpdateCheckResult> {
   try {
     const update = await check();
@@ -33,11 +29,7 @@ export async function checkForUpdate(): Promise<UpdateCheckResult> {
   }
 }
 
-/**
- * Downloads + installs the latest update, then relaunches the app.
- * Throws on signature mismatch — the app refuses to install anything
- * not signed by our private updater key.
- */
+/** Throws on signature mismatch; relaunches on success. */
 export async function applyUpdate(
   onProgress?: (downloaded: number, total: number) => void,
 ): Promise<void> {

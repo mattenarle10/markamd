@@ -1,13 +1,5 @@
-/* Ghostty-style window transparency.
-   When user opts in (slider < 100), ALL chrome surfaces become transparent so
-   the single rgba background on .mdv-app + the native macOS NSVisualEffect
-   vibrancy show through uniformly. Without this, each chrome row stacks its
-   own rgba layer on top of the shell, producing the "only 2 panes look
-   transparent" effect.
-
-   .mdv-app keeps its var(--bg) (which becomes rgba when transparency is on).
-   Surface popovers (menu, popover, palette) intentionally keep --surface so
-   they remain readable on top of the translucent background. */
+/* transparency: clear all chrome so NSVisualEffect shows through uniformly
+   (layered rgba would only translucent-ify 2 panes). popovers keep --surface intentionally. */
 
 :root[data-transparency="on"] .mdv-titlebar,
 :root[data-transparency="on"] .mdv-breadcrumb,

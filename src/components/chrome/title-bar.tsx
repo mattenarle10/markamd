@@ -63,10 +63,6 @@ export function TitleBar({
   const { opacity, on: transparent, set: setTransparency } = useTransparency();
   const [menuOpen, setMenuOpen] = useState(false);
   const themeAnchorRef = useRef<HTMLDivElement>(null);
-  // hover = preview only (DOM-level, no storage write).
-  // moving between items keeps the preview (no flash).
-  // mouse-leave the ENTIRE menu OR popover close = revert to stored.
-  // click = commit (setMode → writes storage + applies).
   const hoverTimer = useRef<number | null>(null);
   const resolveThemeForPreview = (value: ThemeMode): Theme =>
     value === "system" ? getSystemTheme() : value;
@@ -78,8 +74,6 @@ export function TitleBar({
     }, 60);
   };
   const cancelHoverTimer = () => {
-    // cancel a PENDING preview without reverting — used when cursor leaves an
-    // item but is still inside the menu (moving to another item).
     if (hoverTimer.current !== null) {
       window.clearTimeout(hoverTimer.current);
       hoverTimer.current = null;
@@ -90,8 +84,6 @@ export function TitleBar({
     previewTheme(null);
   };
 
-  // ActiveIcon is the resolved theme's icon (single source of truth: THEME_CHOICES).
-  // Avoids drift when adding new themes — add one entry to THEME_CHOICES, done.
   const ActiveIcon =
     mode === "system"
       ? Monitor

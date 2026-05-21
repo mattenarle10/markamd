@@ -7,13 +7,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   iconRight?: ReactNode;
 };
 
-/**
- * Base button. Two variants — `ghost` (default, transparent with hover) and
- * `solid` (accent-filled CTA). Pair `icon` (or `iconRight`) + optional `children`.
- *
- * <Button icon={<Icon icon={Save} />} title="save (⌘S)" onClick={save} />
- * <Button iconRight={<Icon icon={ChevronRight} />}>next</Button>
- */
+/** Ghost (default) or solid variant. Accepts icon, iconRight, children. */
 export function Button({
   variant = "ghost",
   size = "sm",
