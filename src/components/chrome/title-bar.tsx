@@ -21,15 +21,15 @@ import { getSystemTheme, previewTheme, shortcutLabel, startWindowDrag, useThemeM
 
 type TitleBarProps = {
   fileName?: string;
-  /** full path of the active file — shown on hover over the centered filename */
   filePath?: string | null;
   dirty?: boolean;
   readingMode?: boolean;
   onToggleReading?: () => void;
-  /** shown in title-bar only while reading mode is on */
   onCopyMarkdown?: () => void;
   copyPulse?: boolean;
   onExportPdf?: () => void;
+  vimOn?: boolean;
+  onToggleVim?: () => void;
 };
 
 type ThemeChoice = { value: ThemeMode; label: string; icon: typeof Sun };
@@ -47,6 +47,8 @@ const THEME_CHOICES: ThemeChoice[] = [
 ];
 
 export function TitleBar({
+  vimOn = false,
+  onToggleVim,
   fileName,
   filePath,
   dirty = false,
@@ -222,6 +224,21 @@ export function TitleBar({
                   aria-valuetext={`${100 - opacity} percent transparent`}
                 />
               </div>
+              {onToggleVim ? (
+                <button
+                  type="button"
+                  className={`mdv-menu__item${vimOn ? " is-active" : ""}`}
+                  onClick={onToggleVim}
+                  role="menuitemcheckbox"
+                  aria-checked={vimOn}
+                >
+                  <span className="mdv-menu__item-icon" aria-hidden>
+                    <span className="mdv-menu__vim-badge">VIM</span>
+                  </span>
+                  <span className="mdv-menu__item-label">vim mode</span>
+                  <span className={`mdv-menu__switch${vimOn ? " is-on" : ""}`} aria-hidden />
+                </button>
+              ) : null}
             </div>
           </Popover>
         </div>

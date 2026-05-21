@@ -8,6 +8,7 @@ export const STORAGE_KEYS = {
   lastFile: "mdview.lastFile",
   welcomed: "mdview.welcomed",
   recentFiles: "mdview.recent.files",
+  vimMode: "mdview.vim",
 } as const;
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];

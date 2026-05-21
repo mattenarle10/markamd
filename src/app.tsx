@@ -105,6 +105,7 @@ export function App() {
     if (stack.length > 20) stack.shift();
   }, []);
   const [welcomed, setWelcomed] = usePersistedState<boolean>(STORAGE_KEYS.welcomed, false);
+  const [vimOn, setVimOn] = usePersistedState<boolean>(STORAGE_KEYS.vimMode, false);
   const [welcomeOpen, setWelcomeOpen] = useState(!welcomed);
   const [dragActive, setDragActive] = useState(false);
   const [loadError, setLoadError] = useState<{ message: string; path?: string } | null>(null);
@@ -1101,6 +1102,8 @@ export function App() {
         onCopyMarkdown={activePath || source ? () => void copyMarkdown() : undefined}
         copyPulse={copyPulse}
         onExportPdf={exportToPdf}
+        vimOn={vimOn}
+        onToggleVim={() => setVimOn((v: boolean) => !v)}
       />
 
       <Breadcrumb
@@ -1148,7 +1151,7 @@ export function App() {
               treeVersion={treeVersion}
             />
             <Splitter
-              left={<Editor value={source} onChange={setSource} />}
+              left={<Editor value={source} onChange={setSource} vimOn={vimOn} />}
               right={<Preview source={debouncedPreview} />}
             />
           </>

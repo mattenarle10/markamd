@@ -272,3 +272,19 @@
   outline-offset: 4px;
   border-radius: 8px;
 }
+
+.mdv-menu__vim-badge {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 2px 4px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  line-height: 1;
+}
+.mdv-menu__item.is-active .mdv-menu__vim-badge {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+}

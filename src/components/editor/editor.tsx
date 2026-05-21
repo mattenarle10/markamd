@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { EditorState } from "@codemirror/state";
+import { Compartment, EditorState } from "@codemirror/state";
 import { EditorView, keymap, lineNumbers, highlightActiveLine, drawSelection } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
 import { HighlightStyle, syntaxHighlighting, bracketMatching } from "@codemirror/language";
@@ -28,6 +28,8 @@ const mdHighlight = HighlightStyle.define([
 type EditorProps = {
   value: string;
   onChange: (next: string) => void;
+  /** opt-in vim keybindings (lazy-loaded on first true) */
+  vimOn?: boolean;
 };
 
 function buildTheme() {
@@ -82,11 +84,14 @@ function buildTheme() {
   );
 }
 
-export function Editor({ value, onChange }: EditorProps) {
+export function Editor({ value, onChange, vimOn = false }: EditorProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  // Compartment lets us swap the vim extension at runtime without rebuilding
+  // the EditorState (preserves doc, history, selection, undo stack).
+  const vimCompartment = useRef(new Compartment());
 
   useEffect(() => {
     if (!hostRef.current) return;
@@ -103,6 +108,8 @@ export function Editor({ value, onChange }: EditorProps) {
         markdown(),
         EditorView.lineWrapping,
         search({ top: true }),
+        // vim slot — empty until user toggles vimOn (#23)
+        vimCompartment.current.of([]),
         keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap, indentWithTab]),
         buildTheme(),
         EditorView.updateListener.of((update) => {
@@ -133,6 +140,32 @@ export function Editor({ value, onChange }: EditorProps) {
       });
     }
   }, [value]);
+
+  // vim mode toggle (#23). Lazy-loads @replit/codemirror-vim on first enable
+  // so non-vim users don't pay the ~200KB cost. Persists across re-renders via
+  // the Compartment.reconfigure effect — doc + history are preserved.
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
+    let cancelled = false;
+    if (vimOn) {
+      void import("@replit/codemirror-vim").then(({ vim }) => {
+        if (cancelled || !viewRef.current) return;
+        viewRef.current.dispatch({
+          effects: vimCompartment.current.reconfigure(vim()),
+        });
+      }).catch((err) => {
+        console.error("marka.md: failed to load vim mode", err);
+      });
+    } else {
+      view.dispatch({
+        effects: vimCompartment.current.reconfigure([]),
+      });
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [vimOn]);
 
   return <div ref={hostRef} className="mdv-editor" />;
 }
