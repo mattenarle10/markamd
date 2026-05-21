@@ -55,6 +55,21 @@ import "./app.css";
 
 const SAVED_FLASH_MS = 1200;
 
+type UndoOp =
+  | { kind: "move"; from: string; to: string }
+  | { kind: "rename"; from: string; to: string }
+  | { kind: "create-folder"; path: string }
+  | { kind: "create-file"; path: string };
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export function App() {
   const [source, setSource] = useState<string>(DEMO_MARKDOWN);
   const [savedContent, setSavedContent] = useState<string>(DEMO_MARKDOWN);
@@ -92,12 +107,6 @@ export function App() {
   const [updateInstalling, setUpdateInstalling] = useState(false);
   const [updateUpToDate, setUpdateUpToDate] = useState(false);
 
-  // undo stack for sidebar file operations — ⌘⌥Z pops + reverses
-  type UndoOp =
-    | { kind: "move"; from: string; to: string }
-    | { kind: "rename"; from: string; to: string }
-    | { kind: "create-folder"; path: string }
-    | { kind: "create-file"; path: string };
   const undoStackRef = useRef<UndoOp[]>([]);
   const pushUndo = useCallback((op: UndoOp) => {
     const stack = undoStackRef.current;
@@ -134,8 +143,8 @@ export function App() {
     setSaveStatus("idle");
   }, [setActivePath]);
 
-  const handleToggleSidebarFromCommands = useCallback(() => {
-    setSidebarOpen((v) => !v);
+  const handleToggleSidebar = useCallback(() => {
+    setSidebarOpen((v: boolean) => !v);
   }, [setSidebarOpen]);
 
   const exportToPdf = useCallback(async () => {
@@ -162,13 +171,6 @@ export function App() {
 
     const fileName = activePath ? basename(activePath) : undefined;
     const title = fileName ?? "marka.md export";
-    const escapeHtml = (s: string): string =>
-      s
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
 
     // self-contained print stylesheet — light theme regardless of app theme.
     // tracks the live prose CSS conceptually but stays decoupled so the
@@ -496,11 +498,10 @@ export function App() {
       try {
         const exists = await pathExists(activePath);
         if (cancelled) return;
-        if (exists && !cancelled) {
+        if (exists) {
           void loadFile(activePath);
-        } else if (!exists) {
-          // stale path — file deleted between sessions, clear silently
-          setActivePath(null);
+        } else {
+          setActivePath(null); // stale path — file deleted between sessions
         }
       } catch (err) {
         console.warn("marka.md: session restore failed", err);
@@ -550,10 +551,6 @@ export function App() {
       editor?.focus();
     });
   }, [setActivePath]);
-
-  const handleToggleSidebar = useCallback(() => {
-    setSidebarOpen(!sidebarOpen);
-  }, [setSidebarOpen, sidebarOpen]);
 
   const handleMove = useCallback(
     async (src: string, dstParent: string) => {
@@ -984,7 +981,6 @@ export function App() {
         : {}),
     }),
     [
-      sidebarOpen,
       activePath,
       source,
       savedContent,
@@ -993,14 +989,10 @@ export function App() {
       handleOpenFile,
       handleOpenFolder,
       handleNewFile,
-      handleToggleSidebarFromCommands,
-      showHelp,
-      showWelcome,
+      handleToggleSidebar,
       copyMarkdown,
       exportToPdf,
       toggleFullscreen,
-      loadFile,
-      recentFiles,
       readingMode,
       toggleReadingMode,
       exitReadingMode,
@@ -1019,7 +1011,7 @@ export function App() {
             void saveNow(activePath, source);
           }
         },
-        toggleSidebar: handleToggleSidebarFromCommands,
+        toggleSidebar: handleToggleSidebar,
         toggleReading: toggleReadingMode,
         showHelp,
         showWelcome,
@@ -1045,7 +1037,6 @@ export function App() {
       savedContent,
       saveNow,
       sidebarOpen,
-      setSidebarOpen,
       copyMarkdown,
       showHelp,
       showWelcome,
@@ -1055,7 +1046,7 @@ export function App() {
       handleManualUpdateCheck,
       exportToPdf,
       toggleFullscreen,
-      handleToggleSidebarFromCommands,
+      handleToggleSidebar,
       loadFile,
       recentFiles,
     ],
