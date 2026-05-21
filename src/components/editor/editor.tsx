@@ -147,20 +147,20 @@ export function Editor({ value, onChange, vimOn = false }: EditorProps) {
   useEffect(() => {
     const view = viewRef.current;
     if (!view) return;
+    const compartment = vimCompartment.current;
     let cancelled = false;
     if (vimOn) {
-      void import("@replit/codemirror-vim").then(({ vim }) => {
-        if (cancelled || !viewRef.current) return;
-        viewRef.current.dispatch({
-          effects: vimCompartment.current.reconfigure(vim()),
+      void import("@replit/codemirror-vim")
+        .then(({ vim }) => {
+          if (cancelled) return;
+          view.dispatch({ effects: compartment.reconfigure(vim()) });
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          console.error("marka.md: failed to load vim mode", err);
         });
-      }).catch((err) => {
-        console.error("marka.md: failed to load vim mode", err);
-      });
     } else {
-      view.dispatch({
-        effects: vimCompartment.current.reconfigure([]),
-      });
+      view.dispatch({ effects: compartment.reconfigure([]) });
     }
     return () => {
       cancelled = true;

@@ -517,9 +517,9 @@ export function App() {
       try {
         const exists = await pathExists(activePath);
         if (cancelled) return;
-        if (exists) {
+        if (exists && !cancelled) {
           void loadFile(activePath);
-        } else {
+        } else if (!exists) {
           // stale path — file deleted between sessions, clear silently
           setActivePath(null);
         }
@@ -1103,7 +1103,7 @@ export function App() {
         copyPulse={copyPulse}
         onExportPdf={exportToPdf}
         vimOn={vimOn}
-        onToggleVim={() => setVimOn((v: boolean) => !v)}
+        onToggleVim={() => setVimOn((v) => !v)}
       />
 
       <Breadcrumb
