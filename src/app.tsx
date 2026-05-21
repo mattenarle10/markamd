@@ -37,6 +37,7 @@ import {
   isMarkdownPath,
   joinPath,
   listFolder,
+  pathExists,
   moveEntry,
   pickFolder,
   pickMarkdownFile,
@@ -501,6 +502,36 @@ export function App() {
     }
   }, [activePath]);
   useFileWatcher(activePath, handleExternalChange);
+
+  // session restore (#22) — on app mount, if a file was open in the previous
+  // session, load it. uses the persisted `activePath` from usePersistedState
+  // (STORAGE_KEYS.lastFile). gracefully falls back to demo content if the file
+  // was deleted between sessions.
+  // mount-only on purpose — we do NOT re-fire when activePath changes, because
+  // that's normal file-switching during a session (handled by loadFile already).
+  useEffect(() => {
+    if (!activePath) return; // no persisted file → demo content stays
+    let cancelled = false;
+    void (async () => {
+      try {
+        const exists = await pathExists(activePath);
+        if (cancelled) return;
+        if (exists) {
+          void loadFile(activePath);
+        } else {
+          // stale path — file deleted between sessions, clear silently
+          setActivePath(null);
+        }
+      } catch (err) {
+        console.warn("marka.md: session restore failed", err);
+        if (!cancelled) setActivePath(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // mark dirty as soon as content diverges from disk
   useEffect(() => {
