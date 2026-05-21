@@ -14,6 +14,7 @@ import {
   Sparkles,
   Sun,
   Sunset,
+  Terminal,
   Waves,
 } from "lucide-react";
 import { Button, Icon, Popover } from "@/components/primitives";
@@ -225,19 +226,23 @@ export function TitleBar({
                 />
               </div>
               {onToggleVim ? (
-                <button
-                  type="button"
-                  className={`mdv-menu__item${vimOn ? " is-active" : ""}`}
-                  onClick={onToggleVim}
-                  role="menuitemcheckbox"
-                  aria-checked={vimOn}
-                >
-                  <span className="mdv-menu__item-icon" aria-hidden>
-                    <span className="mdv-menu__vim-badge">VIM</span>
-                  </span>
-                  <span className="mdv-menu__item-label">vim mode</span>
-                  <span className={`mdv-menu__switch${vimOn ? " is-on" : ""}`} aria-hidden />
-                </button>
+                <>
+                  <div className="mdv-menu__divider" aria-hidden />
+                  <div className="mdv-menu__label">editor</div>
+                  <button
+                    type="button"
+                    className={`mdv-menu__item${vimOn ? " is-active" : ""}`}
+                    onClick={onToggleVim}
+                    role="menuitemcheckbox"
+                    aria-checked={vimOn}
+                  >
+                    <span className="mdv-menu__item-icon">
+                      <Icon icon={Terminal} size={14} strokeWidth={1.5} />
+                    </span>
+                    <span className="mdv-menu__item-label">vim mode</span>
+                    <span className={`mdv-menu__switch${vimOn ? " is-on" : ""}`} aria-hidden />
+                  </button>
+                </>
               ) : null}
             </div>
           </Popover>
