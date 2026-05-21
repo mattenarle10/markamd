@@ -44,9 +44,10 @@ works with claude, chatgpt, gemini, your local agent — anywhere that reads pla
 
 [download the latest release →](https://github.com/mattenarle10/markamd/releases/latest)
 
-### macOS (apple silicon, notarized)
+### macOS (notarized + auto-updating, universal arch coverage)
 
-grab `marka.md.dmg` → drag **marka.md.app** into `/Applications` → open.
+- **apple silicon** (M1/M2/M3/M4): grab `marka.md.dmg` → drag **marka.md.app** into `/Applications` → open.
+- **intel mac**: grab `marka.md_intel.dmg` → same install steps.
 
 ### Windows (10+, x64)
 
@@ -99,7 +100,7 @@ shortcuts shown with **macOS** modifiers below. on **Windows / Linux**, substitu
 
 | layer | choice |
 |---|---|
-| shell | tauri 2 (rust + webview), apple silicon target |
+| shell | tauri 2 (rust + webview), macOS universal + Windows + Linux |
 | frontend | react 19 · vite 7 · typescript 5.8 · bun |
 | editor | codemirror 6 + `@codemirror/lang-markdown` + `@codemirror/search` |
 | markdown | markdown-it + shiki + mermaid |
@@ -134,7 +135,6 @@ per-release detail lives on the [changelog](https://markamd.vercel.app/changelog
 **next** (v1.4+):
 - **session restore** — remember last folder + open file + scroll position
 - **context tray** — multi-file bundling, ⌘-click to stage, copy as one prompt
-- **intel mac builds** (currently apple silicon only)
 
 contributions welcome — see [feedback](#feedback) below to suggest priorities.
 

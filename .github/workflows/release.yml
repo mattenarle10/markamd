@@ -19,6 +19,9 @@ jobs:
           - os: macos-latest
             target: aarch64-apple-darwin
             args: --target aarch64-apple-darwin
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            args: --target x86_64-apple-darwin
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             args: ""
@@ -163,7 +166,8 @@ jobs:
 
             ## install
 
-            **macOS** (notarized + auto-updating): `marka.md.dmg` → drag to `/Applications`
+            **macOS Apple Silicon** (notarized + auto-updating): `marka.md.dmg` → drag to `/Applications`
+            **macOS Intel** (notarized + auto-updating): `marka.md_intel.dmg` → drag to `/Applications`
             **Windows**: `marka.md_*-setup.exe` → run (SmartScreen → "More info" → "Run anyway")
             **Linux** 🐧: pick `.AppImage` (any distro), `.deb` (Debian/Ubuntu), or `.rpm` (Fedora/RHEL)
 
@@ -185,28 +189,47 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }}
 
-      # tauri-action emits `marka.md_<version>_<arch>.dmg` by default — too
-      # wordy. rename to `marka.md.dmg` via GH API (pure metadata change, no
-      # re-upload). macOS-only — Windows artifact names stay as
-      # `marka.md_<version>_x64-setup.exe` / `.msi` (Tauri convention).
-      - name: rename dmg → marka.md.dmg
-        if: matrix.os == 'macos-latest' && success()
+      # tauri-action emits `marka.md_<version>_<arch>.dmg` by default. Rename
+      # per arch so users get clean filenames + the landing dropdown can keep
+      # linking to `marka.md.dmg` (apple-silicon default). Intel gets a clear
+      # `_intel` suffix. Both rename steps are guarded by their matrix target
+      # so the two macOS legs don't race.
+      - name: rename dmg → marka.md.dmg (apple silicon)
+        if: matrix.target == 'aarch64-apple-darwin' && success()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           set -e
-          # /releases/tags/<tag> 404s on draft releases. /releases lists all
-          # (incl. drafts) — filter by tag_name to find the right one.
           RELEASE_ID=$(gh api repos/${{ github.repository }}/releases --jq '.[] | select(.tag_name == "${{ github.ref_name }}") | .id' | head -1)
           if [ -z "$RELEASE_ID" ]; then
             echo "no release found for tag ${{ github.ref_name }} — skipping rename"
             exit 0
           fi
-          ASSET_ID=$(gh api "repos/${{ github.repository }}/releases/$RELEASE_ID/assets" --jq '.[] | select(.name | endswith(".dmg")) | .id' | head -1)
+          ASSET_ID=$(gh api "repos/${{ github.repository }}/releases/$RELEASE_ID/assets" --jq '.[] | select(.name | test("aarch64.*\\.dmg$")) | .id' | head -1)
           if [ -n "$ASSET_ID" ]; then
-            echo "renaming dmg asset $ASSET_ID → marka.md.dmg"
+            echo "renaming aarch64 dmg asset $ASSET_ID → marka.md.dmg"
             gh api "repos/${{ github.repository }}/releases/assets/$ASSET_ID" -X PATCH -f name='marka.md.dmg'
+          else
+            echo "no aarch64 dmg asset found — skipping rename"
+          fi
+
+      - name: rename dmg → marka.md_intel.dmg (intel)
+        if: matrix.target == 'x86_64-apple-darwin' && success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -e
+          RELEASE_ID=$(gh api repos/${{ github.repository }}/releases --jq '.[] | select(.tag_name == "${{ github.ref_name }}") | .id' | head -1)
+          if [ -z "$RELEASE_ID" ]; then
+            echo "no release found for tag ${{ github.ref_name }} — skipping rename"
+            exit 0
+          fi
+          ASSET_ID=$(gh api "repos/${{ github.repository }}/releases/$RELEASE_ID/assets" --jq '.[] | select(.name | test("x64.*\\.dmg$")) | .id' | head -1)
+          if [ -n "$ASSET_ID" ]; then
+            echo "renaming intel dmg asset $ASSET_ID → marka.md_intel.dmg"
+            gh api "repos/${{ github.repository }}/releases/assets/$ASSET_ID" -X PATCH -f name='marka.md_intel.dmg'
           else
             echo "no dmg asset found — skipping rename"
           fi
