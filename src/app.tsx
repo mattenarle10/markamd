@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Breadcrumb, StatusBar, TitleBar, type VimMode } from "@/components/chrome";
-import { Editor, Preview, ReadingFind, Splitter } from "@/components/editor";
+import { Editor, OpenTabs, Preview, ReadingFind, Splitter } from "@/components/editor";
 import { ContextMenu, Sidebar, type ContextMenuItem } from "@/components/files";
 import { AboutOverlay, CommandPalette, DropOverlay, HelpOverlay, Toast, WelcomeOverlay } from "@/components/overlays";
 import { TooltipRoot } from "@/components/primitives";
@@ -38,10 +38,12 @@ import {
   readContextFiles,
   removeEntry,
   STORAGE_KEYS,
+  useI18n,
 } from "@/lib";
 import "./app.css";
 
 export function App() {
+  const { t } = useI18n();
   const {
     loadError,
     setLoadError,
@@ -61,6 +63,10 @@ export function App() {
     savedContent,
     activePath,
     setActivePath,
+    tabs,
+    activeTabId,
+    switchTab,
+    closeTab,
     rootPath,
     setRootPath,
     saveStatus,
@@ -147,11 +153,11 @@ export function App() {
     } catch (err) {
       const message = err instanceof PdfExportError
         ? err.message
-        : "couldn't export to pdf";
+        : t("app.pdfFailed");
       console.error("marka.md: pdf export failed", err);
       setLoadError({ message });
     }
-  }, [source, activePath]);
+  }, [source, activePath, setLoadError, t]);
 
 
   const toggleFullscreen = useCallback(async () => {
@@ -211,22 +217,25 @@ export function App() {
 
   const copyContextBundle = useCallback(async () => {
     if (stagedPaths.length === 0) {
-      setLoadError({ message: "stage files from the sidebar first" });
+      setLoadError({ message: t("app.stageFirst") });
       return;
     }
     try {
       const files = await readContextFiles(stagedPaths, activePath, source);
       const bundle = formatContextBundle(files, rootPath);
       const stats = getContextBundleStats(files);
+      const filesLabel = stats.files === 1
+        ? t("app.fileSingular", { count: stats.files })
+        : t("app.filePlural", { count: stats.files });
       await copyMarkdownCore(
         bundle,
-        `copied context · ${stats.files} file${stats.files === 1 ? "" : "s"} · ${stats.formattedTokens} tok`,
+        t("app.contextCopied", { files: filesLabel, tokens: stats.formattedTokens }),
       );
     } catch (err) {
       console.error("marka.md: context bundle copy failed", err);
-      setLoadError({ message: `couldn't copy context bundle — ${String(err)}` });
+      setLoadError({ message: `${t("app.contextCopyFailed")} — ${String(err)}` });
     }
-  }, [stagedPaths, activePath, source, rootPath, copyMarkdownCore, setLoadError]);
+  }, [stagedPaths, activePath, source, rootPath, copyMarkdownCore, setLoadError, t]);
 
   const debouncedPreview = useDebouncedValue(source, 50);
 
@@ -286,8 +295,8 @@ export function App() {
     const target = await saveAsCore();
     if (!target) return;
     bumpTree();
-    showSaveAsToast(`saved to ${basename(target)}`);
-  }, [saveAsCore, bumpTree, showSaveAsToast]);
+    showSaveAsToast(t("app.savedTo", { name: basename(target) }));
+  }, [saveAsCore, bumpTree, showSaveAsToast, t]);
 
   const handleOpenFolder = useCallback(async () => {
     const folder = await pickFolder();
@@ -313,40 +322,40 @@ export function App() {
     const { path, isDir } = contextMenu;
     const items: ContextMenuItem[] = [
       {
-        label: "rename",
+        label: t("menu.rename"),
         onSelect: () => setEditingPath(path),
       },
     ];
     if (isDir) {
       items.push("divider");
       items.push({
-        label: "new file",
+        label: t("menu.newFile"),
         onSelect: () => setNewEntry({ parent: path, kind: "file" }),
       });
       items.push({
-        label: "new folder",
+        label: t("menu.newFolder"),
         onSelect: () => setNewEntry({ parent: path, kind: "folder" }),
       });
     } else {
       items.push("divider");
       items.push({
-        label: "reveal in finder",
+        label: t("menu.revealFinder"),
         onSelect: () => void openPath(dirname(path)),
       });
       items.push({
-        label: "open in default app",
+        label: t("menu.openDefault"),
         onSelect: () => void openPath(path),
       });
     }
     items.push("divider");
     items.push({
-      label: isDir ? "delete folder" : "delete",
+      label: isDir ? t("menu.deleteFolder") : t("menu.delete"),
       destructive: true,
       onSelect: () => {
         const name = basename(path);
         const msg = isDir
-          ? `delete folder "${name}" and everything inside it?\n\nthis cannot be undone.`
-          : `delete "${name}"?\n\nthis cannot be undone.`;
+          ? t("menu.confirmDeleteFolder", { name })
+          : t("menu.confirmDelete", { name });
         if (!window.confirm(msg)) return;
         void (async () => {
           try {
@@ -368,7 +377,7 @@ export function App() {
       },
     });
     return items;
-  }, [contextMenu, activePath, setActivePath, bumpTree]);
+  }, [contextMenu, activePath, setActivePath, bumpTree, t]);
 
   // OS "Open With → marka.md" from Finder — Rust emits marka:open-file
   useEffect(() => {
@@ -450,7 +459,7 @@ export function App() {
         }
       } else if (files.length > 0) {
         setLoadError({
-          message: "only .md / .markdown / .mdx files can be opened in marka.md",
+          message: t("app.dropMarkdownOnly"),
         });
       }
     };
@@ -470,7 +479,7 @@ export function App() {
       window.removeEventListener("dragend", reset);
       window.removeEventListener("blur", reset);
     };
-  }, [setActivePath]);
+  }, [setActivePath, t]);
 
   const shortcuts = useMemo(
     () => ({
@@ -605,7 +614,7 @@ export function App() {
         editorOnly,
         toggleEditorOnly,
         contextCount: stagedPaths.length,
-      }),
+      }, t),
     [
       handleNewFile,
       handleOpenFile,
@@ -630,10 +639,20 @@ export function App() {
       loadFile,
       recentFiles,
       stagedPaths.length,
+      t,
     ],
   );
 
   const displayName = activePath ? basename(activePath) : undefined;
+
+  const handleCloseTab = useCallback((id: string) => {
+    const tab = tabs.find((item) => item.id === id);
+    if (!tab) return;
+    if (tab.source !== tab.savedContent && !window.confirm(t("tabs.closeUnsaved", { name: tab.title }))) {
+      return;
+    }
+    closeTab(id);
+  }, [closeTab, tabs, t]);
 
   return (
     <div
@@ -702,16 +721,24 @@ export function App() {
               onCancelNew={() => setNewEntry(null)}
               treeVersion={treeVersion}
             />
-            {editorOnly ? (
-              <div className="mdv-shell__editor-solo">
-                <Editor value={source} onChange={setSource} vimOn={vimOn} onVimMode={setVimMode} />
-              </div>
-            ) : (
-              <Splitter
-                left={<Editor value={source} onChange={setSource} vimOn={vimOn} onVimMode={setVimMode} />}
-                right={<Preview source={debouncedPreview} />}
+            <div className="mdv-workspace">
+              <OpenTabs
+                tabs={tabs}
+                activeTabId={activeTabId}
+                onSelect={switchTab}
+                onClose={handleCloseTab}
               />
-            )}
+              {editorOnly ? (
+                <div className="mdv-shell__editor-solo">
+                  <Editor value={source} onChange={setSource} vimOn={vimOn} onVimMode={setVimMode} />
+                </div>
+              ) : (
+                <Splitter
+                  left={<Editor value={source} onChange={setSource} vimOn={vimOn} onVimMode={setVimMode} />}
+                  right={<Preview source={debouncedPreview} />}
+                />
+              )}
+            </div>
           </>
         )}
       </main>
@@ -723,7 +750,7 @@ export function App() {
         action={
           loadError?.path
             ? {
-                label: "open in default app",
+                label: t("app.openDefault"),
                 onClick: async () => {
                   if (loadError.path) {
                     try {
@@ -756,8 +783,8 @@ export function App() {
         open={updateAvail != null && loadError == null}
         message={
           updateInstalling
-            ? `installing v${updateAvail?.version}…`
-            : `update available · v${updateAvail?.version}`
+            ? t("app.installingVersion", { version: updateAvail?.version ?? "" })
+            : t("app.updateAvailable", { version: updateAvail?.version ?? "" })
         }
         variant="info"
         durationMs={null}
@@ -765,13 +792,13 @@ export function App() {
         action={
           updateInstalling
             ? undefined
-            : { label: "install", onClick: () => void handleApplyUpdate() }
+            : { label: t("app.install"), onClick: () => void handleApplyUpdate() }
         }
       />
 
       <Toast
         open={updateUpToDate && loadError == null && updateAvail == null}
-        message="you're on the latest version"
+        message={t("app.latestVersion")}
         variant="info"
         onDismiss={() => setUpdateUpToDate(false)}
       />
@@ -783,7 +810,7 @@ export function App() {
         durationMs={null}
         onDismiss={() => setWhatsNewVersion(null)}
         action={{
-          label: "what's new",
+          label: t("app.releaseNotes"),
           onClick: () => {
             void openUrl(CHANGELOG_URL);
           },
@@ -792,19 +819,19 @@ export function App() {
 
       <Toast
         open={externalReloadToast && loadError == null}
-        message="file changed externally · reloaded"
+        message={t("app.fileReloaded")}
         variant="info"
         onDismiss={dismissExternalReload}
       />
 
       <Toast
         open={externalConflict != null && loadError == null}
-        message="this file changed externally · your unsaved edits would be lost"
+        message={t("app.fileConflict")}
         variant="info"
         durationMs={null}
         onDismiss={() => setExternalConflict(null)}
         action={{
-          label: "reload (discard mine)",
+          label: t("app.reloadDiscard"),
           onClick: () => {
             if (externalConflict != null) {
               setSource(externalConflict);

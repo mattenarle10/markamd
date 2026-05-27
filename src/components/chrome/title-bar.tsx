@@ -20,7 +20,7 @@ import {
   Waves,
 } from "lucide-react";
 import { Button, Icon, Popover } from "@/components/primitives";
-import { getSystemTheme, previewTheme, shortcutLabel, startWindowDrag, THEME_GROUPS, useThemeMode, useTransparency, type Theme, type ThemeMode } from "@/lib";
+import { getSystemTheme, LANGUAGE_CHOICES, previewTheme, shortcutLabel, startWindowDrag, THEME_GROUPS, useI18n, useThemeMode, useTransparency, type Theme, type ThemeMode } from "@/lib";
 
 type TitleBarProps = {
   fileName?: string;
@@ -65,6 +65,7 @@ export function TitleBar({
   copyPulse = false,
   onExportPdf,
 }: TitleBarProps) {
+  const { language, setLanguage, t } = useI18n();
   const { mode, resolved, setMode } = useThemeMode();
   const { opacity, on: transparent, set: setTransparency } = useTransparency();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -121,7 +122,7 @@ export function TitleBar({
             title={filePath ?? fileName}
           >
             {fileName}
-            {dirty ? <span className="mdv-titlebar__dot" aria-label="unsaved changes" data-tauri-drag-region /> : null}
+            {dirty ? <span className="mdv-titlebar__dot" aria-label={t("title.unsavedChanges")} data-tauri-drag-region /> : null}
           </span>
         ) : null}
       </div>
@@ -131,8 +132,8 @@ export function TitleBar({
           <button
             type="button"
             className={`mdv-copybtn${copyPulse ? " is-copied" : ""}`}
-            data-tooltip={copyPulse ? "copied!" : shortcutLabel("copy markdown (⌘⇧C)")}
-            aria-label={copyPulse ? "copied" : "copy markdown"}
+            data-tooltip={copyPulse ? t("app.copied") : shortcutLabel(t("app.copyMarkdownShortcut"))}
+            aria-label={copyPulse ? t("app.copied") : t("app.copyMarkdown")}
             onClick={onCopyMarkdown}
           >
             <span className="mdv-copybtn__icon mdv-copybtn__icon--copy" aria-hidden>
@@ -145,16 +146,16 @@ export function TitleBar({
         ) : null}
         {readingMode && onExportPdf ? (
           <Button
-            data-tooltip={shortcutLabel("export to pdf (⌘P)")}
-            aria-label="export to pdf"
+            data-tooltip={shortcutLabel(t("app.exportPdfShortcut"))}
+            aria-label={t("app.exportPdf")}
             onClick={onExportPdf}
             icon={<Icon icon={FileDown} size={13} strokeWidth={1.5} />}
           />
         ) : null}
         {onToggleReading ? (
           <Button
-            data-tooltip={readingMode ? "exit reading (esc)" : shortcutLabel("reading mode (⌘.)")}
-            aria-label={readingMode ? "exit reading mode" : "reading mode"}
+            data-tooltip={readingMode ? t("title.exitReadingTooltip") : shortcutLabel(t("title.readingModeShortcut"))}
+            aria-label={readingMode ? t("title.exitReading") : t("title.readingMode")}
             aria-pressed={readingMode}
             onClick={onToggleReading}
             icon={<Icon icon={readingMode ? Minimize2 : BookOpen} size={14} strokeWidth={1.5} />}
@@ -162,8 +163,8 @@ export function TitleBar({
         ) : null}
         <div className="mdv-titlebar__theme" ref={themeAnchorRef}>
           <Button
-            data-tooltip="theme & transparency"
-            aria-label="theme"
+            data-tooltip={t("title.themeTooltip")}
+            aria-label={t("title.theme")}
             aria-haspopup="menu"
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((v) => !v)}
@@ -192,7 +193,7 @@ export function TitleBar({
                       onClick={() => toggleThemeGroup(group.label)}
                       aria-expanded={expanded}
                     >
-                      <span>{group.label}</span>
+                      <span>{t(`theme.group.${group.label}`)}</span>
                       <Icon icon={ChevronRight} size={13} strokeWidth={1.7} />
                     </button>
                     <div className="mdv-menu__group-body">
@@ -239,9 +240,9 @@ export function TitleBar({
                 <span className="mdv-menu__slider-icon" aria-hidden>
                   <Icon icon={Sparkles} size={14} strokeWidth={1.5} />
                 </span>
-                <span className="mdv-menu__slider-label">transparency</span>
+                <span className="mdv-menu__slider-label">{t("title.transparency")}</span>
                 <span className="mdv-menu__slider-value" aria-hidden>
-                  {opacity >= 100 ? "off" : `${100 - opacity}%`}
+                  {opacity >= 100 ? t("title.off") : `${100 - opacity}%`}
                 </span>
                 <input
                   type="range"
@@ -253,17 +254,33 @@ export function TitleBar({
                      so the value-label "% transparent" maps left→right cleanly. */
                   value={100 - opacity}
                   onChange={(e) => setTransparency(100 - Number(e.target.value))}
-                  aria-label="window transparency"
+                  aria-label={t("title.transparency")}
                   aria-valuemin={0}
                   aria-valuemax={100}
                   aria-valuenow={100 - opacity}
-                  aria-valuetext={`${100 - opacity} percent transparent`}
+                  aria-valuetext={t("title.percentTransparent", { percent: 100 - opacity })}
                 />
               </div>
+              <div className="mdv-menu__divider" aria-hidden />
+              <label className="mdv-menu__select-row">
+                <span className="mdv-menu__select-label">{t("title.language")}</span>
+                <select
+                  className="mdv-menu__select"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as typeof language)}
+                  aria-label={t("title.language")}
+                >
+                  {LANGUAGE_CHOICES.map((choice) => (
+                    <option key={choice.value} value={choice.value}>
+                      {choice.nativeLabel}
+                    </option>
+                  ))}
+                </select>
+              </label>
               {onToggleVim ? (
                 <>
                   <div className="mdv-menu__divider" aria-hidden />
-                  <div className="mdv-menu__label">editor</div>
+                  <div className="mdv-menu__label">{t("title.editor")}</div>
                   <button
                     type="button"
                     className={`mdv-menu__item${vimOn ? " is-active" : ""}`}
@@ -274,7 +291,7 @@ export function TitleBar({
                     <span className="mdv-menu__item-icon">
                       <Icon icon={Terminal} size={14} strokeWidth={1.5} />
                     </span>
-                    <span className="mdv-menu__item-label">vim mode</span>
+                    <span className="mdv-menu__item-label">{t("title.vimMode")}</span>
                     <span className={`mdv-menu__switch${vimOn ? " is-on" : ""}`} aria-hidden />
                   </button>
                 </>

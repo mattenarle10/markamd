@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { App } from "./app";
+import { I18nProvider } from "./lib";
 import "./styles/globals.css";
 
 // platform class on <html> — lets CSS gate macOS-only chrome (traffic-light
@@ -18,6 +19,8 @@ document.documentElement.classList.add(platformClass);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <App />
+    <I18nProvider>
+      <App />
+    </I18nProvider>
   </React.StrictMode>,
 );

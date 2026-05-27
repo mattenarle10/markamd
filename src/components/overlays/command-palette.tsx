@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon, Kbd, Overlay } from "@/components/primitives";
-import { shortcutLabel } from "@/lib";
-import { CATEGORY_LABELS, CATEGORY_ORDER, type Command, type CommandCategory } from "@/lib/commands";
+import { shortcutLabel, useI18n, type Translate } from "@/lib";
+import { CATEGORY_ORDER, type Command, type CommandCategory } from "@/lib/commands";
 
 export type { Command };
 
@@ -15,7 +15,7 @@ type RenderRow =
   | { kind: "header"; key: string; label: string }
   | { kind: "item"; key: string; cmd: Command; index: number };
 
-function buildRows(commands: Command[], grouped: boolean): RenderRow[] {
+function buildRows(commands: Command[], grouped: boolean, t: Translate): RenderRow[] {
   if (!grouped) {
     return commands.map((cmd, i) => ({ kind: "item", key: cmd.id, cmd, index: i }));
   }
@@ -33,7 +33,7 @@ function buildRows(commands: Command[], grouped: boolean): RenderRow[] {
   for (const cat of CATEGORY_ORDER) {
     const bucket = byCategory.get(cat);
     if (!bucket || bucket.length === 0) continue;
-    rows.push({ kind: "header", key: `h-${cat}`, label: CATEGORY_LABELS[cat] });
+    rows.push({ kind: "header", key: `h-${cat}`, label: t(`command.${cat}`) });
     for (const cmd of bucket) {
       rows.push({ kind: "item", key: cmd.id, cmd, index });
       index += 1;
@@ -42,7 +42,7 @@ function buildRows(commands: Command[], grouped: boolean): RenderRow[] {
   // anything without a category falls under "other"
   const other = byCategory.get("other");
   if (other && other.length > 0) {
-    rows.push({ kind: "header", key: "h-other", label: "other" });
+    rows.push({ kind: "header", key: "h-other", label: t("command.other") });
     for (const cmd of other) {
       rows.push({ kind: "item", key: cmd.id, cmd, index });
       index += 1;
@@ -52,6 +52,7 @@ function buildRows(commands: Command[], grouped: boolean): RenderRow[] {
 }
 
 export function CommandPalette({ open, onClose, commands }: CommandPaletteProps) {
+  const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -67,8 +68,8 @@ export function CommandPalette({ open, onClose, commands }: CommandPaletteProps)
   }, [query, commands]);
 
   const rows = useMemo(
-    () => buildRows(filtered, query.trim().length === 0),
-    [filtered, query],
+    () => buildRows(filtered, query.trim().length === 0, t),
+    [filtered, query, t],
   );
 
   const itemCount = useMemo(() => rows.filter((r) => r.kind === "item").length, [rows]);
@@ -110,12 +111,12 @@ export function CommandPalette({ open, onClose, commands }: CommandPaletteProps)
   }, [activeIndex, open]);
 
   return (
-    <Overlay open={open} onClose={onClose} ariaLabel="command palette" variant="palette">
+    <Overlay open={open} onClose={onClose} ariaLabel={t("command.placeholder")} variant="palette">
       <div className="mdv-palette__search">
         <input
           ref={inputRef}
           className="mdv-palette__input"
-          placeholder="type a command…"
+          placeholder={t("command.placeholder")}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -127,7 +128,7 @@ export function CommandPalette({ open, onClose, commands }: CommandPaletteProps)
       </div>
       <ul className="mdv-palette__list" role="listbox" ref={listRef}>
         {rows.length === 0 ? (
-          <li className="mdv-palette__empty">no matches</li>
+          <li className="mdv-palette__empty">{t("command.noMatches")}</li>
         ) : (
           rows.map((row) => {
             if (row.kind === "header") {
@@ -167,9 +168,9 @@ export function CommandPalette({ open, onClose, commands }: CommandPaletteProps)
         )}
       </ul>
       <div className="mdv-palette__footer">
-        <span><Kbd>↑</Kbd> <Kbd>↓</Kbd> navigate</span>
-        <span><Kbd>↵</Kbd> run</span>
-        <span><Kbd>esc</Kbd> close</span>
+        <span><Kbd>↑</Kbd> <Kbd>↓</Kbd> {t("command.navigate")}</span>
+        <span><Kbd>↵</Kbd> {t("command.run")}</span>
+        <span><Kbd>esc</Kbd> {t("command.close")}</span>
       </div>
     </Overlay>
   );

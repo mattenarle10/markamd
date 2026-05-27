@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Copy, FolderOpen, Search, Trash2, X } from "lucide-react";
 import { Button, Icon } from "@/components/primitives";
-import { basename, shortcutLabel, startWindowDrag, type FileEntry } from "@/lib";
+import { basename, shortcutLabel, startWindowDrag, useI18n, type FileEntry } from "@/lib";
 import emptyTowerUrl from "@/assets/mascot/empty-m.png";
 import { FileTree, type NewEntry } from "./file-tree";
 import { SearchResults } from "./sidebar-search";
@@ -56,6 +56,7 @@ export function Sidebar({
   onCancelNew,
   treeVersion = 0,
 }: SidebarProps) {
+  const { t } = useI18n();
   const draggingRef = useRef(false);
   const startXRef = useRef(0);
   const startWidthRef = useRef(width);
@@ -142,21 +143,21 @@ export function Sidebar({
       <div className="mdv-sidebar__inner" style={{ width: `${width}px` }}>
         <header className="mdv-sidebar__header" data-tauri-drag-region onMouseDown={startWindowDrag}>
           <span className={`mdv-sidebar__title${rootPath ? "" : " is-empty"}`}>
-            {rootPath ? basename(rootPath) : "no folder"}
+            {rootPath ? basename(rootPath) : t("sidebar.noFolder")}
           </span>
           <div className="mdv-sidebar__header-actions">
             {rootPath ? (
               <Button
-                data-tooltip={searchOpen ? "close search (esc)" : "search folder"}
-                aria-label={searchOpen ? "close search" : "search folder"}
+                data-tooltip={searchOpen ? t("sidebar.closeSearchShortcut") : t("sidebar.searchFolder")}
+                aria-label={searchOpen ? t("sidebar.closeSearch") : t("sidebar.searchFolder")}
                 aria-pressed={searchOpen}
                 onClick={() => (searchOpen ? closeSearch() : setSearchOpen(true))}
                 icon={<Icon icon={Search} size={12} strokeWidth={1.5} />}
               />
             ) : null}
             <Button
-              data-tooltip={shortcutLabel("open folder (⌘⇧O)")}
-              aria-label="open folder"
+              data-tooltip={shortcutLabel(t("app.openFolderShortcut"))}
+              aria-label={t("app.openFolder")}
               onClick={onOpenFolder}
               icon={<Icon icon={FolderOpen} size={13} strokeWidth={1.5} />}
             />
@@ -174,7 +175,7 @@ export function Sidebar({
               ref={searchInputRef}
               type="text"
               className="mdv-sidebar__search-input"
-              placeholder="search files…"
+              placeholder={t("sidebar.searchPlaceholder")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               spellCheck={false}
@@ -185,7 +186,7 @@ export function Sidebar({
             <button
               type="button"
               className="mdv-sidebar__search-close"
-              aria-label="close search"
+              aria-label={t("sidebar.closeSearch")}
               onClick={closeSearch}
               tabIndex={searchOpen ? 0 : -1}
             >
@@ -266,31 +267,33 @@ export function Sidebar({
                 draggable={false}
                 className="mdv-sidebar__empty-art"
               />
-              <span>open a folder</span>
-              <span className="mdv-sidebar__hint">browse your markdown notes</span>
+              <span>{t("app.openFolder")}</span>
+              <span className="mdv-sidebar__hint">{t("sidebar.browseNotes")}</span>
             </button>
           )}
         </div>
         {rootPath ? (
           <footer className={`mdv-context-tray${stagedPaths.length > 0 ? " has-files" : ""}`}>
             <div className="mdv-context-tray__meta">
-              <span className="mdv-context-tray__label">context</span>
+              <span className="mdv-context-tray__label">{t("sidebar.context")}</span>
               <span className="mdv-context-tray__count">
-                {stagedPaths.length === 1 ? "1 file" : `${stagedPaths.length} files`}
+                {stagedPaths.length === 1
+                  ? t("app.fileSingular", { count: 1 })
+                  : t("app.filePlural", { count: stagedPaths.length })}
               </span>
-              <span className="mdv-context-tray__tokens">{stagedTokenLabel} tok</span>
+              <span className="mdv-context-tray__tokens">{t("sidebar.tokens", { tokens: stagedTokenLabel })}</span>
             </div>
             <div className="mdv-context-tray__actions">
               <Button
-                data-tooltip="copy staged context"
-                aria-label="copy staged context"
+                data-tooltip={t("sidebar.copyContext")}
+                aria-label={t("sidebar.copyContext")}
                 disabled={stagedPaths.length === 0}
                 onClick={onCopyContext}
                 icon={<Icon icon={Copy} size={12} strokeWidth={1.6} />}
               />
               <Button
-                data-tooltip="clear context"
-                aria-label="clear staged context"
+                data-tooltip={t("sidebar.clearContext")}
+                aria-label={t("sidebar.clearContext")}
                 disabled={stagedPaths.length === 0}
                 onClick={onClearContext}
                 icon={<Icon icon={Trash2} size={12} strokeWidth={1.6} />}
@@ -308,7 +311,7 @@ export function Sidebar({
         onPointerCancel={stopResize}
         role="separator"
         aria-orientation="vertical"
-        aria-label="resize sidebar"
+        aria-label={t("sidebar.resize")}
       />
     </aside>
   );

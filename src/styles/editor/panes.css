@@ -11,6 +11,126 @@
   min-width: 0;
 }
 
+.mdv-workspace {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mdv-workspace > .mdv-splitter,
+.mdv-workspace > .mdv-shell__editor-solo {
+  flex: 1;
+  min-height: 0;
+}
+
+/* open file tabs */
+.mdv-tabs {
+  flex: 0 0 auto;
+  min-width: 0;
+  height: 34px;
+  display: flex;
+  align-items: end;
+  gap: 2px;
+  padding: 4px 8px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  scroll-padding-inline: 8px;
+  mask-image: linear-gradient(90deg, transparent 0, #000 10px, #000 calc(100% - 10px), transparent 100%);
+  background: color-mix(in srgb, var(--surface) 74%, var(--bg));
+  border-bottom: 1px solid var(--border);
+  -webkit-app-region: no-drag;
+}
+
+.mdv-tab {
+  flex: 0 0 clamp(118px, 18vw, 200px);
+  min-width: 0;
+  height: 30px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 24px;
+  align-items: center;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  color: var(--muted);
+  background: transparent;
+  transition:
+    background-color var(--dur-fast) var(--easing),
+    border-color var(--dur-fast) var(--easing),
+    color var(--dur-fast) var(--easing);
+}
+
+.mdv-tab:hover {
+  color: var(--fg);
+  background: color-mix(in srgb, var(--fg) 5%, transparent);
+}
+
+.mdv-tab.is-active {
+  color: var(--fg);
+  border-color: var(--border);
+  background: var(--bg);
+}
+
+.mdv-tab__select {
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 6px 0 10px;
+}
+
+.mdv-tab__dot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.mdv-tab.is-dirty .mdv-tab__dot {
+  background: var(--accent);
+}
+
+.mdv-tab__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.mdv-tab__close {
+  width: 24px;
+  height: 24px;
+  margin-right: 2px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  color: var(--muted);
+  opacity: 0;
+  transition:
+    opacity var(--dur-fast) var(--easing),
+    color var(--dur-fast) var(--easing),
+    background-color var(--dur-fast) var(--easing);
+}
+
+.mdv-tab:hover .mdv-tab__close,
+.mdv-tab.is-active .mdv-tab__close {
+  opacity: 1;
+}
+
+.mdv-tab__close:hover {
+  color: var(--fg);
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+}
+
 /* editor-only mode (#28) — preview pane hidden, editor fills remaining width */
 .mdv-shell__editor-solo {
   flex: 1;

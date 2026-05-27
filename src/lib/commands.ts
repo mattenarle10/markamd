@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { basename, dirname } from "./files";
 import { setThemeMode, setTransparency, THEME_CHOICES, THEME_HINTS, type ThemeMode } from "./theme";
+import type { Translate } from "./i18n";
 
 export type CommandCategory = "recent" | "file" | "view" | "edit" | "share" | "theme" | "help";
 
@@ -89,7 +90,7 @@ const THEME_ICONS: Record<ThemeMode, LucideIcon> = {
 const THEME_COMMANDS: Array<{ mode: ThemeMode; label: string; hint: string; icon: LucideIcon }> =
   THEME_CHOICES.map((theme) => ({
     mode: theme.value,
-    label: `theme: ${theme.label}`,
+    label: theme.label,
     hint: THEME_HINTS[theme.value],
     icon: THEME_ICONS[theme.value],
   }));
@@ -104,22 +105,21 @@ export const CATEGORY_ORDER: CommandCategory[] = [
   "help",
 ];
 
-export const CATEGORY_LABELS: Record<CommandCategory, string> = {
-  recent: "recent",
-  file: "file",
-  view: "view",
-  edit: "edit",
-  share: "share",
-  theme: "theme",
-  help: "help",
+const defaultT: Translate = (key, vars) => {
+  if (vars) {
+    return key.replace(/\{(\w+)\}/g, (_, name: string) =>
+      Object.prototype.hasOwnProperty.call(vars, name) ? String(vars[name]) : `{${name}}`,
+    );
+  }
+  return key;
 };
 
-export function buildCommands(actions: CommandActions): Command[] {
+export function buildCommands(actions: CommandActions, t: Translate = defaultT): Command[] {
   const recent = actions.recentFiles.slice(0, 5).map(
     (path): Command => ({
       id: `recent-${path}`,
       label: basename(path),
-      hint: `recent · ${dirname(path)}`,
+      hint: t("command.recentHint", { dir: dirname(path) }),
       icon: FileText,
       category: "recent",
       action: () => actions.openRecent(path),
@@ -130,8 +130,8 @@ export function buildCommands(actions: CommandActions): Command[] {
     ...recent,
     {
       id: "open-folder",
-      label: "open folder…",
-      hint: "load a folder of notes — turn the sidebar into your context library",
+      label: t("command.openFolderLabel"),
+      hint: t("command.openFolderHint"),
       shortcut: "⌘⇧O",
       icon: FolderPlus,
       category: "file",
@@ -139,8 +139,8 @@ export function buildCommands(actions: CommandActions): Command[] {
     },
     {
       id: "open-file",
-      label: "open file…",
-      hint: "pick a single .md from disk",
+      label: t("command.openFileLabel"),
+      hint: t("command.openFileHint"),
       shortcut: "⌘O",
       icon: FolderOpen,
       category: "file",
@@ -148,8 +148,8 @@ export function buildCommands(actions: CommandActions): Command[] {
     },
     {
       id: "new",
-      label: "new file",
-      hint: "start a blank markdown buffer",
+      label: t("app.newFile"),
+      hint: t("command.newFileHint"),
       shortcut: "⌘N",
       icon: FilePlus2,
       category: "file",
@@ -157,8 +157,8 @@ export function buildCommands(actions: CommandActions): Command[] {
     },
     {
       id: "save",
-      label: "save",
-      hint: actions.hasActivePath ? "write changes to disk" : "no file loaded — open one first",
+      label: t("command.save"),
+      hint: actions.hasActivePath ? t("command.saveHintReady") : t("command.saveHintEmpty"),
       shortcut: "⌘S",
       icon: Save,
       category: "file",
@@ -166,8 +166,8 @@ export function buildCommands(actions: CommandActions): Command[] {
     },
     {
       id: "undo-file-op",
-      label: "undo last file action",
-      hint: "reverse the last move / rename / new file / new folder",
+      label: t("command.undoFileOp"),
+      hint: t("command.undoFileOpHint"),
       shortcut: "⌘⌥Z",
       icon: Undo2,
       category: "file",
@@ -175,8 +175,8 @@ export function buildCommands(actions: CommandActions): Command[] {
     },
     {
       id: "toggle-sidebar",
-      label: actions.sidebarOpen ? "hide sidebar" : "show sidebar",
-      hint: "your folder tree + file search",
+      label: actions.sidebarOpen ? t("command.hideSidebar") : t("command.showSidebar"),
+      hint: t("command.sidebarHint"),
       shortcut: "⌘B",
       icon: actions.sidebarOpen ? PanelLeftClose : PanelLeftOpen,
       category: "view",
@@ -184,10 +184,10 @@ export function buildCommands(actions: CommandActions): Command[] {
     },
     {
       id: "toggle-reading",
-      label: actions.readingMode ? "exit reading mode" : "enter reading mode",
+      label: actions.readingMode ? t("command.exitReading") : t("command.enterReading"),
       hint: actions.readingMode
-        ? "back to split editor + preview"
-        : "calm preview-only view — great for proofing before sharing",
+        ? t("command.backToSplit")
+        : t("command.readingHint"),
       shortcut: "⌘.",
       icon: actions.readingMode ? Minimize2 : BookOpen,
       category: "view",
@@ -195,10 +195,10 @@ export function buildCommands(actions: CommandActions): Command[] {
     },
     {
       id: "toggle-editor-only",
-      label: actions.editorOnly ? "exit editor-only" : "enter editor-only",
+      label: actions.editorOnly ? t("command.exitEditorOnly") : t("command.enterEditorOnly"),
       hint: actions.editorOnly
-        ? "back to split editor + preview"
-        : "hide the preview — focus on writing",
+        ? t("command.backToSplit")
+        : t("command.editorOnlyHint"),
       shortcut: "⌘⇧.",
       icon: actions.editorOnly ? Minimize2 : FileText,
       category: "view",
@@ -206,8 +206,8 @@ export function buildCommands(actions: CommandActions): Command[] {
     },
     {
       id: "fullscreen",
-      label: "toggle fullscreen",
-      hint: "native macOS fullscreen",
+      label: t("command.fullscreen"),
+      hint: t("command.fullscreenHint"),
       shortcut: "⌃⌘F",
       icon: Maximize2,
       category: "view",
@@ -215,8 +215,8 @@ export function buildCommands(actions: CommandActions): Command[] {
     },
     {
       id: "copy-markdown",
-      label: "copy markdown to clipboard",
-      hint: "share with any ai — paste straight into chat",
+      label: t("command.copyMarkdown"),
+      hint: t("command.copyMarkdownHint"),
       shortcut: "⌘⇧C",
       icon: Copy,
       category: "share",
@@ -224,61 +224,66 @@ export function buildCommands(actions: CommandActions): Command[] {
     },
     {
       id: "copy-context",
-      label: "copy context bundle",
+      label: t("command.copyContext"),
       hint: actions.contextCount > 0
-        ? `${actions.contextCount} staged file${actions.contextCount === 1 ? "" : "s"} → one prompt blob`
-        : "stage files from the sidebar first",
+        ? t("command.copyContextHint", {
+            count: actions.contextCount,
+            files: actions.contextCount === 1
+              ? t("app.fileSingular", { count: actions.contextCount })
+              : t("app.filePlural", { count: actions.contextCount }),
+          })
+        : t("app.stageFirst"),
       icon: Files,
       category: "share",
       action: actions.copyContextBundle,
     },
     {
       id: "clear-context",
-      label: "clear context bundle",
-      hint: actions.contextCount > 0 ? "remove all staged files" : "no staged files",
+      label: t("command.clearContext"),
+      hint: actions.contextCount > 0 ? t("command.clearContextHintReady") : t("command.clearContextHintEmpty"),
       icon: Files,
       category: "share",
       action: actions.clearContextBundle,
     },
     {
       id: "export-pdf",
-      label: "export to pdf",
-      hint: "opens print view with stable page margins",
+      label: t("app.exportPdf"),
+      hint: t("command.exportPdfHint"),
       shortcut: "⌘P",
       icon: FileDown,
       category: "share",
       action: actions.exportToPdf,
     },
     ...THEME_COMMANDS.map(
-      (t): Command => ({
-        id: `theme-${t.mode}`,
-        label: t.label,
-        hint: t.hint,
-        icon: t.icon,
+      (theme): Command => ({
+        id: `theme-${theme.mode}`,
+        label: t("command.themePrefix", { theme: theme.label }),
+        hint: theme.hint,
+        icon: theme.icon,
         category: "theme",
-        action: () => setThemeMode(t.mode),
+        action: () => setThemeMode(theme.mode),
       }),
     ),
     {
       id: "transparency-on",
-      label: "transparency: on (74%)",
-      hint: "macOS vibrancy through the window — adjust opacity in theme menu",
+      label: t("command.transparencyOn"),
+      hint: t("command.transparencyOnHint"),
       icon: Sparkles,
       category: "theme",
       action: () => setTransparency(74),
     },
     {
       id: "transparency-off",
-      label: "transparency: off",
-      hint: "solid window background",
+      label: t("command.transparencyOff"),
+      hint: t("command.transparencyOffHint"),
       icon: Sparkles,
       category: "theme",
       action: () => setTransparency(100),
     },
     {
       id: "help",
-      label: "show help",
-      hint: "keyboard shortcuts + tips",
+      label: t("command.showHelp"),
+      hint: t("command.showHelpHint"),
       shortcut: "⌘/",
       icon: CircleHelp,
       category: "help",
@@ -286,32 +291,32 @@ export function buildCommands(actions: CommandActions): Command[] {
     },
     {
       id: "demo",
-      label: "show onboarding doc",
-      hint: "load the original 'welcome to marka.md' markdown into the editor",
+      label: t("command.demo"),
+      hint: t("command.demoHint"),
       icon: BookOpen,
       category: "help",
       action: actions.loadDemo,
     },
     {
       id: "tutorial",
-      label: "show tutorial · welcome",
-      hint: "reopen the onboarding modal",
+      label: t("command.tutorial"),
+      hint: t("command.tutorialHint"),
       icon: Sparkles,
       category: "help",
       action: actions.showWelcome,
     },
     {
       id: "check-updates",
-      label: "check for updates",
-      hint: "see if there's a newer version of marka.md",
+      label: t("command.checkUpdates"),
+      hint: t("command.checkUpdatesHint"),
       icon: Download,
       category: "help",
       action: actions.checkForUpdates,
     },
     {
       id: "about",
-      label: "about marka.md",
-      hint: "version, license, links",
+      label: t("command.about"),
+      hint: t("command.aboutHint"),
       icon: Info,
       category: "help",
       action: actions.showAbout,

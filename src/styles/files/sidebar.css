@@ -532,15 +532,17 @@
 }
 
 .mdv-context-tray__meta {
-  display: grid;
-  grid-template-columns: auto auto;
+  display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 1px 8px;
+  gap: 2px 8px;
   min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
 }
 
 .mdv-context-tray__label {
-  grid-column: 1 / -1;
+  flex: 0 0 100%;
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.08em;
@@ -554,9 +556,17 @@
   font-size: 11px;
   color: var(--fg);
   white-space: nowrap;
+  min-width: 0;
+}
+
+.mdv-context-tray__count {
+  max-width: calc(100% - 58px);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .mdv-context-tray__tokens {
+  flex: 0 0 auto;
   color: var(--muted);
 }
 

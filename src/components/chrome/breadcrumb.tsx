@@ -1,6 +1,6 @@
 import { Check, ChevronRight, Copy, FileDown, FilePlus2, FileText, FolderOpen, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Button, Icon } from "@/components/primitives";
-import { shortcutLabel, startWindowDrag } from "@/lib";
+import { shortcutLabel, startWindowDrag, useI18n, type Translate } from "@/lib";
 import exciteUrl from "@/assets/mascot/excite.png";
 
 export type SaveStatus = "idle" | "dirty" | "saving" | "saved";
@@ -27,14 +27,14 @@ function pathSegments(path: string): string[] {
   return ["…", ...parts.slice(-MAX_SEGMENTS)];
 }
 
-function statusLabel(status: SaveStatus): string {
+function statusLabel(status: SaveStatus, t: Translate): string {
   switch (status) {
     case "saving":
-      return "saving…";
+      return t("breadcrumb.saving");
     case "dirty":
-      return "unsaved";
+      return t("breadcrumb.unsaved");
     case "saved":
-      return "saved";
+      return t("breadcrumb.saved");
     default:
       return "";
   }
@@ -53,15 +53,16 @@ export function Breadcrumb({
   onExportPdf,
   copyPulse = false,
 }: BreadcrumbProps) {
+  const { t } = useI18n();
   const path = activePath ?? rootPath;
   const segments = path ? pathSegments(path) : [];
-  const label = statusLabel(saveStatus);
+  const label = statusLabel(saveStatus, t);
 
   return (
     <div className="mdv-breadcrumb" data-tauri-drag-region onMouseDown={startWindowDrag}>
       <Button
-        data-tooltip={shortcutLabel(sidebarOpen ? "hide sidebar (⌘B)" : "show sidebar (⌘B)")}
-        aria-label={sidebarOpen ? "hide sidebar" : "show sidebar"}
+        data-tooltip={shortcutLabel(sidebarOpen ? t("breadcrumb.hideSidebarShortcut") : t("breadcrumb.showSidebarShortcut"))}
+        aria-label={sidebarOpen ? t("breadcrumb.hideSidebar") : t("breadcrumb.showSidebar")}
         onClick={onToggleSidebar}
         icon={
           <Icon
@@ -72,9 +73,9 @@ export function Breadcrumb({
         }
       />
 
-      <nav className="mdv-breadcrumb__path" aria-label="path" data-tauri-drag-region>
+      <nav className="mdv-breadcrumb__path" aria-label={t("breadcrumb.path")} data-tauri-drag-region>
         {segments.length === 0 ? (
-          <span className="mdv-breadcrumb__placeholder">no file open</span>
+          <span className="mdv-breadcrumb__placeholder">{t("breadcrumb.noFile")}</span>
         ) : (
           segments.map((seg, i) => (
             <span key={`${seg}-${i}`} className="mdv-breadcrumb__seg-row">
@@ -122,8 +123,8 @@ export function Breadcrumb({
           <button
             type="button"
             className={`mdv-copybtn${copyPulse ? " is-copied" : ""}`}
-            data-tooltip={copyPulse ? "copied!" : shortcutLabel("copy markdown (⌘⇧C)")}
-            aria-label={copyPulse ? "copied" : "copy markdown"}
+            data-tooltip={copyPulse ? t("app.copied") : shortcutLabel(t("app.copyMarkdownShortcut"))}
+            aria-label={copyPulse ? t("app.copied") : t("app.copyMarkdown")}
             onClick={onCopyMarkdown}
           >
             <span className="mdv-copybtn__icon mdv-copybtn__icon--copy" aria-hidden>
@@ -135,26 +136,26 @@ export function Breadcrumb({
           </button>
         ) : null}
         <Button
-          data-tooltip={shortcutLabel("export to pdf (⌘P)")}
-          aria-label="export to pdf"
+          data-tooltip={shortcutLabel(t("app.exportPdfShortcut"))}
+          aria-label={t("app.exportPdf")}
           onClick={onExportPdf}
           icon={<Icon icon={FileDown} size={13} strokeWidth={1.5} />}
         />
         <Button
-          data-tooltip={shortcutLabel("new file (⌘N)")}
-          aria-label="new file"
+          data-tooltip={shortcutLabel(t("app.newFileShortcut"))}
+          aria-label={t("app.newFile")}
           onClick={onNewFile}
           icon={<Icon icon={FilePlus2} size={13} strokeWidth={1.5} />}
         />
         <Button
-          data-tooltip={shortcutLabel("open file (⌘O)")}
-          aria-label="open file"
+          data-tooltip={shortcutLabel(t("app.openFileShortcut"))}
+          aria-label={t("app.openFile")}
           onClick={onOpenFile}
           icon={<Icon icon={FileText} size={13} strokeWidth={1.5} />}
         />
         <Button
-          data-tooltip={shortcutLabel("open folder (⌘⇧O)")}
-          aria-label="open folder"
+          data-tooltip={shortcutLabel(t("app.openFolderShortcut"))}
+          aria-label={t("app.openFolder")}
           onClick={onOpenFolder}
           icon={<Icon icon={FolderOpen} size={13} strokeWidth={1.5} />}
         />

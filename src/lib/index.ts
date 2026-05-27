@@ -16,6 +16,13 @@ export {
   type ThemeMode,
 } from "./theme";
 export { STORAGE_KEYS, type StorageKey } from "./storage";
+export {
+  I18nProvider,
+  LANGUAGE_CHOICES,
+  useI18n,
+  type Language,
+  type Translate,
+} from "./i18n";
 export { CHANGELOG_URL, getWhatsNewToastMessage } from "./release-notes";
 export { buildCommands, type Command, type CommandActions } from "./commands";
 export { estimateTokens, formatTokens } from "./bundle";
