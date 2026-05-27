@@ -1,7 +1,7 @@
 export const CHANGELOG_URL = "https://markamd.vercel.app/changelog";
 
 const WHATS_NEW_TOAST_BY_MINOR: Record<string, string> = {
-  "1.5": "context tray is here - stage files, copy one AI-ready bundle",
+  "1.5": "file tabs, more languages, and cleaner app naming are here",
 };
 
 export function getWhatsNewToastMessage(version: string): string {

@@ -150,8 +150,9 @@ per-release detail lives on the [changelog](https://markamd.vercel.app/changelog
 - **what's new toast** — first launch after update now points users straight to the changelog
 - **pdf export polish** — cleaner document margins, no browser-added date/time/path headers, and rendered mermaid diagrams
 - **theme polish** — mono / mono dark, animated grouped theme menu, and AI-inspired Claude / Codex / Gemini / Cursor palettes
+- **file tabs + languages** — open multiple notes, switch between them quickly, and use the app in more interface languages
 - **code block wrapping** — long rendered code lines wrap in preview and PDF export
-- **macOS file handling** — default-handler launches open the selected markdown file reliably
+- **macOS app naming + file handling** — packaged builds use `marka.md` consistently and default-handler launches open the selected markdown file reliably
 
 **next**:
 - native/silent PDF generation, so export does not depend on the browser print dialog

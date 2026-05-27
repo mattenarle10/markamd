@@ -1,9 +1,9 @@
 import { expect, test } from "bun:test";
 import { getWhatsNewToastMessage } from "../src/lib/release-notes";
 
-test("calls out the context tray in the v1.5 what's-new toast", () => {
-  expect(getWhatsNewToastMessage("1.5.0")).toBe(
-    "v1.5.0: context tray is here - stage files, copy one AI-ready bundle",
+test("calls out the latest v1.5 polish in the what's-new toast", () => {
+  expect(getWhatsNewToastMessage("1.5.3")).toBe(
+    "v1.5.3: file tabs, more languages, and cleaner app naming are here",
   );
 });
 
