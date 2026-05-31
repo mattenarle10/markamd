@@ -15,6 +15,40 @@ use tauri::{Emitter, Manager, RunEvent};
 struct PendingOpenFiles(Mutex<Vec<String>>);
 
 #[tauri::command]
+fn reveal_in_file_manager(path: String) {
+    #[cfg(any(target_os = "windows", target_os = "linux"))]
+    let p = std::path::Path::new(&path);
+    #[cfg(target_os = "windows")]
+    {
+        let target = if p.is_dir() {
+            path.clone()
+        } else {
+            p.parent()
+                .and_then(|d| d.to_str())
+                .unwrap_or("")
+                .to_string()
+        };
+        let _ = std::process::Command::new("explorer").arg(target).spawn();
+    }
+    #[cfg(target_os = "macos")]
+    {
+        let _ = std::process::Command::new("open").args(["-R", &path]).spawn();
+    }
+    #[cfg(target_os = "linux")]
+    {
+        let target = if p.is_dir() {
+            p.to_str().unwrap_or("").to_string()
+        } else {
+            p.parent()
+                .and_then(|d| d.to_str())
+                .unwrap_or("")
+                .to_string()
+        };
+        let _ = std::process::Command::new("xdg-open").arg(target).spawn();
+    }
+}
+
+#[tauri::command]
 fn take_pending_open_files(state: State<'_, PendingOpenFiles>) -> Vec<String> {
     let mut pending = state
         .0
@@ -32,7 +66,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
-        .invoke_handler(tauri::generate_handler![take_pending_open_files])
+        .invoke_handler(tauri::generate_handler![take_pending_open_files, reveal_in_file_manager])
         .setup(|_app| {
             #[cfg(target_os = "macos")]
             {

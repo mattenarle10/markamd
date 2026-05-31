@@ -25,7 +25,6 @@ import {
   basename,
   buildCommands,
   CHANGELOG_URL,
-  dirname,
   estimateTokens,
   exportPreviewToPdf,
   formatContextBundle,
@@ -36,6 +35,7 @@ import {
   pickFolder,
   pickMarkdownFile,
   readContextFiles,
+  relativePath,
   removeEntry,
   STORAGE_KEYS,
   useI18n,
@@ -91,6 +91,13 @@ export function App() {
     STORAGE_KEYS.sidebarWidth,
     240,
   );
+  const [titlebarVisible, setTitlebarVisible] = usePersistedState<boolean>(
+    STORAGE_KEYS.titlebarVisible,
+    true,
+  );
+  const handleToggleTitlebar = useCallback(() => {
+    setTitlebarVisible((v: boolean) => !v);
+  }, [setTitlebarVisible]);
   const {
     treeVersion,
     bumpTree,
@@ -325,7 +332,27 @@ export function App() {
         label: t("menu.rename"),
         onSelect: () => setEditingPath(path),
       },
+      "divider",
+      {
+        label: t("menu.copyPath"),
+        onSelect: () => {
+          void navigator.clipboard.writeText(path);
+          showSaveAsToast(t("menu.pathCopied"));
+        },
+      },
+      {
+        label: t("menu.copyRelativePath"),
+        onSelect: () => {
+          void navigator.clipboard.writeText(relativePath(path, rootPath));
+          showSaveAsToast(t("menu.pathCopied"));
+        },
+      },
     ];
+    items.push("divider");
+    items.push({
+      label: t("menu.revealExplorer"),
+      onSelect: () => void invoke("reveal_in_file_manager", { path }),
+    });
     if (isDir) {
       items.push("divider");
       items.push({
@@ -337,11 +364,6 @@ export function App() {
         onSelect: () => setNewEntry({ parent: path, kind: "folder" }),
       });
     } else {
-      items.push("divider");
-      items.push({
-        label: t("menu.revealFinder"),
-        onSelect: () => void openPath(dirname(path)),
-      });
       items.push({
         label: t("menu.openDefault"),
         onSelect: () => void openPath(path),
@@ -656,7 +678,7 @@ export function App() {
 
   return (
     <div
-      className={`mdv-app${sidebarOpen ? " has-sidebar" : ""}${readingMode ? " is-reading" : ""}`}
+      className={`mdv-app${sidebarOpen ? " has-sidebar" : ""}${readingMode ? " is-reading" : ""}${!titlebarVisible ? " has-hidden-titlebar" : ""}`}
     >
       <TitleBar
         fileName={displayName}
@@ -667,8 +689,6 @@ export function App() {
         onCopyMarkdown={activePath || source ? () => void copyMarkdown() : undefined}
         copyPulse={copyPulse}
         onExportPdf={exportToPdf}
-        vimOn={vimOn}
-        onToggleVim={() => setVimOn((v) => !v)}
       />
 
       <Breadcrumb
@@ -683,6 +703,12 @@ export function App() {
         onCopyMarkdown={activePath || source ? () => void copyMarkdown() : undefined}
         onExportPdf={exportToPdf}
         copyPulse={copyPulse}
+        titlebarVisible={titlebarVisible}
+        onToggleTitlebar={handleToggleTitlebar}
+        readingMode={readingMode}
+        onToggleReading={toggleReadingMode}
+        vimOn={vimOn}
+        onToggleVim={() => setVimOn((v) => !v)}
       />
 
       <main className="mdv-shell">

@@ -19,6 +19,23 @@
     "dialog:default",
     "fs:default",
     {
+      "identifier": "fs:scope",
+      "allow": [
+        { "path": "**/.agent" },
+        { "path": "**/.agent/**" },
+        { "path": "**/.claude" },
+        { "path": "**/.claude/**" },
+        { "path": "**/.codex" },
+        { "path": "**/.codex/**" },
+        { "path": "**/.cursor" },
+        { "path": "**/.cursor/**" },
+        { "path": "**/.github" },
+        { "path": "**/.github/**" },
+        { "path": "**/.vscode" },
+        { "path": "**/.vscode/**" }
+      ]
+    },
+    {
       "identifier": "fs:allow-read-text-file",
       "allow": [{ "path": "**" }]
     },

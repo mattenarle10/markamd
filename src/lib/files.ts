@@ -64,10 +64,17 @@ export function joinPath(parent: string, child: string): string {
   return `${parent}${sep}${child}`;
 }
 
+export function relativePath(path: string, rootPath: string | null): string {
+  if (!rootPath) return basename(path);
+  const sep = rootPath.includes("\\") ? "\\" : "/";
+  const prefix = rootPath.endsWith(sep) ? rootPath : rootPath + sep;
+  return path.startsWith(prefix) ? path.slice(prefix.length) : basename(path);
+}
+
 export async function listFolder(path: string): Promise<FileEntry[]> {
   const entries = await readDir(path);
-  return entries
-    .filter((e) => !e.name.startsWith("."))
+  return (entries || [])
+    .filter((e) => e?.name && isVisibleTreeEntryName(e.name))
     .map((e) => ({
       name: e.name,
       path: joinPath(path, e.name),
@@ -85,6 +92,20 @@ export type FlatFileEntry = {
   /** path relative to the walk root, for display ("notes/ideas.md") */
   rel: string;
 };
+
+/** Modern dev/AI tool folders that start with a dot but are not hidden files. */
+const DOT_PREFIX_ALLOWLIST = new Set([
+  ".agent",
+  ".claude",
+  ".codex",
+  ".cursor",
+  ".github",
+  ".vscode",
+]);
+
+export function isVisibleTreeEntryName(name: string): boolean {
+  return !name.startsWith(".") || DOT_PREFIX_ALLOWLIST.has(name);
+}
 
 const WALK_SKIP = new Set([
   "node_modules",
@@ -113,7 +134,7 @@ export async function walkSupportedTextFiles(root: string): Promise<FlatFileEntr
     }
     for (const e of entries) {
       if (out.length >= WALK_MAX_FILES) return;
-      if (e.name.startsWith(".")) continue;
+      if (!isVisibleTreeEntryName(e.name)) continue;
       if (e.isDirectory && WALK_SKIP.has(e.name)) continue;
       const childPath = joinPath(dir, e.name);
       const childRel = relPrefix ? `${relPrefix}${sep}${e.name}` : e.name;

@@ -15,6 +15,9 @@ dist-ssr
 # personal scratchpad — never committed
 notes/
 
+# local MSVC build environment override (machine-specific paths, breaks Linux CI)
+src-tauri/.cargo/config.toml
+
 # secrets — defensive ignores. real secrets live in 1Password + GH secrets,
 # but if someone accidentally drops a .p12 / .key / .pem into the repo, git
 # will refuse to track it instead of leaking it to a PR.

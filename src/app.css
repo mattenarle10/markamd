@@ -36,6 +36,14 @@
 .mdv-app > .mdv-shell { grid-row: 3; }
 .mdv-app > .mdv-statusbar { grid-row: 4; }
 
+/* titlebar hidden mode */
+.mdv-app.has-hidden-titlebar {
+  grid-template-rows: 0 var(--breadcrumb-h) 1fr var(--statusbar-h);
+}
+.mdv-app.has-hidden-titlebar .mdv-titlebar {
+  display: none;
+}
+
 /* reading mode — Preview is rendered directly as flex-1 child of .mdv-shell */
 .mdv-app.is-reading {
   grid-template-rows: var(--titlebar-h) 0 1fr 0;
@@ -44,6 +52,10 @@
 .mdv-app.is-reading .mdv-breadcrumb,
 .mdv-app.is-reading .mdv-statusbar {
   display: none;
+}
+
+.mdv-app.is-reading.has-hidden-titlebar .mdv-titlebar {
+  display: flex;
 }
 
 /* iA Writer-style reading mode: wide max-width, generous breathing room,
