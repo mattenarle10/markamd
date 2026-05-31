@@ -7,9 +7,8 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: 'Release tag (e.g. v1.5.5)'
+        description: "Existing release tag to build, e.g. v1.5.5"
         required: true
-        default: 'v1.5.5'
 
 permissions:
   contents: write
@@ -17,6 +16,8 @@ permissions:
 jobs:
   build:
     strategy:
+      # don't kill the macOS build if Windows fails (or vice versa) — release
+      # still ships partial artifacts for users on the platform that built ok.
       fail-fast: false
       matrix:
         include:
@@ -36,12 +37,20 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     env:
+      # flag at job level for the cert-import step's `if:` condition.
+      # we DON'T put the actual cert material at job level — if we did,
+      # an empty APPLE_CERTIFICATE env var would leak into tauri-action,
+      # which sees the var as "set" and tries to `security import` empty
+      # data, hard-failing the bundle step.
       HAS_APPLE_CERT: ${{ secrets.APPLE_CERTIFICATE != '' }}
       RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref_name }}
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref }}
+          # need full history + tags so we can derive a per-release commit list
+          # via `git log <prev_tag>..<this_tag>` for the changelog.
           fetch-depth: 0
           fetch-tags: true
 
@@ -50,6 +59,8 @@ jobs:
         shell: bash
         run: |
           set -e
+          # find the most recent tag BEFORE the one we're building. `git tag --sort`
+          # gives semver-ordered tags; we filter out the current ref and pick the next.
           PREV_TAG=$(git tag --sort=-version:refname | grep -v "^${{ env.RELEASE_TAG }}$" | head -1 || true)
           if [ -z "$PREV_TAG" ]; then
             COMMITS="- first public release 🐙"
@@ -107,7 +118,7 @@ jobs:
           targets: ${{ matrix.target }}
 
       - name: cache cargo
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry
@@ -132,16 +143,6 @@ jobs:
       - name: install dependencies
         run: bun install
 
-      - name: disable updater artifact signing (no signing key required)
-        shell: bash
-        run: |
-          node -e "
-            const fs = require('fs');
-            const cfg = JSON.parse(fs.readFileSync('src-tauri/tauri.conf.json','utf8'));
-            cfg.bundle.createUpdaterArtifacts = false;
-            fs.writeFileSync('src-tauri/tauri.conf.json', JSON.stringify(cfg, null, 2));
-          "
-
       - name: import apple cert + propagate signing env (macOS only)
         if: matrix.os == 'macos-latest' && env.HAS_APPLE_CERT == 'true'
         env:
@@ -161,6 +162,10 @@ jobs:
           security import /tmp/cert.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
           rm /tmp/cert.p12
+          # propagate the signing env to later steps so tauri-action can read it.
+          # this step is skipped when HAS_APPLE_CERT=false or non-macOS → these
+          # vars are never written → tauri-action's env contains no APPLE_* →
+          # Tauri auto-skips signing instead of running `codesign --sign ""`.
           {
             echo "APPLE_SIGNING_IDENTITY=$APPLE_SIGNING_IDENTITY"
             echo "APPLE_ID=$APPLE_ID"
@@ -172,14 +177,33 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Apple signing env injected by the cert-import step via $GITHUB_ENV
+          # (macOS only — Windows runner never sees these).
+          # Tauri updater signing — signs the bundle + emits latest.json. Set on
+          # both runners so macOS .app.tar.gz.sig and Windows .nsis.zip.sig are
+          # produced and the updater can verify upgrades cross-platform.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ env.RELEASE_TAG }}
           releaseName: "marka.md ${{ env.RELEASE_TAG }}"
           releaseBody: ${{ steps.release_body.outputs.BODY }}
+          # publish as a DRAFT so the matrix runners can both upload artifacts
+          # (including their per-platform latest.json entries) without racing
+          # to overwrite each other on the same live release. the publish-release
+          # job below flips the draft to public AFTER both legs complete + a
+          # consolidated latest.json with both `darwin-aarch64` and
+          # `windows-x86_64` platforms is in place.
+          # ref: https://v2.tauri.app/distribute/pipelines/github/
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
 
+      # tauri-action emits `marka.md_<version>_<arch>.dmg` by default. Rename
+      # per arch so users get clean filenames + the landing dropdown can keep
+      # linking to `marka.md.dmg` (apple-silicon default). Intel gets a clear
+      # `_intel` suffix. Both rename steps are guarded by their matrix target
+      # so the two macOS legs don't race.
       - name: rename dmg → marka.md.dmg (apple silicon)
         if: matrix.target == 'aarch64-apple-darwin' && success()
         env:
@@ -220,6 +244,10 @@ jobs:
             echo "no dmg asset found — skipping rename"
           fi
 
+  # flip the draft release to public AFTER both matrix runners have finished
+  # uploading their artifacts + latest.json entries. this prevents the
+  # cross-platform race where each runner could overwrite the other's
+  # latest.json on a live release.
   publish-release:
     needs: build
     runs-on: ubuntu-latest
@@ -238,18 +266,24 @@ jobs:
             --draft=false \
             --latest
 
+  # fires a Vercel deploy hook after a release publishes so markamd.vercel.app
+  # rebuilds and picks up the new version automatically (no manual empty
+  # commit needed). gracefully no-ops if the secret isn't set yet.
+  # NOTE: GitHub Actions does not allow `secrets.*` in `if:` expressions —
+  # they must be evaluated through env first (same pattern as HAS_APPLE_CERT).
   notify-site:
     needs: publish-release
     runs-on: ubuntu-latest
     env:
       HAS_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK != '' }}
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref_name }}
     steps:
       - name: ping vercel deploy hook
         if: env.HAS_HOOK == 'true'
         env:
           DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: |
-          echo "triggering markamd-site rebuild"
+          echo "triggering markamd-site rebuild for ${{ env.RELEASE_TAG }}"
           curl -fsS -X POST "$DEPLOY_HOOK"
       - name: no hook configured
         if: env.HAS_HOOK != 'true'
