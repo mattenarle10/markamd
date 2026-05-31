@@ -4,11 +4,6 @@ on:
   push:
     tags:
       - "v*.*.*"
-  workflow_dispatch:
-    inputs:
-      tag_name:
-        description: "Existing release tag to build, e.g. v1.5.5"
-        required: true
 
 permissions:
   contents: write
@@ -43,12 +38,10 @@ jobs:
       # which sees the var as "set" and tries to `security import` empty
       # data, hard-failing the bundle step.
       HAS_APPLE_CERT: ${{ secrets.APPLE_CERTIFICATE != '' }}
-      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref_name }}
     steps:
       - name: checkout
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref }}
           # need full history + tags so we can derive a per-release commit list
           # via `git log <prev_tag>..<this_tag>` for the changelog.
           fetch-depth: 0
@@ -61,16 +54,16 @@ jobs:
           set -e
           # find the most recent tag BEFORE the one we're building. `git tag --sort`
           # gives semver-ordered tags; we filter out the current ref and pick the next.
-          PREV_TAG=$(git tag --sort=-version:refname | grep -v "^${{ env.RELEASE_TAG }}$" | head -1 || true)
+          PREV_TAG=$(git tag --sort=-version:refname | grep -v "^${{ github.ref_name }}$" | head -1 || true)
           if [ -z "$PREV_TAG" ]; then
             COMMITS="- first public release 🐙"
             DIFF_URL=""
           else
-            COMMITS=$(git log "$PREV_TAG..${{ env.RELEASE_TAG }}" --pretty=format:'- %s' --no-merges --reverse)
+            COMMITS=$(git log "$PREV_TAG..${{ github.ref_name }}" --pretty=format:'- %s' --no-merges --reverse)
             if [ -z "$COMMITS" ]; then
               COMMITS="- (no commit changes since $PREV_TAG — version bump only)"
             fi
-            DIFF_URL="full diff: https://github.com/${{ github.repository }}/compare/$PREV_TAG...${{ env.RELEASE_TAG }}"
+            DIFF_URL="full diff: https://github.com/mattenarle10/markamd/compare/$PREV_TAG...${{ github.ref_name }}"
           fi
           echo "PREV_TAG=$PREV_TAG" >> "$GITHUB_OUTPUT"
           {
@@ -86,7 +79,7 @@ jobs:
         env:
           COMMITS: ${{ steps.changelog.outputs.COMMITS }}
           DIFF_URL: ${{ steps.changelog.outputs.DIFF_URL }}
-          TAG_NAME: ${{ env.RELEASE_TAG }}
+          TAG_NAME: ${{ github.ref_name }}
         run: |
           set -e
           NOTES_FILE="docs/release-notes/${TAG_NAME}.md"
@@ -185,8 +178,8 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: ${{ env.RELEASE_TAG }}
-          releaseName: "marka.md ${{ env.RELEASE_TAG }}"
+          tagName: ${{ github.ref_name }}
+          releaseName: "marka.md ${{ github.ref_name }}"
           releaseBody: ${{ steps.release_body.outputs.BODY }}
           # publish as a DRAFT so the matrix runners can both upload artifacts
           # (including their per-platform latest.json entries) without racing
@@ -211,9 +204,9 @@ jobs:
         shell: bash
         run: |
           set -e
-          RELEASE_ID=$(gh api repos/${{ github.repository }}/releases --jq '.[] | select(.tag_name == "${{ env.RELEASE_TAG }}") | .id' | head -1)
+          RELEASE_ID=$(gh api repos/${{ github.repository }}/releases --jq '.[] | select(.tag_name == "${{ github.ref_name }}") | .id' | head -1)
           if [ -z "$RELEASE_ID" ]; then
-            echo "no release found for tag ${{ env.RELEASE_TAG }} — skipping rename"
+            echo "no release found for tag ${{ github.ref_name }} — skipping rename"
             exit 0
           fi
           ASSET_ID=$(gh api "repos/${{ github.repository }}/releases/$RELEASE_ID/assets" --jq '.[] | select(.name | test("aarch64.*\\.dmg$")) | .id' | head -1)
@@ -231,9 +224,9 @@ jobs:
         shell: bash
         run: |
           set -e
-          RELEASE_ID=$(gh api repos/${{ github.repository }}/releases --jq '.[] | select(.tag_name == "${{ env.RELEASE_TAG }}") | .id' | head -1)
+          RELEASE_ID=$(gh api repos/${{ github.repository }}/releases --jq '.[] | select(.tag_name == "${{ github.ref_name }}") | .id' | head -1)
           if [ -z "$RELEASE_ID" ]; then
-            echo "no release found for tag ${{ env.RELEASE_TAG }} — skipping rename"
+            echo "no release found for tag ${{ github.ref_name }} — skipping rename"
             exit 0
           fi
           ASSET_ID=$(gh api "repos/${{ github.repository }}/releases/$RELEASE_ID/assets" --jq '.[] | select(.name | test("x64.*\\.dmg$")) | .id' | head -1)
@@ -253,15 +246,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    env:
-      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref_name }}
     steps:
       - name: publish draft release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "publishing draft release for ${{ env.RELEASE_TAG }}"
-          gh release edit "${{ env.RELEASE_TAG }}" \
+          echo "publishing draft release for ${{ github.ref_name }}"
+          gh release edit "${{ github.ref_name }}" \
             --repo "${{ github.repository }}" \
             --draft=false \
             --latest
@@ -276,14 +267,13 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HAS_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK != '' }}
-      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref_name }}
     steps:
       - name: ping vercel deploy hook
         if: env.HAS_HOOK == 'true'
         env:
           DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: |
-          echo "triggering markamd-site rebuild for ${{ env.RELEASE_TAG }}"
+          echo "triggering markamd-site rebuild for ${{ github.ref_name }}"
           curl -fsS -X POST "$DEPLOY_HOOK"
       - name: no hook configured
         if: env.HAS_HOOK != 'true'
