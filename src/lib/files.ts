@@ -64,6 +64,13 @@ export function joinPath(parent: string, child: string): string {
   return `${parent}${sep}${child}`;
 }
 
+export function relativePath(path: string, rootPath: string | null): string {
+  if (!rootPath) return basename(path);
+  const sep = rootPath.includes("\\") ? "\\" : "/";
+  const prefix = rootPath.endsWith(sep) ? rootPath : rootPath + sep;
+  return path.startsWith(prefix) ? path.slice(prefix.length) : basename(path);
+}
+
 export async function listFolder(path: string): Promise<FileEntry[]> {
   const entries = await readDir(path);
   return (entries || [])

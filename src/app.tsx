@@ -35,6 +35,7 @@ import {
   pickFolder,
   pickMarkdownFile,
   readContextFiles,
+  relativePath,
   removeEntry,
   STORAGE_KEYS,
   useI18n,
@@ -342,10 +343,7 @@ export function App() {
       {
         label: t("menu.copyRelativePath"),
         onSelect: () => {
-          const rel = rootPath && path.startsWith(rootPath)
-            ? path.slice(rootPath.length).replace(/^[\\/]/, "")
-            : path;
-          void navigator.clipboard.writeText(rel);
+          void navigator.clipboard.writeText(relativePath(path, rootPath));
           showSaveAsToast(t("menu.pathCopied"));
         },
       },

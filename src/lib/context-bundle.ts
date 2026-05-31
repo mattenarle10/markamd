@@ -1,4 +1,4 @@
-import { basename, readMarkdown } from "./files";
+import { readMarkdown, relativePath } from "./files";
 import { estimateTokens, formatTokens } from "./bundle";
 
 export type ContextFile = {
@@ -11,13 +11,6 @@ export type ContextBundleStats = {
   tokens: number;
   formattedTokens: string;
 };
-
-function relativePath(path: string, rootPath: string | null): string {
-  if (!rootPath) return basename(path);
-  const sep = rootPath.includes("\\") ? "\\" : "/";
-  const prefix = rootPath.endsWith(sep) ? rootPath : rootPath + sep;
-  return path.startsWith(prefix) ? path.slice(prefix.length) : basename(path);
-}
 
 export function getContextBundleStats(files: readonly ContextFile[]): ContextBundleStats {
   const tokens = estimateTokens(files.map((file) => file.content).join("\n\n"));

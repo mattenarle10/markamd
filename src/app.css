@@ -54,6 +54,10 @@
   display: none;
 }
 
+.mdv-app.is-reading.has-hidden-titlebar .mdv-titlebar {
+  display: flex;
+}
+
 /* iA Writer-style reading mode: wide max-width, generous breathing room,
    subtle warmer tint, and slow calm fade-in */
 .mdv-app.is-reading .mdv-shell > .mdv-preview {
