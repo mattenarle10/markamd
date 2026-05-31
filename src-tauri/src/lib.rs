@@ -16,6 +16,7 @@ struct PendingOpenFiles(Mutex<Vec<String>>);
 
 #[tauri::command]
 fn reveal_in_file_manager(path: String) {
+    #[cfg(any(target_os = "windows", target_os = "linux"))]
     let p = std::path::Path::new(&path);
     #[cfg(target_os = "windows")]
     {
