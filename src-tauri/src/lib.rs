@@ -14,6 +14,22 @@ use tauri::{Emitter, Manager, RunEvent};
 
 struct PendingOpenFiles(Mutex<Vec<String>>);
 
+#[cfg(target_os = "windows")]
+fn initial_open_files_from_args() -> Vec<String> {
+    std::env::args_os()
+        .skip(1)
+        .filter_map(|arg| {
+            let path = std::path::PathBuf::from(arg);
+            let ext = path.extension()?.to_str()?.to_ascii_lowercase();
+            if path.is_file() && matches!(ext.as_str(), "md" | "markdown" | "mdx") {
+                Some(path.to_string_lossy().to_string())
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
 #[tauri::command]
 fn reveal_in_file_manager(path: String) {
     #[cfg(any(target_os = "windows", target_os = "linux"))]
@@ -59,8 +75,13 @@ fn take_pending_open_files(state: State<'_, PendingOpenFiles>) -> Vec<String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    #[cfg(target_os = "windows")]
+    let pending_open_files = initial_open_files_from_args();
+    #[cfg(not(target_os = "windows"))]
+    let pending_open_files = Vec::new();
+
     let app = tauri::Builder::default()
-        .manage(PendingOpenFiles(Mutex::new(Vec::new())))
+        .manage(PendingOpenFiles(Mutex::new(pending_open_files)))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
