@@ -154,6 +154,7 @@
 
 /* mermaid diagram container */
 .mdv-mermaid {
+  position: relative;
   display: flex;
   justify-content: center;
   margin: 16px 0;
@@ -162,6 +163,10 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   overflow-x: auto;
+}
+
+.mdv-mermaid[data-mdv-viewer="true"] {
+  cursor: zoom-in;
 }
 
 .mdv-mermaid:not(.is-rendered) {
@@ -179,6 +184,171 @@
 .mdv-mermaid.is-rendered svg {
   max-width: 100%;
   height: auto;
+}
+
+.mdv-mermaid__open {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--bg-solid, var(--bg)) 88%, transparent);
+  color: var(--muted);
+  opacity: 0;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition:
+    opacity var(--dur-fast) var(--easing),
+    color var(--dur-fast) var(--easing),
+    border-color var(--dur-fast) var(--easing),
+    background-color var(--dur-fast) var(--easing);
+}
+
+.mdv-mermaid:hover .mdv-mermaid__open,
+.mdv-mermaid__open:focus-visible {
+  opacity: 1;
+}
+
+.mdv-mermaid__open:hover {
+  color: var(--fg);
+  border-color: var(--muted);
+  background: var(--bg-solid, var(--bg));
+}
+
+.mdv-diagram-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  grid-template-rows: 44px minmax(0, 1fr);
+  background: color-mix(in srgb, var(--bg-solid, var(--bg)) 94%, #000 6%);
+  color: var(--fg);
+  -webkit-app-region: no-drag;
+  animation: mdv-diagram-viewer-in 140ms var(--easing);
+}
+
+.mdv-diagram-viewer__toolbar {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px 0 16px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 78%, var(--bg));
+}
+
+.mdv-diagram-viewer__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.mdv-diagram-viewer__actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mdv-diagram-viewer__btn {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--easing),
+    border-color var(--dur-fast) var(--easing),
+    background-color var(--dur-fast) var(--easing);
+}
+
+.mdv-diagram-viewer__btn:hover,
+.mdv-diagram-viewer__btn:focus-visible {
+  color: var(--fg);
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--fg) 7%, transparent);
+  outline: none;
+}
+
+.mdv-diagram-viewer__btn span {
+  display: grid;
+  place-items: center;
+}
+
+.mdv-diagram-viewer__scale {
+  min-width: 44px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  user-select: none;
+}
+
+.mdv-diagram-viewer__viewport {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  cursor: grab;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 128, 128, 0.35) transparent;
+}
+
+.mdv-diagram-viewer__viewport.is-dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.mdv-diagram-viewer__stage {
+  min-width: 100%;
+  min-height: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 36px;
+}
+
+.mdv-diagram-viewer__diagram {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+}
+
+.mdv-diagram-viewer__diagram svg {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+}
+
+.mdv-diagram-viewer__diagram.is-fit {
+  width: 100%;
+  height: calc(100vh - 116px);
+  align-self: center;
+}
+
+.mdv-diagram-viewer__diagram.is-fit svg {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+@keyframes mdv-diagram-viewer-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes mdv-diagram-in {

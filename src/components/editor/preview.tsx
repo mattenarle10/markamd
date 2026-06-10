@@ -1,10 +1,18 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { readFile } from "@tauri-apps/plugin-fs";
-import { ensureMarkdownReady, renderMarkdown, useTheme } from "@/lib";
+import { ensureMarkdownReady, renderMarkdown, useI18n, useTheme } from "@/lib";
 import inspectUrl from "@/assets/mascot/inspect.png";
 import { renderMermaidBlocks } from "@/lib/mermaid";
 import { basename, isCsvPath } from "@/lib";
 import { CsvPreview } from "./csv-preview";
+import {
+  createDiagramViewer,
+  decorateMermaidBlocks,
+  DiagramViewerOverlay,
+  type DiagramViewer,
+  type DiagramViewerSource,
+  type MermaidViewerLabels,
+} from "./diagram-viewer";
 
 type PreviewProps = {
   source: string;
@@ -110,10 +118,21 @@ function decorateCodeBlocks(root: HTMLElement): () => void {
 
 export function Preview({ source, filePath }: PreviewProps) {
   const theme = useTheme();
+  const { t } = useI18n();
   const [ready, setReady] = useState(false);
+  const [viewer, setViewer] = useState<DiagramViewer | null>(null);
   const articleRef = useRef<HTMLElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const csvPreview = filePath ? isCsvPath(filePath) : false;
+
+  const viewerLabels = useMemo<MermaidViewerLabels>(() => ({
+    open: t("diagram.openViewer"),
+  }), [t]);
+
+  const openMermaidViewer = useCallback((next: DiagramViewerSource) => {
+    setViewer(createDiagramViewer(next));
+  }, []);
+  const closeMermaidViewer = useCallback(() => setViewer(null), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -159,8 +178,17 @@ export function Preview({ source, filePath }: PreviewProps) {
   useEffect(() => {
     if (!articleRef.current || csvPreview) return;
     const mermaidTheme = theme === "latte" || theme === "matcha" ? "default" : "dark";
-    void renderMermaidBlocks(articleRef.current, mermaidTheme);
-  }, [html, theme, csvPreview]);
+    let cancelled = false;
+    let cleanup = () => {};
+    void renderMermaidBlocks(articleRef.current, mermaidTheme).then(() => {
+      if (cancelled || !articleRef.current) return;
+      cleanup = decorateMermaidBlocks(articleRef.current, openMermaidViewer, viewerLabels);
+    });
+    return () => {
+      cancelled = true;
+      cleanup();
+    };
+  }, [html, theme, csvPreview, openMermaidViewer, viewerLabels]);
 
   useEffect(() => {
     const article = articleRef.current;
@@ -201,16 +229,25 @@ export function Preview({ source, filePath }: PreviewProps) {
   }
 
   return (
-    <div ref={previewRef} className="mdv-preview" data-theme={theme}>
-      {csvPreview ? (
-        <CsvPreview source={source} fileName={filePath ? basename(filePath) : undefined} />
-      ) : (
-        <article
-          ref={articleRef}
-          className="mdv-prose"
-          data-theme={theme}
+    <>
+      <div ref={previewRef} className="mdv-preview" data-theme={theme}>
+        {csvPreview ? (
+          <CsvPreview source={source} fileName={filePath ? basename(filePath) : undefined} />
+        ) : (
+          <article
+            ref={articleRef}
+            className="mdv-prose"
+            data-theme={theme}
+          />
+        )}
+      </div>
+      {viewer ? (
+        <DiagramViewerOverlay
+          viewer={viewer}
+          onChange={setViewer}
+          onClose={closeMermaidViewer}
         />
-      )}
-    </div>
+      ) : null}
+    </>
   );
 }
