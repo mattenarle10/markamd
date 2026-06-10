@@ -18,6 +18,10 @@
 
 /* shell layout */
 .mdv-app {
+  --mdv-writing-font-size: 14px;
+  --mdv-writing-line-height: 1.55;
+  --mdv-prose-font-size: 15px;
+  --mdv-prose-line-height: 1.65;
   display: grid;
   grid-template-rows: var(--titlebar-h) var(--breadcrumb-h) 1fr var(--statusbar-h);
   height: 100vh;

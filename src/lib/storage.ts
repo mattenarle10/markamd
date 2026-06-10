@@ -14,6 +14,8 @@ export const STORAGE_KEYS = {
   titlebarVisible: "mdview.titlebar.visible",
   folders: "mdview.folders",
   favorites: "mdview.favorites",
+  writingFontSize: "mdview.writing.fontSize",
+  writingLineHeight: "mdview.writing.lineHeight",
 } as const;
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];

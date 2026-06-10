@@ -2,8 +2,8 @@
   max-width: 720px;
   margin: 0 auto;
   font-family: var(--font-ui);
-  font-size: 15px;
-  line-height: 1.65;
+  font-size: var(--mdv-prose-font-size);
+  line-height: var(--mdv-prose-line-height);
   color: var(--fg);
 }
 

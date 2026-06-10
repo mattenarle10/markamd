@@ -44,16 +44,15 @@ function buildTheme() {
         backgroundColor: "transparent",
         color: "var(--fg)",
         fontFamily: "var(--font-mono)",
-        fontSize: "14px",
+        fontSize: "var(--mdv-writing-font-size)",
       },
       ".cm-scroller": {
         fontFamily: "var(--font-mono)",
-        lineHeight: "1.55",
+        lineHeight: "var(--mdv-writing-line-height)",
         padding: "20px 28px 80px",
       },
       ".cm-content": {
         caretColor: "var(--accent)",
-        maxWidth: "780px",
       },
       ".cm-cursor, .cm-dropCursor": {
         borderLeftColor: "var(--accent)",

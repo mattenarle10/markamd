@@ -23,6 +23,17 @@ export {
   type Language,
   type Translate,
 } from "./i18n";
+export {
+  DEFAULT_WRITING_DISPLAY,
+  WRITING_FONT_SIZE_OPTIONS,
+  WRITING_LINE_HEIGHT_OPTIONS,
+  getWritingDisplayVars,
+  normalizeWritingFontSize,
+  normalizeWritingLineHeight,
+  type WritingDisplay,
+  type WritingFontSize,
+  type WritingLineHeight,
+} from "./writing-display";
 export { CHANGELOG_URL, getWhatsNewToastMessage } from "./release-notes";
 export { buildCommands, type Command, type CommandActions } from "./commands";
 export { estimateTokens, formatTokens } from "./bundle";
