@@ -5,6 +5,8 @@
 - Match the existing UI style: dense, local-first, calm, keyboard-friendly, and lowercase copy where the app already uses it.
 - Prefer existing primitives from `src/components/primitives` and icons from `lucide-react` through the local `Icon` wrapper.
 - User-facing strings should go through `src/locales/*.json` unless the surrounding file already uses fixed product/legal copy.
+- Treat this as a public OSS repo: do feature work and user-facing fixes on a branch and open a PR by default.
+- Do not push directly to `main` unless Matt explicitly asks for a direct main commit/push in that turn.
 
 ## commands
 
