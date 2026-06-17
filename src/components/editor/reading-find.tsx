@@ -3,6 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 type Props = {
   /** when true, the find bar is mounted + visible */
   open: boolean;
+  /** increments when the parent wants the existing input focused again */
+  focusRequest?: number;
   /** parent calls this to close (Esc, × button, or external trigger) */
   onClose: () => void;
   /** the rendered `<article class="mdv-prose">` to search through */
@@ -23,7 +25,7 @@ type Props = {
  * Cleanup is guaranteed on unmount + close: marks are unwrapped back to plain
  * text so the next render of the prose stays clean.
  */
-export function ReadingFind({ open, onClose, scope, contentKey }: Props) {
+export function ReadingFind({ open, focusRequest = 0, onClose, scope, contentKey }: Props) {
   const [query, setQuery] = useState("");
   const [matches, setMatches] = useState<HTMLElement[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -64,13 +66,14 @@ export function ReadingFind({ open, onClose, scope, contentKey }: Props) {
     };
   }, [scope]);
 
-  // when the bar opens, focus the input + select any existing query for fast retype
+  // when the bar opens or ⌘F/Ctrl+F is pressed again, focus the input + select
+  // any existing query for fast retype.
   useEffect(() => {
     if (open) {
       inputRef.current?.focus();
       inputRef.current?.select();
     }
-  }, [open]);
+  }, [open, focusRequest]);
 
   const go = useCallback(
     (dir: 1 | -1) => {
