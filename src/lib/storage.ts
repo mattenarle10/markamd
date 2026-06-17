@@ -17,6 +17,7 @@ export const STORAGE_KEYS = {
   writingFontSize: "mdview.writing.fontSize",
   writingLineHeight: "mdview.writing.lineHeight",
   pinnedFiles: "mdview.pinnedFiles",
+  viewMode: "mdview.viewMode",
 } as const;
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];

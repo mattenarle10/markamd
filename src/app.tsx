@@ -53,6 +53,8 @@ import {
 } from "@/lib";
 import "./app.css";
 
+type ViewMode = "split" | "reading" | "editor";
+
 export function App() {
   const { t } = useI18n();
   const {
@@ -326,33 +328,36 @@ export function App() {
     }
   }, []);
 
-  const [readingMode, setReadingMode] = useState(false);
-  const [editorOnly, setEditorOnly] = useState(false);
-  // reading + editor-only are mutually exclusive view modes
-  const toggleReadingMode = useCallback(() => {
-    setReadingMode((v) => {
-      const next = !v;
-      if (next) setEditorOnly(false);
-      return next;
-    });
-  }, []);
-  const exitReadingMode = useCallback(() => setReadingMode(false), []);
-  const toggleEditorOnly = useCallback(() => {
-    setEditorOnly((v) => {
-      const next = !v;
-      if (next) setReadingMode(false);
-      return next;
-    });
-  }, []);
+  const [viewMode, setViewMode] = usePersistedState<ViewMode>(
+    STORAGE_KEYS.viewMode,
+    "split",
+  );
+  const [plainTextEditorOnly, setPlainTextEditorOnly] = useState(false);
+  const readingMode = viewMode === "reading" && !plainTextEditorOnly;
+  const editorOnly = viewMode === "editor" || plainTextEditorOnly;
 
-  // Sync editor-only mode with file type: md restores preview, known plain-text hides it.
+  const toggleReadingMode = useCallback(() => {
+    setViewMode((current) => (current === "reading" ? "split" : "reading"));
+  }, [setViewMode]);
+  const exitReadingMode = useCallback(() => setViewMode("split"), [setViewMode]);
+  const toggleEditorOnly = useCallback(() => {
+    setViewMode((current) => (current === "editor" ? "split" : "editor"));
+  }, [setViewMode]);
+
+  // Plain-text fallback files cannot render in preview, so they temporarily force editor-only
+  // without changing the user's persisted default view mode.
   useEffect(() => {
-    if (!activePath) return;
+    if (!activePath) {
+      setPlainTextEditorOnly(false);
+      return;
+    }
     const lower = activePath.toLowerCase();
     if (lower.endsWith(".md") || lower.endsWith(".markdown") || lower.endsWith(".mdx")) {
-      setEditorOnly(false);
+      setPlainTextEditorOnly(false);
     } else if (extPrefs.current.get(getExt(activePath)) === "text") {
-      setEditorOnly(true);
+      setPlainTextEditorOnly(true);
+    } else {
+      setPlainTextEditorOnly(false);
     }
   }, [activePath, getExt]);
 
