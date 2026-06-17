@@ -219,6 +219,68 @@
   background: var(--bg-solid, var(--bg));
 }
 
+/* PlantUML uses an explicit remote-render action so diagrams are not sent to a
+   server just by opening a local markdown file. */
+.mdv-plantuml {
+  margin: 16px 0;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+
+.mdv-plantuml figcaption {
+  margin: 0 0 10px;
+  font-family: var(--font-mono);
+  font-size: 0.72em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.mdv-plantuml pre {
+  margin: 0;
+  color: var(--muted);
+}
+
+.mdv-plantuml__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.mdv-plantuml__btn {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-solid, var(--bg));
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+  cursor: pointer;
+}
+
+.mdv-plantuml__btn:hover,
+.mdv-plantuml__btn:focus-visible {
+  border-color: var(--muted);
+}
+
+.mdv-plantuml__note {
+  font-family: var(--font-mono);
+  font-size: 0.72em;
+  color: var(--muted);
+}
+
+.mdv-plantuml__img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-top: 12px;
+}
+
 .mdv-diagram-viewer {
   position: fixed;
   inset: 0;

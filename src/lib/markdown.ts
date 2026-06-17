@@ -2,11 +2,23 @@ import MarkdownIt from "markdown-it";
 import mark from "markdown-it-mark";
 import taskLists from "markdown-it-task-lists";
 import { createHighlighter, type Highlighter } from "shiki";
+import { plantUmlUrl } from "./plantuml";
 import type { Theme } from "./theme";
 
 // random suffix per render — mermaid id reuse across re-renders silently fails.
 function mermaidId(): string {
   return `mdv-mermaid-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function escapeAttr(value: string): string {
+  return escapeHtml(value).replace(/"/g, "&quot;");
 }
 
 // allowed langs — shiki chunks load on first use via ensureLangsLoaded.
@@ -98,11 +110,13 @@ const md = new MarkdownIt({
     // mermaid blocks bypass shiki — Preview component renders them as svg
     if (lang === "mermaid") {
       const id = mermaidId();
-      const encoded = code
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
+      const encoded = escapeHtml(code);
       return `<pre class="mdv-mermaid" id="${id}"><code>${encoded}</code></pre>`;
+    }
+    if (lang === "plantuml" || lang === "puml") {
+      const source = escapeHtml(code);
+      const src = escapeAttr(plantUmlUrl(code));
+      return `<figure class="mdv-plantuml" data-src="${src}"><figcaption>plantuml</figcaption><pre><code>${source}</code></pre></figure>`;
     }
     if (!highlighter) return "";
     const loaded = highlighter.getLoadedLanguages() as readonly string[];

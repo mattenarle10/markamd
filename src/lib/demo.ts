@@ -19,6 +19,13 @@ flowchart LR
   Claude --> Idea
 \`\`\`
 
+plantuml can be previewed on demand:
+
+\`\`\`plantuml
+Alice -> Bob: hello
+Bob --> Alice: saved
+\`\`\`
+
 ---
 
 ## code

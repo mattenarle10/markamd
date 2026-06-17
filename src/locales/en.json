@@ -167,7 +167,7 @@
   "help.subtitle": "keyboard + tips",
   "help.features": "features",
   "help.feature.markdown.title": "markdown",
-  "help.feature.markdown.body": "preview, mermaid, pdf",
+  "help.feature.markdown.body": "preview, mermaid, plantuml, pdf",
   "help.feature.context.title": "context",
   "help.feature.context.body": "copy one ai-ready bundle",
   "help.feature.csv.title": "csv preview",

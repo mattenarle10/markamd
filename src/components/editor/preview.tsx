@@ -4,6 +4,7 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { ensureMarkdownReady, renderMarkdown, useI18n, useTheme } from "@/lib";
 import inspectUrl from "@/assets/mascot/inspect.png";
 import { renderMermaidBlocks } from "@/lib/mermaid";
+import { decoratePlantUmlBlocks } from "@/lib/plantuml";
 import { basename, isCsvPath } from "@/lib";
 import { CsvPreview } from "./csv-preview";
 import {
@@ -173,7 +174,12 @@ export function Preview({ source, filePath }: PreviewProps) {
 
   useEffect(() => {
     if (!articleRef.current || csvPreview) return;
-    return decorateCodeBlocks(articleRef.current);
+    const cleanupCode = decorateCodeBlocks(articleRef.current);
+    const cleanupPlantUml = decoratePlantUmlBlocks(articleRef.current);
+    return () => {
+      cleanupCode();
+      cleanupPlantUml();
+    };
   }, [html, csvPreview]);
 
   useEffect(() => {
