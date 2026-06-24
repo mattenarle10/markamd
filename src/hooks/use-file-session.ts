@@ -122,11 +122,12 @@ export function useFileSession({ onLoadError }: UseFileSessionArgs = {}): UseFil
   ), []);
 
   useEffect(() => {
-    setTabs((prev) => prev.map((tab) => (
-      tab.id === activeTabId
-        ? { ...tab, path: activePath, title: titleForPath(activePath) }
-        : tab
-    )));
+    setTabs((prev) => prev.map((tab) => {
+      if (tab.id !== activeTabId) return tab;
+      if (activePath === null) return { ...tab, path: null, title: UNTITLED_TITLE };
+      if (!tab.path) return tab;
+      return { ...tab, path: activePath, title: titleForPath(activePath) };
+    }));
   }, [activePath, activeTabId, titleForPath]);
 
   const snapshotActiveTab = useCallback((items: FileTab[]) =>
@@ -134,8 +135,8 @@ export function useFileSession({ onLoadError }: UseFileSessionArgs = {}): UseFil
       tab.id === activeTabId
         ? {
             ...tab,
-            path: activePathRef.current,
-            title: titleForPath(activePathRef.current),
+            path: tab.path ? activePathRef.current : null,
+            title: titleForPath(tab.path ? activePathRef.current : null),
             source: sourceRef.current,
             savedContent: savedRef.current,
           }

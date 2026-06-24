@@ -2,8 +2,8 @@ import { expect, test } from "bun:test";
 import { getWhatsNewToastMessage } from "../src/lib/release-notes";
 
 test("calls out the latest v1.5 polish in the what's-new toast", () => {
-  expect(getWhatsNewToastMessage("1.5.12")).toBe(
-    "v1.5.12: Preview scrolling is smooth again, context staging stays clean, and the workspace polish continues",
+  expect(getWhatsNewToastMessage("1.5.14")).toBe(
+    "v1.5.14: Preview scrolling is smooth again, context staging stays clean, and the workspace polish continues",
   );
 });
 
