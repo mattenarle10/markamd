@@ -67,21 +67,7 @@
 }
 
 html.is-mac .mdv-app.has-hidden-titlebar:not(.is-reading) .mdv-breadcrumb {
-  padding-left: 8px;
-}
-
-html.is-mac .mdv-app.has-hidden-titlebar:not(.is-reading) {
-  grid-template-rows: var(--titlebar-h) var(--breadcrumb-h) 1fr var(--statusbar-h);
-}
-
-html.is-mac .mdv-app.has-hidden-titlebar:not(.is-reading) .mdv-titlebar {
-  display: flex;
-}
-
-html.is-mac .mdv-app.has-hidden-titlebar:not(.is-reading) .mdv-titlebar__lead,
-html.is-mac .mdv-app.has-hidden-titlebar:not(.is-reading) .mdv-titlebar__center,
-html.is-mac .mdv-app.has-hidden-titlebar:not(.is-reading) .mdv-titlebar__actions {
-  display: none;
+  padding-left: 132px;
 }
 
 /* iA Writer-style reading mode: wide max-width, generous breathing room,
