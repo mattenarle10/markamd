@@ -105,6 +105,33 @@ html.is-mac .mdv-titlebar {
   -webkit-app-region: no-drag;
 }
 
+.mdv-titlebar__zoom {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  height: 22px;
+  margin-right: 4px;
+  padding-right: 6px;
+  border-right: 1px solid var(--border);
+}
+
+.mdv-titlebar__zoom .mdv-btn {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+}
+
+.mdv-titlebar__zoom .mdv-btn:disabled {
+  color: color-mix(in srgb, var(--muted) 42%, transparent);
+  cursor: default;
+  transform: none;
+}
+
+.mdv-titlebar__zoom .mdv-btn:disabled:hover {
+  background: transparent;
+  color: color-mix(in srgb, var(--muted) 42%, transparent);
+}
+
 .mdv-titlebar__theme {
   position: relative;
 }
