@@ -16,6 +16,9 @@ export const STORAGE_KEYS = {
   favorites: "mdview.favorites",
   writingFontSize: "mdview.writing.fontSize",
   writingLineHeight: "mdview.writing.lineHeight",
+  readingFontSize: "mdview.reading.fontSize",
+  readingWidth: "mdview.reading.width",
+  proseFontFamily: "mdview.prose.fontFamily",
   viewMode: "mdview.viewMode",
 } as const;
 

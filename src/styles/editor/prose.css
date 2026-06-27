@@ -1,7 +1,7 @@
 .mdv-prose {
   max-width: 720px;
   margin: 0 auto;
-  font-family: var(--font-ui);
+  font-family: var(--mdv-prose-font-family);
   font-size: var(--mdv-prose-font-size);
   line-height: var(--mdv-prose-line-height);
   color: var(--fg);
@@ -15,7 +15,7 @@
 .mdv-prose h2,
 .mdv-prose h3,
 .mdv-prose h4 {
-  font-family: var(--font-ui);
+  font-family: var(--mdv-prose-font-family);
   font-weight: 600;
   letter-spacing: -0.015em;
   line-height: 1.25;

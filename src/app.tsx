@@ -37,6 +37,9 @@ import {
   getContextBundleStats,
   getWhatsNewToastMessage,
   isSupportedTextPath,
+  normalizeProseFontFamily,
+  normalizeReadingFontSize,
+  normalizeReadingWidth,
   normalizeWritingFontSize,
   normalizeWritingLineHeight,
   PdfExportError,
@@ -47,6 +50,9 @@ import {
   removeEntry,
   STORAGE_KEYS,
   useI18n,
+  type ProseFontFamily,
+  type ReadingFontSize,
+  type ReadingWidth,
   type WritingDisplay,
   type WritingFontSize,
   type WritingLineHeight,
@@ -260,6 +266,18 @@ export function App() {
     STORAGE_KEYS.writingLineHeight,
     DEFAULT_WRITING_DISPLAY.lineHeight,
   );
+  const [readingFontSize, setReadingFontSize] = usePersistedState<ReadingFontSize>(
+    STORAGE_KEYS.readingFontSize,
+    DEFAULT_WRITING_DISPLAY.readingFontSize,
+  );
+  const [readingWidth, setReadingWidth] = usePersistedState<ReadingWidth>(
+    STORAGE_KEYS.readingWidth,
+    DEFAULT_WRITING_DISPLAY.readingWidth,
+  );
+  const [proseFontFamily, setProseFontFamily] = usePersistedState<ProseFontFamily>(
+    STORAGE_KEYS.proseFontFamily,
+    DEFAULT_WRITING_DISPLAY.proseFontFamily,
+  );
   const [dragActive, setDragActive] = useState(false);
   const [stagedPaths, setStagedPaths] = useState<string[]>([]);
   const [stagedTokenLabel, setStagedTokenLabel] = useState("0");
@@ -269,8 +287,11 @@ export function App() {
     () => ({
       fontSize: normalizeWritingFontSize(writingFontSize),
       lineHeight: normalizeWritingLineHeight(writingLineHeight),
+      readingFontSize: normalizeReadingFontSize(readingFontSize),
+      readingWidth: normalizeReadingWidth(readingWidth),
+      proseFontFamily: normalizeProseFontFamily(proseFontFamily),
     }),
-    [writingFontSize, writingLineHeight],
+    [writingFontSize, writingLineHeight, readingFontSize, readingWidth, proseFontFamily],
   );
 
   const writingDisplayStyle = useMemo(
@@ -281,7 +302,10 @@ export function App() {
   const resetWritingDisplay = useCallback(() => {
     setWritingFontSize(DEFAULT_WRITING_DISPLAY.fontSize);
     setWritingLineHeight(DEFAULT_WRITING_DISPLAY.lineHeight);
-  }, [setWritingFontSize, setWritingLineHeight]);
+    setReadingFontSize(DEFAULT_WRITING_DISPLAY.readingFontSize);
+    setReadingWidth(DEFAULT_WRITING_DISPLAY.readingWidth);
+    setProseFontFamily(DEFAULT_WRITING_DISPLAY.proseFontFamily);
+  }, [setWritingFontSize, setWritingLineHeight, setReadingFontSize, setReadingWidth, setProseFontFamily]);
 
   const handleToggleSidebar = useCallback(() => {
     setSidebarOpen((v: boolean) => !v);
@@ -815,6 +839,9 @@ export function App() {
         writingDisplay={writingDisplay}
         onWritingFontSizeChange={setWritingFontSize}
         onWritingLineHeightChange={setWritingLineHeight}
+        onReadingFontSizeChange={setReadingFontSize}
+        onReadingWidthChange={setReadingWidth}
+        onProseFontFamilyChange={setProseFontFamily}
         onResetWritingDisplay={resetWritingDisplay}
       />
 
@@ -839,6 +866,9 @@ export function App() {
         writingDisplay={writingDisplay}
         onWritingFontSizeChange={setWritingFontSize}
         onWritingLineHeightChange={setWritingLineHeight}
+        onReadingFontSizeChange={setReadingFontSize}
+        onReadingWidthChange={setReadingWidth}
+        onProseFontFamilyChange={setProseFontFamily}
         onResetWritingDisplay={resetWritingDisplay}
       />
 

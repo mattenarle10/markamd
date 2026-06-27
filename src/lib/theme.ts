@@ -95,7 +95,7 @@ export const THEME_HINTS: Record<ThemeMode, string> = {
   ayu: "ayu mirage dark",
   claude: "warm parchment + terracotta",
   codex: "openai black + green",
-  gemini: "blue and violet glow",
+  gemini: "google white + blue",
   cursor: "warm editor neutrals",
 };
 

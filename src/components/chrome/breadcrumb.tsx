@@ -18,6 +18,9 @@ import {
   startWindowDrag,
   useI18n,
   type Translate,
+  type ProseFontFamily,
+  type ReadingFontSize,
+  type ReadingWidth,
   type WritingDisplay,
   type WritingFontSize,
   type WritingLineHeight,
@@ -48,6 +51,9 @@ type BreadcrumbProps = {
   writingDisplay: WritingDisplay;
   onWritingFontSizeChange: (value: WritingFontSize) => void;
   onWritingLineHeightChange: (value: WritingLineHeight) => void;
+  onReadingFontSizeChange: (value: ReadingFontSize) => void;
+  onReadingWidthChange: (value: ReadingWidth) => void;
+  onProseFontFamilyChange: (value: ProseFontFamily) => void;
   onResetWritingDisplay: () => void;
 };
 
@@ -93,6 +99,9 @@ export function Breadcrumb({
   writingDisplay,
   onWritingFontSizeChange,
   onWritingLineHeightChange,
+  onReadingFontSizeChange,
+  onReadingWidthChange,
+  onProseFontFamilyChange,
   onResetWritingDisplay,
 }: BreadcrumbProps) {
   const { t } = useI18n();
@@ -181,6 +190,9 @@ export function Breadcrumb({
           writingDisplay={writingDisplay}
           onWritingFontSizeChange={onWritingFontSizeChange}
           onWritingLineHeightChange={onWritingLineHeightChange}
+          onReadingFontSizeChange={onReadingFontSizeChange}
+          onReadingWidthChange={onReadingWidthChange}
+          onProseFontFamilyChange={onProseFontFamilyChange}
           onResetWritingDisplay={onResetWritingDisplay}
         />
 

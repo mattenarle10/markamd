@@ -20,13 +20,19 @@ import { Button, Icon, Popover } from "@/components/primitives";
 import {
   getSystemTheme,
   LANGUAGE_CHOICES,
+  PROSE_FONT_FAMILY_OPTIONS,
   previewTheme,
+  READING_FONT_SIZE_OPTIONS,
+  READING_WIDTH_OPTIONS,
   THEME_GROUPS,
   WRITING_FONT_SIZE_OPTIONS,
   WRITING_LINE_HEIGHT_OPTIONS,
   useI18n,
   useThemeMode,
   useTransparency,
+  type ProseFontFamily,
+  type ReadingFontSize,
+  type ReadingWidth,
   type Theme,
   type ThemeMode,
   type WritingDisplay,
@@ -58,6 +64,9 @@ type ThemeButtonProps = {
   writingDisplay: WritingDisplay;
   onWritingFontSizeChange: (value: WritingFontSize) => void;
   onWritingLineHeightChange: (value: WritingLineHeight) => void;
+  onReadingFontSizeChange: (value: ReadingFontSize) => void;
+  onReadingWidthChange: (value: ReadingWidth) => void;
+  onProseFontFamilyChange: (value: ProseFontFamily) => void;
   onResetWritingDisplay: () => void;
 };
 
@@ -109,6 +118,9 @@ export function ThemeButton({
   writingDisplay,
   onWritingFontSizeChange,
   onWritingLineHeightChange,
+  onReadingFontSizeChange,
+  onReadingWidthChange,
+  onProseFontFamilyChange,
   onResetWritingDisplay,
 }: ThemeButtonProps) {
   const { language, setLanguage, t } = useI18n();
@@ -245,7 +257,8 @@ export function ThemeButton({
                 <span className="mdv-menu__settings-summary">
                   {opacity >= 100 ? t("title.off") : `${100 - opacity}%`} /{" "}
                   {t(`writing.font.${writingDisplay.fontSize}`)} /{" "}
-                  {t(`writing.spacing.${writingDisplay.lineHeight}`)}
+                  {t(`writing.spacing.${writingDisplay.lineHeight}`)} /{" "}
+                  {t(`reading.width.${writingDisplay.readingWidth}`)}
                 </span>
                 <Icon icon={ChevronRight} size={13} strokeWidth={1.7} />
               </button>
@@ -288,6 +301,27 @@ export function ThemeButton({
                   options={WRITING_LINE_HEIGHT_OPTIONS}
                   labelFor={(option) => t(`writing.spacing.${option}`)}
                   onChange={onWritingLineHeightChange}
+                />
+                <SliderControl
+                  label={t("title.readingZoom")}
+                  value={writingDisplay.readingFontSize}
+                  options={READING_FONT_SIZE_OPTIONS}
+                  labelFor={(option) => t(`writing.font.${option}`)}
+                  onChange={onReadingFontSizeChange}
+                />
+                <SliderControl
+                  label={t("title.readingWidth")}
+                  value={writingDisplay.readingWidth}
+                  options={READING_WIDTH_OPTIONS}
+                  labelFor={(option) => t(`reading.width.${option}`)}
+                  onChange={onReadingWidthChange}
+                />
+                <SliderControl
+                  label={t("title.proseFont")}
+                  value={writingDisplay.proseFontFamily}
+                  options={PROSE_FONT_FAMILY_OPTIONS}
+                  labelFor={(option) => t(`prose.font.${option}`)}
+                  onChange={onProseFontFamilyChange}
                 />
                 <button
                   type="button"

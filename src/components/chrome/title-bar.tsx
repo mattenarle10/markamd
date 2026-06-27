@@ -4,6 +4,9 @@ import {
   shortcutLabel,
   startWindowDrag,
   useI18n,
+  type ProseFontFamily,
+  type ReadingFontSize,
+  type ReadingWidth,
   type WritingDisplay,
   type WritingFontSize,
   type WritingLineHeight,
@@ -24,6 +27,9 @@ type TitleBarProps = {
   writingDisplay: WritingDisplay;
   onWritingFontSizeChange: (value: WritingFontSize) => void;
   onWritingLineHeightChange: (value: WritingLineHeight) => void;
+  onReadingFontSizeChange: (value: ReadingFontSize) => void;
+  onReadingWidthChange: (value: ReadingWidth) => void;
+  onProseFontFamilyChange: (value: ProseFontFamily) => void;
   onResetWritingDisplay: () => void;
 };
 
@@ -41,6 +47,9 @@ export function TitleBar({
   writingDisplay,
   onWritingFontSizeChange,
   onWritingLineHeightChange,
+  onReadingFontSizeChange,
+  onReadingWidthChange,
+  onProseFontFamilyChange,
   onResetWritingDisplay,
 }: TitleBarProps) {
   const { t } = useI18n();
@@ -76,6 +85,9 @@ export function TitleBar({
             writingDisplay={writingDisplay}
             onWritingFontSizeChange={onWritingFontSizeChange}
             onWritingLineHeightChange={onWritingLineHeightChange}
+            onReadingFontSizeChange={onReadingFontSizeChange}
+            onReadingWidthChange={onReadingWidthChange}
+            onProseFontFamilyChange={onProseFontFamilyChange}
             onResetWritingDisplay={onResetWritingDisplay}
           />
         ) : null}
