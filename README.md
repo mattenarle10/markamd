@@ -11,6 +11,7 @@
   <a href="https://github.com/mattenarle10/markamd/releases/latest"><img src="https://img.shields.io/github/v/release/mattenarle10/markamd?style=flat-square&color=orange&label=release" alt="release" /></a>
   <a href="https://github.com/mattenarle10/markamd/releases"><img src="https://img.shields.io/github/downloads/mattenarle10/markamd/total?style=flat-square&color=black&label=downloads" alt="downloads" /></a>
   <a href="https://github.com/mattenarle10/markamd/stargazers"><img src="https://img.shields.io/github/stars/mattenarle10/markamd?style=flat-square&color=black&label=stars" alt="stars" /></a>
+  <a href="https://opencollective.com/markamd"><img src="https://img.shields.io/opencollective/all/markamd?style=flat-square&color=orange&label=open%20collective" alt="open collective" /></a>
   <img src="https://img.shields.io/badge/macOS-13%2B-black?style=flat-square" alt="macos" />
   <img src="https://img.shields.io/badge/Windows-10%2B-black?style=flat-square" alt="windows" />
   <img src="https://img.shields.io/badge/Linux-x86__64-black?style=flat-square" alt="linux" />
@@ -156,7 +157,7 @@ ideas, bugs, or just want to say hi?
 
 ## support
 
-marka.md is free + MIT. if it saves you time, [star the repo](https://github.com/mattenarle10/markamd) or share it with another dev.
+marka.md is free + MIT. if it saves you time, [star the repo](https://github.com/mattenarle10/markamd), share it with another dev, or support ongoing development through [Open Collective](https://opencollective.com/markamd).
 
 ## license
 
