@@ -68,6 +68,11 @@
 
 html.is-mac .mdv-app.has-hidden-titlebar:not(.is-reading) .mdv-breadcrumb {
   padding-left: 132px;
+  height: 42px;
+}
+
+html.is-mac .mdv-app.has-hidden-titlebar:not(.is-reading) {
+  grid-template-rows: 0 42px 1fr var(--statusbar-h);
 }
 
 /* iA Writer-style reading mode: wide max-width, generous breathing room,
