@@ -18,11 +18,11 @@ test("emits reading display css variables", () => {
     ...DEFAULT_WRITING_DISPLAY,
     readingFontSize: "large",
     readingWidth: "wide",
-    proseFontFamily: "system",
+    proseFontFamily: "mono",
   });
 
   expect(vars["--mdv-reading-font-size"]).toBe("18px");
   expect(vars["--mdv-reading-content-width"]).toBe("1080px");
   expect(vars["--mdv-reading-prose-width"]).toBe("880px");
-  expect(vars["--mdv-prose-font-family"]).toContain("system-ui");
+  expect(vars["--mdv-prose-font-family"]).toBe("var(--font-mono)");
 });

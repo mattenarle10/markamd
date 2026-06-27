@@ -112,6 +112,40 @@ function SliderControl<T extends string>({
   );
 }
 
+type SelectControlProps<T extends string> = {
+  label: string;
+  value: T;
+  options: readonly T[];
+  labelFor: (option: T) => string;
+  onChange: (value: T) => void;
+};
+
+function SelectControl<T extends string>({
+  label,
+  value,
+  options,
+  labelFor,
+  onChange,
+}: SelectControlProps<T>) {
+  return (
+    <label className="mdv-menu__select-row mdv-menu__select-row--display">
+      <span className="mdv-menu__select-label">{label}</span>
+      <select
+        className="mdv-menu__select"
+        value={value}
+        onChange={(e) => onChange(e.target.value as T)}
+        aria-label={label}
+      >
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {labelFor(option)}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 export function ThemeButton({
   vimOn = false,
   onToggleVim,
@@ -316,7 +350,7 @@ export function ThemeButton({
                   labelFor={(option) => t(`reading.width.${option}`)}
                   onChange={onReadingWidthChange}
                 />
-                <SliderControl
+                <SelectControl
                   label={t("title.proseFont")}
                   value={writingDisplay.proseFontFamily}
                   options={PROSE_FONT_FAMILY_OPTIONS}

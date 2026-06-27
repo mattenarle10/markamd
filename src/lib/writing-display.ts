@@ -2,7 +2,7 @@ export type WritingFontSize = "small" | "default" | "large" | "x-large";
 export type WritingLineHeight = "compact" | "comfortable" | "airy";
 export type ReadingFontSize = "small" | "default" | "large" | "x-large";
 export type ReadingWidth = "narrow" | "comfortable" | "wide" | "full";
-export type ProseFontFamily = "inter" | "system";
+export type ProseFontFamily = "inter" | "system" | "mono";
 
 export type WritingDisplay = {
   fontSize: WritingFontSize;
@@ -24,7 +24,7 @@ export const WRITING_FONT_SIZE_OPTIONS: WritingFontSize[] = ["small", "default",
 export const WRITING_LINE_HEIGHT_OPTIONS: WritingLineHeight[] = ["compact", "comfortable", "airy"];
 export const READING_FONT_SIZE_OPTIONS: ReadingFontSize[] = ["small", "default", "large", "x-large"];
 export const READING_WIDTH_OPTIONS: ReadingWidth[] = ["narrow", "comfortable", "wide", "full"];
-export const PROSE_FONT_FAMILY_OPTIONS: ProseFontFamily[] = ["inter", "system"];
+export const PROSE_FONT_FAMILY_OPTIONS: ProseFontFamily[] = ["inter", "system", "mono"];
 
 const EDITOR_FONT_VALUES: Record<WritingFontSize, string> = {
   small: "13px",
@@ -69,6 +69,7 @@ const READING_WIDTH_VALUES: Record<ReadingWidth, { content: string; prose: strin
 const PROSE_FONT_FAMILY_VALUES: Record<ProseFontFamily, string> = {
   inter: "var(--font-ui)",
   system: "-apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+  mono: "var(--font-mono)",
 };
 
 function normalizeOption<T extends string>(value: unknown, options: readonly T[], fallback: T): T {

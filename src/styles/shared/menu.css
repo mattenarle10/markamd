@@ -471,6 +471,10 @@
   background: color-mix(in srgb, var(--surface-hover) 58%, transparent);
 }
 
+.mdv-menu__select-row--display {
+  padding: 5px 10px;
+}
+
 .mdv-menu__select-label {
   font-size: 12px;
   color: var(--fg);
@@ -487,6 +491,10 @@
   font-size: 11px;
   padding: 3px 20px 3px 7px;
   outline: none;
+}
+
+.mdv-menu__select-row--display .mdv-menu__select {
+  width: 104px;
 }
 
 .mdv-menu__select:focus-visible {

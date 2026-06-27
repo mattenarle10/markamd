@@ -110,7 +110,11 @@ export function Breadcrumb({
   const label = statusLabel(saveStatus, t);
 
   return (
-    <div className="mdv-breadcrumb" data-tauri-drag-region onMouseDown={startWindowDrag}>
+    <div
+      className={`mdv-breadcrumb${titlebarVisible ? "" : " is-titlebar-hidden"}`}
+      data-tauri-drag-region
+      onMouseDown={startWindowDrag}
+    >
       <Button
         data-tooltip={shortcutLabel(sidebarOpen ? t("breadcrumb.hideSidebarShortcut") : t("breadcrumb.showSidebarShortcut"))}
         aria-label={sidebarOpen ? t("breadcrumb.hideSidebar") : t("breadcrumb.showSidebar")}
@@ -177,68 +181,72 @@ export function Breadcrumb({
             />
           }
         />
-        <Button
-          data-tooltip={readingMode ? t("title.exitReadingTooltip") : shortcutLabel(t("title.readingModeShortcut"))}
-          aria-label={readingMode ? t("title.exitReading") : t("title.readingMode")}
-          aria-pressed={readingMode}
-          onClick={onToggleReading}
-          icon={<Icon icon={readingMode ? BookOpen : BookOpen} size={14} strokeWidth={1.5} />}
-        />
-        <ThemeButton
-          vimOn={vimOn}
-          onToggleVim={onToggleVim}
-          writingDisplay={writingDisplay}
-          onWritingFontSizeChange={onWritingFontSizeChange}
-          onWritingLineHeightChange={onWritingLineHeightChange}
-          onReadingFontSizeChange={onReadingFontSizeChange}
-          onReadingWidthChange={onReadingWidthChange}
-          onProseFontFamilyChange={onProseFontFamilyChange}
-          onResetWritingDisplay={onResetWritingDisplay}
-        />
+        {titlebarVisible ? (
+          <>
+            <Button
+              data-tooltip={readingMode ? t("title.exitReadingTooltip") : shortcutLabel(t("title.readingModeShortcut"))}
+              aria-label={readingMode ? t("title.exitReading") : t("title.readingMode")}
+              aria-pressed={readingMode}
+              onClick={onToggleReading}
+              icon={<Icon icon={readingMode ? BookOpen : BookOpen} size={14} strokeWidth={1.5} />}
+            />
+            <ThemeButton
+              vimOn={vimOn}
+              onToggleVim={onToggleVim}
+              writingDisplay={writingDisplay}
+              onWritingFontSizeChange={onWritingFontSizeChange}
+              onWritingLineHeightChange={onWritingLineHeightChange}
+              onReadingFontSizeChange={onReadingFontSizeChange}
+              onReadingWidthChange={onReadingWidthChange}
+              onProseFontFamilyChange={onProseFontFamilyChange}
+              onResetWritingDisplay={onResetWritingDisplay}
+            />
 
-        {/* file actions — border-left matches the status→actions separator */}
-        <div className="mdv-breadcrumb__file-actions">
-          {onCopyMarkdown ? (
-            <button
-              type="button"
-              className={`mdv-copybtn${copyPulse ? " is-copied" : ""}`}
-              data-tooltip={copyPulse ? t("app.copied") : shortcutLabel(t("app.copyMarkdownShortcut"))}
-              aria-label={copyPulse ? t("app.copied") : t("app.copyMarkdown")}
-              onClick={onCopyMarkdown}
-            >
-              <span className="mdv-copybtn__icon mdv-copybtn__icon--copy" aria-hidden>
-                <Icon icon={Copy} size={12} strokeWidth={1.5} />
-              </span>
-              <span className="mdv-copybtn__icon mdv-copybtn__icon--check" aria-hidden>
-                <Icon icon={Check} size={13} strokeWidth={2} />
-              </span>
-            </button>
-          ) : null}
-          <Button
-            data-tooltip={shortcutLabel(t("app.exportPdfShortcut"))}
-            aria-label={t("app.exportPdf")}
-            onClick={onExportPdf}
-            icon={<Icon icon={FileDown} size={13} strokeWidth={1.5} />}
-          />
-          <Button
-            data-tooltip={shortcutLabel(t("app.newFileShortcut"))}
-            aria-label={t("app.newFile")}
-            onClick={onNewFile}
-            icon={<Icon icon={FilePlus2} size={13} strokeWidth={1.5} />}
-          />
-          <Button
-            data-tooltip={shortcutLabel(t("app.openFileShortcut"))}
-            aria-label={t("app.openFile")}
-            onClick={onOpenFile}
-            icon={<Icon icon={FileText} size={13} strokeWidth={1.5} />}
-          />
-          <Button
-            data-tooltip={shortcutLabel(t("app.openFolderShortcut"))}
-            aria-label={t("app.openFolder")}
-            onClick={onOpenFolder}
-            icon={<Icon icon={FolderOpen} size={13} strokeWidth={1.5} />}
-          />
-        </div>
+            {/* file actions — border-left matches the status→actions separator */}
+            <div className="mdv-breadcrumb__file-actions">
+              {onCopyMarkdown ? (
+                <button
+                  type="button"
+                  className={`mdv-copybtn${copyPulse ? " is-copied" : ""}`}
+                  data-tooltip={copyPulse ? t("app.copied") : shortcutLabel(t("app.copyMarkdownShortcut"))}
+                  aria-label={copyPulse ? t("app.copied") : t("app.copyMarkdown")}
+                  onClick={onCopyMarkdown}
+                >
+                  <span className="mdv-copybtn__icon mdv-copybtn__icon--copy" aria-hidden>
+                    <Icon icon={Copy} size={12} strokeWidth={1.5} />
+                  </span>
+                  <span className="mdv-copybtn__icon mdv-copybtn__icon--check" aria-hidden>
+                    <Icon icon={Check} size={13} strokeWidth={2} />
+                  </span>
+                </button>
+              ) : null}
+              <Button
+                data-tooltip={shortcutLabel(t("app.exportPdfShortcut"))}
+                aria-label={t("app.exportPdf")}
+                onClick={onExportPdf}
+                icon={<Icon icon={FileDown} size={13} strokeWidth={1.5} />}
+              />
+              <Button
+                data-tooltip={shortcutLabel(t("app.newFileShortcut"))}
+                aria-label={t("app.newFile")}
+                onClick={onNewFile}
+                icon={<Icon icon={FilePlus2} size={13} strokeWidth={1.5} />}
+              />
+              <Button
+                data-tooltip={shortcutLabel(t("app.openFileShortcut"))}
+                aria-label={t("app.openFile")}
+                onClick={onOpenFile}
+                icon={<Icon icon={FileText} size={13} strokeWidth={1.5} />}
+              />
+              <Button
+                data-tooltip={shortcutLabel(t("app.openFolderShortcut"))}
+                aria-label={t("app.openFolder")}
+                onClick={onOpenFolder}
+                icon={<Icon icon={FolderOpen} size={13} strokeWidth={1.5} />}
+              />
+            </div>
+          </>
+        ) : null}
       </div>
     </div>
   );

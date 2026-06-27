@@ -107,6 +107,12 @@
   border-left: 1px solid var(--border);
 }
 
+.mdv-breadcrumb.is-titlebar-hidden .mdv-breadcrumb__actions {
+  margin-left: 0;
+  padding-left: 0;
+  border-left: 0;
+}
+
 .mdv-breadcrumb__actions .mdv-btn {
   height: 22px;
   padding: 0 5px;
