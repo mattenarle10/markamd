@@ -50,7 +50,7 @@ jobs:
       RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref_name }}
     steps:
       - name: checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           # Manual dispatch should build the requested tag, not the branch the
           # workflow UI was opened from.

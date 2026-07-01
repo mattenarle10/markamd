@@ -12,7 +12,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: setup bun
         uses: oven-sh/setup-bun@v2
@@ -30,7 +30,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: setup rust
         uses: dtolnay/rust-toolchain@stable
