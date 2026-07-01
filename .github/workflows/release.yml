@@ -193,7 +193,7 @@ jobs:
 
       - name: build + release (signed updater)
         if: env.HAS_TAURI_SIGNING_KEY == 'true'
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Apple signing env injected by the cert-import step via $GITHUB_ENV
@@ -220,7 +220,7 @@ jobs:
 
       - name: build + release (unsigned, no updater artifacts)
         if: env.HAS_TAURI_SIGNING_KEY != 'true'
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
