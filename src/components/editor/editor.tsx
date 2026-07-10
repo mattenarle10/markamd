@@ -49,7 +49,7 @@ function buildTheme() {
       ".cm-scroller": {
         fontFamily: "var(--font-mono)",
         lineHeight: "var(--mdv-writing-line-height)",
-        padding: "20px 28px 80px 12px",
+        padding: "20px 28px 80px 8px",
       },
       ".cm-content": {
         caretColor: "var(--accent)",
@@ -59,12 +59,22 @@ function buildTheme() {
         borderLeftWidth: "1.5px",
       },
       ".cm-gutters": {
-        backgroundColor: "transparent",
+        backgroundColor: "color-mix(in srgb, var(--surface) 72%, var(--bg))",
         color: "var(--muted)",
-        border: "none",
+        borderRight: "1px solid var(--border)",
         fontFamily: "var(--font-mono)",
         fontSize: "11px",
-        paddingRight: "8px",
+        marginRight: "12px",
+        paddingRight: "0",
+      },
+      ".cm-lineNumbers": {
+        minWidth: "44px",
+      },
+      ".cm-lineNumbers .cm-gutterElement": {
+        boxSizing: "border-box",
+        minWidth: "44px",
+        padding: "0 10px 0 6px",
+        textAlign: "right",
       },
       ".cm-activeLine": {
         backgroundColor: "transparent",
