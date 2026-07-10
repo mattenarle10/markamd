@@ -309,7 +309,11 @@ export function decorateImages(
   images.forEach((img) => {
     // PlantUML previews carry their own open affordance; mermaid renders as
     // inline <svg>, not <img>, but guard anyway so we never double-bind.
-    if (img.closest(".mdv-plantuml") || img.closest("pre.mdv-mermaid")) return;
+    if (
+      img.closest(".mdv-plantuml") ||
+      img.closest("pre.mdv-mermaid") ||
+      img.closest("a[href]")
+    ) return;
 
     img.dataset.mdvImageViewer = "true";
     img.draggable = false;
@@ -329,6 +333,7 @@ export function decorateImages(
 
     const onClick = (e: MouseEvent) => {
       e.preventDefault();
+      e.stopPropagation();
       open();
     };
 
