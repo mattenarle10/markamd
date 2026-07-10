@@ -297,6 +297,51 @@ export function decorateMermaidBlocks(
   return () => cleanups.forEach((fn) => fn());
 }
 
+export function decorateImages(
+  root: HTMLElement,
+  onOpen: (viewer: DiagramViewerSource) => void,
+): () => void {
+  const cleanups: Array<() => void> = [];
+  const images = Array.from(
+    root.querySelectorAll<HTMLImageElement>("img:not([data-mdv-image-viewer])"),
+  );
+
+  images.forEach((img) => {
+    // PlantUML previews carry their own open affordance; mermaid renders as
+    // inline <svg>, not <img>, but guard anyway so we never double-bind.
+    if (img.closest(".mdv-plantuml") || img.closest("pre.mdv-mermaid")) return;
+
+    img.dataset.mdvImageViewer = "true";
+    img.draggable = false;
+
+    const open = () => {
+      const rect = img.getBoundingClientRect();
+      // svg <img> may report naturalWidth 0 — fall back to rendered box.
+      // fit mode (the default) never depends on these, only manual zoom does.
+      const width = img.naturalWidth || Math.max(1, Math.round(rect.width));
+      const height = img.naturalHeight || Math.max(1, Math.round(rect.height));
+      onOpen({
+        svg: `<img class="mdv-diagram-viewer__image" src="${escapeViewerAttr(img.src)}" alt="${escapeViewerAttr(img.alt || "")}" />`,
+        width,
+        height,
+      });
+    };
+
+    const onClick = (e: MouseEvent) => {
+      e.preventDefault();
+      open();
+    };
+
+    img.addEventListener("click", onClick);
+    cleanups.push(() => {
+      img.removeEventListener("click", onClick);
+      delete img.dataset.mdvImageViewer;
+    });
+  });
+
+  return () => cleanups.forEach((fn) => fn());
+}
+
 function clampDiagramScale(scale: number): number {
   return Math.min(MAX_DIAGRAM_SCALE, Math.max(MIN_DIAGRAM_SCALE, scale));
 }
@@ -354,4 +399,12 @@ function svgSize(svg: SVGSVGElement): { width: number; height: number } {
   }
   const rect = svg.getBoundingClientRect();
   return { width: Math.max(rect.width, 1), height: Math.max(rect.height, 1) };
+}
+
+function escapeViewerAttr(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }

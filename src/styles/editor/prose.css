@@ -537,6 +537,10 @@
   border: 1px solid var(--border);
 }
 
+.mdv-prose img[data-mdv-image-viewer="true"] {
+  cursor: zoom-in;
+}
+
 .mdv-prose video,
 .mdv-prose audio {
   display: block;

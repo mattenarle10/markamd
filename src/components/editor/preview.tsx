@@ -10,6 +10,7 @@ import { basename, isCsvPath } from "@/lib";
 import { CsvPreview } from "./csv-preview";
 import {
   createDiagramViewer,
+  decorateImages,
   decorateMermaidBlocks,
   DiagramViewerOverlay,
   type DiagramViewer,
@@ -199,9 +200,11 @@ export function Preview({ source, filePath }: PreviewProps) {
     if (!articleRef.current || csvPreview) return;
     const cleanupCode = decorateCodeBlocks(articleRef.current);
     const cleanupPlantUml = decoratePlantUmlBlocks(articleRef.current, openDiagramViewer, viewerLabels);
+    const cleanupImages = decorateImages(articleRef.current, openDiagramViewer);
     return () => {
       cleanupCode();
       cleanupPlantUml();
+      cleanupImages();
     };
   }, [html, csvPreview, openDiagramViewer, viewerLabels]);
 
