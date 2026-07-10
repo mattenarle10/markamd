@@ -130,6 +130,17 @@ export function buildCommands(actions: CommandActions, t: Translate = defaultT):
       action: () => actions.openRecent(path),
     }),
   );
+  const tocCommands: Command[] = actions.readingMode
+    ? [{
+        id: "toggle-toc",
+        label: actions.tocVisible ? t("command.hideToc") : t("command.showToc"),
+        hint: t("command.tocHint"),
+        icon: List,
+        category: "view",
+        keywords: ["toc", "outline", "headings", "contents"],
+        action: actions.toggleToc,
+      }]
+    : [];
 
   return [
     ...recent,
@@ -217,15 +228,7 @@ export function buildCommands(actions: CommandActions, t: Translate = defaultT):
       keywords: ["editor", "writing", "focus", "hide preview"],
       action: actions.toggleEditorOnly,
     },
-    {
-      id: "toggle-toc",
-      label: actions.tocVisible ? t("command.hideToc") : t("command.showToc"),
-      hint: t("command.tocHint"),
-      icon: List,
-      category: "view",
-      keywords: ["toc", "outline", "headings", "contents"],
-      action: actions.toggleToc,
-    },
+    ...tocCommands,
     {
       id: "fullscreen",
       label: t("command.fullscreen"),
