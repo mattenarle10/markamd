@@ -8,6 +8,7 @@
 @import "./styles/editor/panes.css";
 @import "./styles/editor/prose.css";
 @import "./styles/editor/reading-find.css";
+@import "./styles/editor/toc.css";
 @import "./styles/files/sidebar.css";
 @import "./styles/overlays/overlay.css";
 @import "./styles/overlays/palette.css";
@@ -107,6 +108,28 @@ html.is-mac .mdv-app.has-hidden-titlebar:not(.is-reading) {
 @keyframes mdv-reading-in {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* reading width = "full": content fills the pane and multi-column tables
+   span full width (no horizontal scrollbar). Applies in both the split
+   preview pane and reading mode. */
+.mdv-app.is-reading-width-full .mdv-preview {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+.mdv-app.is-reading-width-full .mdv-prose {
+  max-width: none;
+}
+.mdv-app.is-reading-width-full .mdv-prose table {
+  width: 100%;
+}
+/* reading mode's own width/padding rules are more specific, so match them */
+.mdv-app.is-reading-width-full.is-reading .mdv-shell > .mdv-preview {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+.mdv-app.is-reading-width-full.is-reading .mdv-shell > .mdv-preview .mdv-prose {
+  max-width: none;
 }
 
 /* theme transition smoothing — common surfaces fade between palettes */

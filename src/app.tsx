@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { EditorView } from "@codemirror/view";
 import { Breadcrumb, StatusBar, TitleBar, type VimMode } from "@/components/chrome";
-import { Editor, OpenTabs, Preview, ReadingFind, Splitter } from "@/components/editor";
+import { Editor, OpenTabs, Preview, ReadingFind, Splitter, TocPanel } from "@/components/editor";
 import { ContextMenu, Sidebar, type ContextMenuItem } from "@/components/files";
 import { AboutOverlay, CommandPalette, DropOverlay, HelpOverlay, Toast, WelcomeOverlay } from "@/components/overlays";
 import { TooltipRoot } from "@/components/primitives";
@@ -409,6 +409,10 @@ export function App() {
   const [findOpen, setFindOpen] = useState(false);
   const [findFocusRequest, setFindFocusRequest] = useState(0);
   const [proseEl, setProseEl] = useState<HTMLElement | null>(null);
+  const [tocVisible, setTocVisible] = usePersistedState<boolean>(
+    STORAGE_KEYS.tocVisible,
+    false,
+  );
   useEffect(() => {
     if (!readingMode) {
       setProseEl(null);
@@ -875,6 +879,8 @@ export function App() {
         readingMode,
         editorOnly,
         toggleEditorOnly,
+        tocVisible,
+        toggleToc: () => setTocVisible((v) => !v),
         contextCount: stagedPaths.length,
       }, t),
     [
@@ -901,6 +907,7 @@ export function App() {
       loadFile,
       recentFiles,
       stagedPaths.length,
+      tocVisible,
       t,
     ],
   );
@@ -909,7 +916,7 @@ export function App() {
 
   return (
     <div
-      className={`mdv-app${sidebarOpen ? " has-sidebar" : ""}${readingMode ? " is-reading" : ""}${!titlebarVisible ? " has-hidden-titlebar" : ""}`}
+      className={`mdv-app${sidebarOpen ? " has-sidebar" : ""}${readingMode ? " is-reading" : ""}${!titlebarVisible ? " has-hidden-titlebar" : ""}${writingDisplay.readingWidth === "full" ? " is-reading-width-full" : ""}`}
       style={writingDisplayStyle}
     >
       <TitleBar
@@ -930,6 +937,8 @@ export function App() {
         onReadingWidthChange={setReadingWidth}
         onProseFontFamilyChange={setProseFontFamily}
         onResetWritingDisplay={resetWritingDisplay}
+        tocVisible={tocVisible}
+        onToggleToc={() => setTocVisible((v) => !v)}
       />
 
       <Breadcrumb
@@ -963,6 +972,11 @@ export function App() {
         {readingMode ? (
           <>
             <Preview source={debouncedPreview} filePath={activePath} />
+            <TocPanel
+              open={tocVisible}
+              scope={proseEl}
+              contentKey={debouncedPreview}
+            />
             <ReadingFind
               open={findOpen}
               focusRequest={findFocusRequest}

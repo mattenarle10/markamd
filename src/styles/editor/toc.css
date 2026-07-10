@@ -1,0 +1,71 @@
+/* docked table-of-contents outline for reading mode — sits to the right of the
+   preview pane, scrolls independently, and jumps to a heading on click. */
+.mdv-toc {
+  flex: 0 0 248px;
+  width: 248px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 80px 12px 96px 8px;
+  border-left: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 96%, var(--fg) 4%);
+  scrollbar-width: thin;
+}
+
+.mdv-toc__header {
+  padding: 0 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.mdv-toc__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mdv-toc__item {
+  margin: 0;
+}
+
+.mdv-toc__link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--easing),
+    background-color var(--dur-fast) var(--easing);
+}
+
+.mdv-toc__link:hover,
+.mdv-toc__link:focus-visible {
+  color: var(--fg);
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+  outline: none;
+}
+
+.mdv-toc__item--1 > .mdv-toc__link {
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.mdv-toc__empty {
+  display: block;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
