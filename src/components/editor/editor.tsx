@@ -49,7 +49,7 @@ function buildTheme() {
       ".cm-scroller": {
         fontFamily: "var(--font-mono)",
         lineHeight: "var(--mdv-writing-line-height)",
-        padding: "20px 28px 80px",
+        padding: "20px 28px 80px 12px",
       },
       ".cm-content": {
         caretColor: "var(--accent)",
