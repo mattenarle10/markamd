@@ -1,5 +1,5 @@
 .mdv-prose {
-  max-width: 720px;
+  max-width: var(--mdv-reading-prose-width);
   margin: 0 auto;
   font-family: var(--mdv-prose-font-family);
   font-size: var(--mdv-prose-font-size);

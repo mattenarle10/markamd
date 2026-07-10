@@ -20,6 +20,7 @@ export const STORAGE_KEYS = {
   readingWidth: "mdview.reading.width",
   proseFontFamily: "mdview.prose.fontFamily",
   viewMode: "mdview.viewMode",
+  tocVisible: "mdview.toc.visible",
 } as const;
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];

@@ -1,4 +1,4 @@
-import { Check, Copy, FileDown, Minimize2, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
+import { Check, Copy, FileDown, List, Minimize2, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import { Button, Icon } from "@/components/primitives";
 import {
   DEFAULT_WRITING_DISPLAY,
@@ -33,6 +33,8 @@ type TitleBarProps = {
   onReadingWidthChange: (value: ReadingWidth) => void;
   onProseFontFamilyChange: (value: ProseFontFamily) => void;
   onResetWritingDisplay: () => void;
+  tocVisible?: boolean;
+  onToggleToc?: () => void;
 };
 
 export function TitleBar({
@@ -53,6 +55,8 @@ export function TitleBar({
   onReadingWidthChange,
   onProseFontFamilyChange,
   onResetWritingDisplay,
+  tocVisible = false,
+  onToggleToc,
 }: TitleBarProps) {
   const { t } = useI18n();
   const readingFontIndex = Math.max(
@@ -131,6 +135,15 @@ export function TitleBar({
             onReadingWidthChange={onReadingWidthChange}
             onProseFontFamilyChange={onProseFontFamilyChange}
             onResetWritingDisplay={onResetWritingDisplay}
+          />
+        ) : null}
+        {readingMode && onToggleToc ? (
+          <Button
+            data-tooltip={t("title.toggleToc")}
+            aria-label={t("title.toc")}
+            aria-pressed={tocVisible}
+            onClick={onToggleToc}
+            icon={<Icon icon={List} size={14} strokeWidth={1.5} />}
           />
         ) : null}
         {readingMode && onCopyMarkdown ? (
