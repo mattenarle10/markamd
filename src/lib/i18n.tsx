@@ -10,15 +10,17 @@ import ja from "@/locales/ja.json";
 import ko from "@/locales/ko.json";
 import ptBR from "@/locales/pt-BR.json";
 import zh from "@/locales/zh.json";
+import zhTW from "@/locales/zh-TW.json";
 import { STORAGE_KEYS } from "./storage";
 
-export type Language = "en" | "ja" | "zh" | "ko" | "es" | "pt-BR" | "it" | "fr" | "de";
+export type Language = "en" | "ja" | "zh" | "zh-TW" | "ko" | "es" | "pt-BR" | "it" | "fr" | "de";
 export type Translate = (key: string, vars?: Record<string, string | number>) => string;
 
 export const LANGUAGE_CHOICES: Array<{ value: Language; label: string; nativeLabel: string }> = [
   { value: "en", label: "English", nativeLabel: "English" },
   { value: "ja", label: "Japanese", nativeLabel: "日本語" },
   { value: "zh", label: "Chinese", nativeLabel: "简体中文" },
+  { value: "zh-TW", label: "Chinese (Traditional)", nativeLabel: "正體中文" },
   { value: "ko", label: "Korean", nativeLabel: "한국어" },
   { value: "es", label: "Spanish", nativeLabel: "Español" },
   { value: "pt-BR", label: "Portuguese", nativeLabel: "Português (Brasil)" },
@@ -43,6 +45,7 @@ void i18n.init({
     ko: { translation: ko },
     "pt-BR": { translation: ptBR },
     zh: { translation: zh },
+    "zh-TW": { translation: zhTW },
   },
   interpolation: {
     escapeValue: false,
