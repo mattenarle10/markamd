@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { App } from "./app";
+import { PreviewWindow } from "./components/editor";
 import { I18nProvider } from "./lib";
 import "./styles/globals.css";
 
@@ -17,10 +18,13 @@ const platformClass = /Mac|iPhone|iPad|iPod/i.test(ua)
       : "is-unknown"; // no platform-specific chrome applied — safe default
 document.documentElement.classList.add(platformClass);
 
+const params = new URLSearchParams(window.location.search);
+const Root = params.get("window") === "preview" ? PreviewWindow : App;
+
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <I18nProvider>
-      <App />
+      <Root />
     </I18nProvider>
   </React.StrictMode>,
 );

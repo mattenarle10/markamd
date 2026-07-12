@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { readFile } from "@tauri-apps/plugin-fs";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { ExternalLink } from "lucide-react";
+import { Button, Icon } from "@/components/primitives";
 import { ensureMarkdownReady, renderMarkdown, useI18n, useTheme } from "@/lib";
 import { extensionFromMarkdownAssetSrc, markdownMediaAssetForExtension } from "@/lib/media-assets";
 import inspectUrl from "@/assets/mascot/inspect.png";
@@ -21,6 +23,7 @@ import {
 type PreviewProps = {
   source: string;
   filePath?: string | null;
+  onOpenPreviewWindow?: () => void;
 };
 
 // hand-written lucide copy + check icons so we don't drag in react-dom/server
@@ -141,7 +144,7 @@ function decorateCodeBlocks(root: HTMLElement): () => void {
   return () => cleanups.forEach((fn) => fn());
 }
 
-export function Preview({ source, filePath }: PreviewProps) {
+export function Preview({ source, filePath, onOpenPreviewWindow }: PreviewProps) {
   const theme = useTheme();
   const { t } = useI18n();
   const [ready, setReady] = useState(false);
@@ -158,6 +161,11 @@ export function Preview({ source, filePath }: PreviewProps) {
     setViewer(createDiagramViewer(next));
   }, []);
   const closeDiagramViewer = useCallback(() => setViewer(null), []);
+  const handleOpenPreviewWindow = useCallback((event: ReactMouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    void onOpenPreviewWindow?.();
+  }, [onOpenPreviewWindow]);
 
   useEffect(() => {
     let cancelled = false;
@@ -170,6 +178,7 @@ export function Preview({ source, filePath }: PreviewProps) {
   }, []);
 
   const [html, setHtml] = useState("");
+  const renderedHtml = useMemo(() => ({ __html: html }), [html]);
 
   // renderMarkdown is async (lazy-loads shiki themes + langs on demand).
   // Cancelled flag guards against stale renders on rapid file/theme switches.
@@ -184,14 +193,10 @@ export function Preview({ source, filePath }: PreviewProps) {
     };
   }, [source, theme, ready, csvPreview]);
 
-  // Imperatively set innerHTML — React's dangerouslySetInnerHTML re-applies the
-  // string on each parent re-render even when the value is unchanged, which
-  // wipes mermaid's post-render DOM mutations (and shiki's decorate-codeblock
-  // wrappers). Setting innerHTML in a useEffect that only fires when `html`
-  // actually changes preserves mermaid SVGs across save / saveStatus updates.
+  // React owns the base markdown HTML; the effects below only decorate the
+  // rendered DOM with media resolution, diagram viewers, and code copy buttons.
   useEffect(() => {
     if (!articleRef.current || csvPreview) return;
-    articleRef.current.innerHTML = html;
     replaceRemoteMediaImages(articleRef.current);
     if (filePath) void resolveMarkdownMediaAssets(articleRef.current, filePath);
   }, [html, filePath, csvPreview]);
@@ -249,6 +254,17 @@ export function Preview({ source, filePath }: PreviewProps) {
   if (!csvPreview && source.trim().length === 0) {
     return (
       <div className="mdv-preview" data-theme={theme}>
+        {onOpenPreviewWindow ? (
+          <div className="mdv-preview__floating-actions">
+            <Button
+              className="mdv-preview__float-button"
+              data-tooltip={t("title.openPreviewWindowTooltip")}
+              aria-label={t("title.openPreviewWindow")}
+              onClick={handleOpenPreviewWindow}
+              icon={<Icon icon={ExternalLink} size={12} strokeWidth={1.7} />}
+            />
+          </div>
+        ) : null}
         <div className="mdv-preview__empty">
           <img
             src={inspectUrl}
@@ -269,6 +285,17 @@ export function Preview({ source, filePath }: PreviewProps) {
   return (
     <>
       <div ref={previewRef} className="mdv-preview" data-theme={theme}>
+        {onOpenPreviewWindow ? (
+          <div className="mdv-preview__floating-actions">
+            <Button
+              className="mdv-preview__float-button"
+              data-tooltip={t("title.openPreviewWindowTooltip")}
+              aria-label={t("title.openPreviewWindow")}
+              onClick={handleOpenPreviewWindow}
+              icon={<Icon icon={ExternalLink} size={12} strokeWidth={1.7} />}
+            />
+          </div>
+        ) : null}
         {csvPreview ? (
           <CsvPreview source={source} fileName={filePath ? basename(filePath) : undefined} />
         ) : (
@@ -276,6 +303,7 @@ export function Preview({ source, filePath }: PreviewProps) {
             ref={articleRef}
             className="mdv-prose"
             data-theme={theme}
+            dangerouslySetInnerHTML={renderedHtml}
           />
         )}
       </div>

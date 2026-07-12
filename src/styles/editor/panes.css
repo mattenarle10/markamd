@@ -289,10 +289,39 @@
 
 /* preview pane wrapper */
 .mdv-preview {
+  position: relative;
   height: 100%;
   overflow: auto;
   padding: 20px 28px 80px;
   user-select: text;
+}
+
+.mdv-preview__floating-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.mdv-preview__float-button.mdv-btn {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 76%, transparent);
+  color: var(--muted);
+  opacity: 0.72;
+  pointer-events: auto;
+  backdrop-filter: blur(8px);
+}
+
+.mdv-preview__float-button.mdv-btn:focus-visible,
+.mdv-preview__float-button.mdv-btn:hover {
+  background: var(--bg);
+  color: var(--fg);
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+  opacity: 1;
 }
 
 /* scrollbars — CSS standard (Firefox) */

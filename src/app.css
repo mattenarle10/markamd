@@ -45,6 +45,23 @@
 .mdv-app > .mdv-shell { grid-row: 3; }
 .mdv-app > .mdv-statusbar { grid-row: 4; }
 
+.mdv-preview-window {
+  --mdv-prose-font-family: var(--font-ui);
+  --mdv-prose-font-size: 15px;
+  --mdv-prose-line-height: 1.65;
+  --mdv-reading-content-width: 880px;
+  --mdv-reading-prose-width: 720px;
+  height: 100vh;
+  width: 100vw;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.mdv-preview-window > .mdv-preview {
+  height: 100%;
+  padding: 42px max(36px, calc((100% - var(--mdv-reading-content-width, 880px)) / 2)) 72px;
+}
+
 /* titlebar hidden mode */
 .mdv-app.has-hidden-titlebar {
   grid-template-rows: 0 var(--breadcrumb-h) 1fr var(--statusbar-h);

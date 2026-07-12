@@ -21,8 +21,9 @@ import {
   useUpdateFlow,
 } from "@/hooks";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { getVersion } from "@tauri-apps/api/app";
-import { listen } from "@tauri-apps/api/event";
+import { emitTo, listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import {
@@ -427,6 +428,73 @@ export function App() {
   }, [readingMode]);
 
   const copyMarkdown = useCallback(() => copyMarkdownCore(source), [copyMarkdownCore, source]);
+  const previewWindowTitle = useMemo(() => activePath ? basename(activePath) : "untitled", [activePath]);
+  const sendPreviewWindowState = useCallback(async () => {
+    await emitTo("preview", "marka:preview-state", {
+      source,
+      filePath: activePath,
+      title: previewWindowTitle,
+    });
+  }, [activePath, previewWindowTitle, source]);
+
+  const openPreviewWindow = useCallback(async () => {
+    try {
+      const existing = await WebviewWindow.getByLabel("preview");
+      if (existing) {
+        await existing.show();
+        await existing.unminimize();
+        await existing.setFocus();
+        await sendPreviewWindowState();
+        return;
+      }
+
+      const preview = new WebviewWindow("preview", {
+        url: "index.html?window=preview",
+        title: `${previewWindowTitle} - preview`,
+        width: 900,
+        height: 720,
+        minWidth: 520,
+        minHeight: 360,
+        decorations: true,
+        focus: true,
+      });
+
+      await new Promise<void>((resolve, reject) => {
+        let settled = false;
+        const unlisten: Array<() => void> = [];
+        const settle = (next: () => void) => {
+          if (settled) return;
+          settled = true;
+          unlisten.forEach((fn) => fn());
+          next();
+        };
+
+        void preview.once("tauri://created", () => settle(resolve)).then((fn) => unlisten.push(fn));
+        void preview.once<unknown>("tauri://error", (event) => {
+          settle(() => reject(event.payload));
+        }).then((fn) => unlisten.push(fn));
+      });
+    } catch (err) {
+      console.warn("marka.md: preview window failed", err);
+      showSaveAsToast(t("title.openPreviewWindowFailed"));
+    }
+  }, [previewWindowTitle, sendPreviewWindowState, showSaveAsToast, t]);
+
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    void listen("marka:preview-ready", () => {
+      void sendPreviewWindowState().catch(() => undefined);
+    }).then((fn) => {
+      unlisten = fn;
+    });
+    return () => {
+      unlisten?.();
+    };
+  }, [sendPreviewWindowState]);
+
+  useEffect(() => {
+    void sendPreviewWindowState().catch(() => undefined);
+  }, [sendPreviewWindowState]);
 
   const toggleStagedPath = useCallback((path: string) => {
     setStagedPaths((prev) =>
@@ -971,7 +1039,7 @@ export function App() {
       <main className="mdv-shell">
         {readingMode ? (
           <>
-            <Preview source={debouncedPreview} filePath={activePath} />
+            <Preview source={debouncedPreview} filePath={activePath} onOpenPreviewWindow={openPreviewWindow} />
             <TocPanel
               open={tocVisible}
               scope={proseEl}
@@ -1031,7 +1099,7 @@ export function App() {
               ) : (
                 <Splitter
                   left={<Editor value={source} onChange={setSource} vimOn={vimOn} onVimMode={setVimMode} viewRef={editorViewRef} />}
-                  right={<Preview source={debouncedPreview} filePath={activePath} />}
+                  right={<Preview source={debouncedPreview} filePath={activePath} onOpenPreviewWindow={openPreviewWindow} />}
                 />
               )}
             </div>
