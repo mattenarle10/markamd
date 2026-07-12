@@ -55,7 +55,7 @@ function getGroups(t: Translate): Group[] {
     ],
   },
   {
-    title: t("help.view"),
+    title: t("help.workspace"),
     rows: [
       { keys: "⌘+K", label: t("help.openPalette") },
       { keys: "⌘+B", label: t("help.showHideSidebar") },
@@ -68,6 +68,7 @@ function getGroups(t: Translate): Group[] {
   {
     title: t("help.edit"),
     rows: [
+      { keys: "⌘+K", label: t("help.insertMarkdown") },
       { keys: "⌘+F", label: t("help.findReplace") },
       { keys: "⌘+G", label: t("help.findNext") },
     ],

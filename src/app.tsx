@@ -37,6 +37,7 @@ import {
   getContextBundleStats,
   getWhatsNewToastMessage,
   isSupportedTextPath,
+  markdownInsertion,
   normalizeProseFontFamily,
   normalizeReadingFontSize,
   normalizeReadingWidth,
@@ -50,6 +51,7 @@ import {
   removeEntry,
   STORAGE_KEYS,
   useI18n,
+  type MarkdownInsertion,
   type ProseFontFamily,
   type ReadingFontSize,
   type ReadingWidth,
@@ -509,6 +511,28 @@ export function App() {
   }, []);
 
   const editorViewRef = useRef<EditorView | null>(null);
+  const insertMarkdown = useCallback((kind: MarkdownInsertion) => {
+    const view = editorViewRef.current;
+    if (!view) {
+      const insertion = markdownInsertion(kind);
+      const prefix = source.length > 0 && !source.endsWith("\n") ? "\n\n" : "";
+      setSource(`${source}${prefix}${insertion.text}`);
+      return;
+    }
+
+    const { from, to } = view.state.selection.main;
+    const selected = view.state.sliceDoc(from, to);
+    const insertion = markdownInsertion(kind, selected);
+    view.dispatch({
+      changes: { from, to, insert: insertion.text },
+      selection: {
+        anchor: from + insertion.selectionFrom,
+        head: from + insertion.selectionTo,
+      },
+      scrollIntoView: true,
+    });
+    view.focus();
+  }, [setSource, source]);
 
   // proportional editor <-> preview scroll sync; rebinds when active file changes
   useSyncScroll({ rebindKey: activePath ?? "untitled" });
@@ -871,6 +895,7 @@ export function App() {
         copyContextBundle,
         clearContextBundle,
         exportToPdf,
+        insertMarkdown,
         toggleFullscreen,
         openRecent: (path: string) => void loadFile(path),
         recentFiles,
@@ -902,6 +927,7 @@ export function App() {
       handleUndoFileOp,
       handleManualUpdateCheck,
       exportToPdf,
+      insertMarkdown,
       toggleFullscreen,
       handleToggleSidebar,
       loadFile,

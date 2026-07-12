@@ -27,6 +27,7 @@ function commandActions(
     copyContextBundle: noop,
     clearContextBundle: noop,
     exportToPdf: noop,
+    insertMarkdown: noop,
     toggleFullscreen: noop,
     openRecent: noop,
     recentFiles: [],
@@ -55,4 +56,23 @@ test("labels the outline command from its current visibility", () => {
 
   expect(shown.find((command) => command.id === "toggle-toc")?.label).toBe("command.hideToc");
   expect(hidden.find((command) => command.id === "toggle-toc")?.label).toBe("command.showToc");
+});
+
+test("includes markdown insertion commands", () => {
+  const commands = buildCommands(commandActions());
+  const ids = commands.map((command) => command.id);
+
+  expect(ids).toContain("insert-table-2x2");
+  expect(ids).toContain("insert-table-3x3");
+  expect(ids).toContain("insert-unordered-list");
+  expect(ids).toContain("insert-ordered-list");
+  expect(ids).toContain("insert-code-block");
+});
+
+test("groups layout commands under workspace instead of view", () => {
+  const commands = buildCommands(commandActions());
+
+  expect(commands.some((command) => String(command.category) === "view")).toBe(false);
+  expect(commands.find((command) => command.id === "toggle-reading")?.category).toBe("workspace");
+  expect(commands.find((command) => command.id === "toggle-sidebar")?.category).toBe("workspace");
 });

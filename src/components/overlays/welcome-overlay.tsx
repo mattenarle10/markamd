@@ -44,7 +44,7 @@ const SLIDES: Slide[] = [
     title: "write with live preview",
     body: (
       <>
-        type on the left, preview on the right. markdown, code, mermaid, plantuml, tasks, csv, video, and audio previews all stay close to the draft.
+        type on the left, preview on the right. use <Shortcut keys="⌘+K" /> to insert tables, lists, and code blocks without leaving the keyboard.
       </>
     ),
   },
@@ -71,7 +71,7 @@ const SLIDES: Slide[] = [
     title: "make it yours",
     body: (
       <>
-        use <Shortcut keys="⌘+K" /> for commands, themes, language, updates, help, and the demo doc. happy writing.
+        use <Shortcut keys="⌘+K" /> for files, workspace actions, markdown inserts, themes, updates, help, and the demo doc. happy writing.
       </>
     ),
   },
