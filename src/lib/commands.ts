@@ -3,6 +3,7 @@ import {
   BookOpen,
   Circle,
   CircleHelp,
+  Code2,
   Copy,
   FilePlus2,
   FileDown,
@@ -14,6 +15,8 @@ import {
   Info,
   Leaf,
   List,
+  ListOrdered,
+  Table2,
   Undo2,
   Maximize2,
   Minimize2,
@@ -29,7 +32,7 @@ import { basename, dirname } from "./files";
 import { setThemeMode, setTransparency, THEME_CHOICES, THEME_HINTS, type ThemeMode } from "./theme";
 import type { Translate } from "./i18n";
 
-export type CommandCategory = "recent" | "file" | "view" | "edit" | "share" | "theme" | "help";
+export type CommandCategory = "recent" | "file" | "workspace" | "edit" | "share" | "theme" | "help";
 
 export type Command = {
   id: string;
@@ -61,6 +64,7 @@ export type CommandActions = {
   copyContextBundle: () => void | Promise<void>;
   clearContextBundle: () => void;
   exportToPdf: () => void;
+  insertMarkdown: (kind: "table-2x2" | "table-3x3" | "unordered-list" | "ordered-list" | "code-block") => void;
   toggleFullscreen: () => void | Promise<void>;
   openRecent: (path: string) => void;
   recentFiles: readonly string[];
@@ -102,7 +106,7 @@ const THEME_COMMANDS: Array<{ mode: ThemeMode; label: string; hint: string; icon
 export const CATEGORY_ORDER: CommandCategory[] = [
   "recent",
   "file",
-  "view",
+  "workspace",
   "edit",
   "share",
   "theme",
@@ -136,7 +140,7 @@ export function buildCommands(actions: CommandActions, t: Translate = defaultT):
         label: actions.tocVisible ? t("command.hideToc") : t("command.showToc"),
         hint: t("command.tocHint"),
         icon: List,
-        category: "view",
+        category: "workspace",
         keywords: ["toc", "outline", "headings", "contents"],
         action: actions.toggleToc,
       }]
@@ -200,7 +204,7 @@ export function buildCommands(actions: CommandActions, t: Translate = defaultT):
       hint: t("command.sidebarHint"),
       shortcut: "⌘B",
       icon: actions.sidebarOpen ? PanelLeftClose : PanelLeftOpen,
-      category: "view",
+      category: "workspace",
       keywords: ["sidebar", "explorer", "tree", "files"],
       action: actions.toggleSidebar,
     },
@@ -212,7 +216,7 @@ export function buildCommands(actions: CommandActions, t: Translate = defaultT):
         : t("command.readingHint"),
       shortcut: "⌘.",
       icon: actions.readingMode ? Minimize2 : BookOpen,
-      category: "view",
+      category: "workspace",
       keywords: ["reading", "preview", "proof", "focus"],
       action: actions.toggleReading,
     },
@@ -224,9 +228,54 @@ export function buildCommands(actions: CommandActions, t: Translate = defaultT):
         : t("command.editorOnlyHint"),
       shortcut: "⌘⇧.",
       icon: actions.editorOnly ? Minimize2 : FileText,
-      category: "view",
+      category: "workspace",
       keywords: ["editor", "writing", "focus", "hide preview"],
       action: actions.toggleEditorOnly,
+    },
+    {
+      id: "insert-table-2x2",
+      label: t("command.insertTable2x2"),
+      hint: t("command.insertTable2x2Hint"),
+      icon: Table2,
+      category: "edit",
+      keywords: ["insert", "table", "grid", "markdown", "rows", "columns"],
+      action: () => actions.insertMarkdown("table-2x2"),
+    },
+    {
+      id: "insert-table-3x3",
+      label: t("command.insertTable3x3"),
+      hint: t("command.insertTable3x3Hint"),
+      icon: Table2,
+      category: "edit",
+      keywords: ["insert", "table", "grid", "markdown", "rows", "columns"],
+      action: () => actions.insertMarkdown("table-3x3"),
+    },
+    {
+      id: "insert-unordered-list",
+      label: t("command.insertUnorderedList"),
+      hint: t("command.insertUnorderedListHint"),
+      icon: List,
+      category: "edit",
+      keywords: ["insert", "list", "bullet", "bullets", "unordered", "markdown"],
+      action: () => actions.insertMarkdown("unordered-list"),
+    },
+    {
+      id: "insert-ordered-list",
+      label: t("command.insertOrderedList"),
+      hint: t("command.insertOrderedListHint"),
+      icon: ListOrdered,
+      category: "edit",
+      keywords: ["insert", "list", "numbered", "numbers", "ordered", "markdown"],
+      action: () => actions.insertMarkdown("ordered-list"),
+    },
+    {
+      id: "insert-code-block",
+      label: t("command.insertCodeBlock"),
+      hint: t("command.insertCodeBlockHint"),
+      icon: Code2,
+      category: "edit",
+      keywords: ["insert", "code", "fence", "block", "markdown", "highlight"],
+      action: () => actions.insertMarkdown("code-block"),
     },
     ...tocCommands,
     {
@@ -235,7 +284,7 @@ export function buildCommands(actions: CommandActions, t: Translate = defaultT):
       hint: t("command.fullscreenHint"),
       shortcut: "⌃⌘F",
       icon: Maximize2,
-      category: "view",
+      category: "workspace",
       keywords: ["fullscreen", "window", "native"],
       action: actions.toggleFullscreen,
     },
