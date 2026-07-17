@@ -79,6 +79,7 @@ export {
   pickMarkdownFile,
   pickSaveMarkdown,
   listFolder,
+  directoryFingerprint,
   walkMarkdownFiles,
   walkSupportedTextFiles,
   readMarkdown,
