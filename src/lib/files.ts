@@ -86,10 +86,6 @@ export async function listFolder(path: string): Promise<FileEntry[]> {
     });
 }
 
-export function directoryFingerprint(entries: readonly FileEntry[]): string {
-  return entries.map((entry) => `${entry.isDir ? "dir" : "file"}:${entry.path}`).join("\0");
-}
-
 export type FlatFileEntry = {
   name: string;
   path: string;

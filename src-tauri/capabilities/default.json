@@ -53,6 +53,10 @@
       "allow": [{ "path": "**" }]
     },
     {
+      "identifier": "fs:allow-watch",
+      "allow": [{ "path": "**" }]
+    },
+    {
       "identifier": "fs:allow-write-text-file",
       "allow": [{ "path": "**" }]
     },

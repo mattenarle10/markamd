@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { listFolder, type FileEntry } from "@/lib";
-import { useDirectoryWatcher } from "@/hooks";
 import sadUrl from "@/assets/mascot/sad.png";
 import { EditableRow } from "./editable-row";
 import { FileNode, FolderNode } from "./folder-node";
@@ -66,8 +65,6 @@ export function FileTree({
       cancelled = true;
     };
   }, [rootPath, treeVersion]);
-
-  useDirectoryWatcher(rootPath, setEntries);
 
   if (error) {
     return (

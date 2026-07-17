@@ -10,6 +10,7 @@ import {
   useDebouncedValue,
   useFileOps,
   useFileSession,
+  useFolderWatcher,
   type LoadError,
   useNotifications,
   useOverlays,
@@ -269,6 +270,7 @@ export function App() {
     startNewBuffer,
     onError: setLoadError,
   });
+  useFolderWatcher(folders, bumpTree);
 
   const {
     paletteOpen,
