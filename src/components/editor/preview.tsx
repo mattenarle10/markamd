@@ -3,7 +3,7 @@ import { readFile } from "@tauri-apps/plugin-fs";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { ExternalLink } from "lucide-react";
 import { Button, Icon } from "@/components/primitives";
-import { ensureMarkdownReady, renderMarkdown, useI18n, useTheme } from "@/lib";
+import { renderMarkdown, useI18n, useTheme } from "@/lib";
 import { extensionFromMarkdownAssetSrc, markdownMediaAssetForExtension } from "@/lib/media-assets";
 import inspectUrl from "@/assets/mascot/inspect.png";
 import { renderMermaidBlocks } from "@/lib/mermaid";
@@ -147,7 +147,6 @@ function decorateCodeBlocks(root: HTMLElement): () => void {
 export function Preview({ source, filePath, onOpenPreviewWindow }: PreviewProps) {
   const theme = useTheme();
   const { t } = useI18n();
-  const [ready, setReady] = useState(false);
   const [viewer, setViewer] = useState<DiagramViewer | null>(null);
   const articleRef = useRef<HTMLElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -167,23 +166,13 @@ export function Preview({ source, filePath, onOpenPreviewWindow }: PreviewProps)
     void onOpenPreviewWindow?.();
   }, [onOpenPreviewWindow]);
 
-  useEffect(() => {
-    let cancelled = false;
-    void ensureMarkdownReady().then(() => {
-      if (!cancelled) setReady(true);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   const [html, setHtml] = useState("");
   const renderedHtml = useMemo(() => ({ __html: html }), [html]);
 
-  // renderMarkdown is async (lazy-loads shiki themes + langs on demand).
+  // renderMarkdown lazy-loads shiki only when the document contains code.
   // Cancelled flag guards against stale renders on rapid file/theme switches.
   useEffect(() => {
-    if (!ready || csvPreview) return;
+    if (csvPreview) return;
     let cancelled = false;
     void renderMarkdown(source, theme).then((h) => {
       if (!cancelled) setHtml(h);
@@ -191,7 +180,7 @@ export function Preview({ source, filePath, onOpenPreviewWindow }: PreviewProps)
     return () => {
       cancelled = true;
     };
-  }, [source, theme, ready, csvPreview]);
+  }, [source, theme, csvPreview]);
 
   // React owns the base markdown HTML; the effects below only decorate the
   // rendered DOM with media resolution, diagram viewers, and code copy buttons.

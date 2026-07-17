@@ -1,7 +1,7 @@
 import MarkdownIt from "markdown-it";
 import mark from "markdown-it-mark";
 import taskLists from "markdown-it-task-lists";
-import { createHighlighter, type Highlighter } from "shiki";
+import type { Highlighter } from "shiki";
 import { plantUmlUrl } from "./plantuml";
 import type { Theme } from "./theme";
 
@@ -60,7 +60,8 @@ let activeShikiTheme: string = THEMES.latte;
 
 function getHighlighter(): Promise<Highlighter> {
   if (!highlighterPromise) {
-    highlighterPromise = createHighlighter({ themes: [], langs: [] })
+    highlighterPromise = import("shiki")
+      .then(({ createHighlighter }) => createHighlighter({ themes: [], langs: [] }))
       .then((h) => {
         highlighter = h;
         return h;
@@ -165,14 +166,18 @@ md.renderer.rules.heading_open = (tokens, idx, options, _env, self) => {
 };
 
 export async function ensureMarkdownReady(): Promise<void> {
+  // Kept for callers that explicitly want to warm the renderer.
   await getHighlighter();
 }
 
 export async function renderMarkdown(src: string, theme: Theme): Promise<string> {
-  const h = await getHighlighter();
-  const shikiTheme = THEMES[theme];
-  await ensureThemeLoaded(h, shikiTheme);
-  await ensureLangsLoaded(h, extractLangs(src));
-  activeShikiTheme = shikiTheme;
+  const langs = extractLangs(src);
+  if (langs.length > 0) {
+    const h = await getHighlighter();
+    const shikiTheme = THEMES[theme];
+    await ensureThemeLoaded(h, shikiTheme);
+    await ensureLangsLoaded(h, langs);
+    activeShikiTheme = shikiTheme;
+  }
   return md.render(src);
 }

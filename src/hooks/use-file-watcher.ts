@@ -1,68 +1,44 @@
 import { useEffect } from "react";
-import { stat } from "@tauri-apps/plugin-fs";
+import { watch, type UnwatchFn, type WatchEvent } from "@tauri-apps/plugin-fs";
+
+export function isFileContentChangeEvent(event: WatchEvent): boolean {
+  if (event.type === "any") return true;
+  if (typeof event.type === "string") return false;
+  if ("create" in event.type || "remove" in event.type) return true;
+  if ("modify" in event.type) {
+    return event.type.modify.kind === "any" || event.type.modify.kind === "data";
+  }
+  return false;
+}
 
 /**
- * Polls mtime every 2s. Pauses on blur, resumes on focus.
- * Picked over tauri-plugin-fs-watch: md files are cheap, no new rust deps.
+ * Watches the active file through Tauri's native filesystem watcher.
  */
 export function useFileWatcher(path: string | null, onChange: () => void): void {
   useEffect(() => {
     if (!path) return;
-    let lastMtime: number | null = null;
-    let active = true;
-    let intervalId: number | null = null;
+    let disposed = false;
+    let unwatch: UnwatchFn | null = null;
 
-    const check = async () => {
-      if (!active) return;
-      try {
-        const meta = await stat(path);
-        const m = meta.mtime ? new Date(meta.mtime).getTime() : null;
-        // first read seeds lastMtime without firing onChange — only later ticks
-        // count as "external changes".
-        if (lastMtime !== null && m !== null && m !== lastMtime) {
-          onChange();
-        }
-        lastMtime = m;
-      } catch {
-        // file deleted / unreadable — stop polling cleanly, no error spam
-        active = false;
-        if (intervalId !== null) {
-          window.clearInterval(intervalId);
-          intervalId = null;
-        }
-      }
-    };
-
-    const startInterval = () => {
-      if (intervalId === null) {
-        intervalId = window.setInterval(check, 2000);
-      }
-    };
-    const stopInterval = () => {
-      if (intervalId !== null) {
-        window.clearInterval(intervalId);
-        intervalId = null;
-      }
-    };
-
-    const onFocus = () => {
-      startInterval();
-      void check();
-    };
-    const onBlur = () => {
-      stopInterval();
-    };
-
-    void check(); // seed lastMtime
-    startInterval();
-    window.addEventListener("focus", onFocus);
-    window.addEventListener("blur", onBlur);
+    void watch(
+      path,
+      (event) => {
+        if (isFileContentChangeEvent(event)) onChange();
+      },
+      { delayMs: 350 },
+    )
+      .then((stop) => {
+        if (disposed) stop();
+        else unwatch = stop;
+      })
+      .catch((error) => {
+        console.warn(`marka.md: failed to watch file ${path}`, error);
+      });
 
     return () => {
-      active = false;
-      stopInterval();
-      window.removeEventListener("focus", onFocus);
-      window.removeEventListener("blur", onBlur);
+      disposed = true;
+      unwatch?.();
+      unwatch = null;
     };
   }, [path, onChange]);
 }
