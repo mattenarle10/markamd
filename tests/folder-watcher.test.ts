@@ -1,5 +1,14 @@
 import { expect, test } from "bun:test";
-import { isDirectoryChangeEvent } from "../src/hooks/use-folder-watcher";
+import {
+  isDirectoryChangeEvent,
+  watchableFolderPaths,
+} from "../src/hooks/use-folder-watcher";
+
+test("does not recursively watch filesystem roots", () => {
+  expect(watchableFolderPaths(["V:\\", "V:\\notes", "V:\\notes", "/"])).toEqual([
+    "V:\\notes",
+  ]);
+});
 
 test("refreshes the tree for folder creation, removal, and rename events", () => {
   expect(isDirectoryChangeEvent({ type: { create: { kind: "folder" } }, paths: [], attrs: null })).toBe(true);

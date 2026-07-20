@@ -1,7 +1,14 @@
 import { useEffect, useRef } from "react";
 import { watch, type UnwatchFn, type WatchEvent } from "@tauri-apps/plugin-fs";
+import { isFilesystemRoot } from "@/lib/storage";
 
 const WATCH_DEBOUNCE_MS = 350;
+
+export function watchableFolderPaths(paths: readonly string[]): string[] {
+  return Array.from(new Set(
+    paths.filter((path) => path.length > 0 && !isFilesystemRoot(path)),
+  ));
+}
 
 export function isDirectoryChangeEvent(event: WatchEvent): boolean {
   if (event.type === "any") return true;
@@ -25,7 +32,7 @@ export function useFolderWatcher(paths: readonly string[], onChange: () => void)
   useEffect(() => {
     let disposed = false;
     const unwatchers = new Set<UnwatchFn>();
-    const uniquePaths = Array.from(new Set(paths.filter(Boolean)));
+    const uniquePaths = watchableFolderPaths(paths);
 
     const start = async () => {
       for (const path of uniquePaths) {

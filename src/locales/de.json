@@ -9,6 +9,7 @@
   "app.openFile": "Datei öffnen",
   "app.openFileShortcut": "Datei öffnen (⌘O)",
   "app.openFolder": "Ordner öffnen",
+  "app.folderRootUnsupported": "Wähle einen Unterordner; Dateisystem-Stammverzeichnisse können nicht geöffnet werden",
   "app.openFolderShortcut": "Ordner öffnen (⌘⇧O)",
   "app.close": "schließen",
   "app.closeEsc": "schließen (esc)",

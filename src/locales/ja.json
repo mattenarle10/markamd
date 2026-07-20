@@ -9,6 +9,7 @@
   "app.openFile": "ファイルを開く",
   "app.openFileShortcut": "ファイルを開く (⌘O)",
   "app.openFolder": "フォルダを開く",
+  "app.folderRootUnsupported": "サブフォルダを選択してください。ファイルシステムのルートは開けません",
   "app.openFolderShortcut": "フォルダを開く (⌘⇧O)",
   "app.close": "閉じる",
   "app.closeEsc": "閉じる (esc)",

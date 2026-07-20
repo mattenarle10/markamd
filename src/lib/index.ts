@@ -21,7 +21,12 @@ export {
   type ThemeGroup,
   type ThemeMode,
 } from "./theme";
-export { STORAGE_KEYS, type StorageKey } from "./storage";
+export {
+  clearUnsafeFolderRestoreState,
+  isFilesystemRoot,
+  STORAGE_KEYS,
+  type StorageKey,
+} from "./storage";
 export {
   I18nProvider,
   LANGUAGE_CHOICES,

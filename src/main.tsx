@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { App } from "./app";
 import { PreviewWindow } from "./components/editor";
-import { I18nProvider } from "./lib";
+import { clearUnsafeFolderRestoreState, I18nProvider } from "./lib";
 import "./styles/globals.css";
 
 // platform class on <html> — lets CSS gate macOS-only chrome (traffic-light
@@ -17,6 +17,10 @@ const platformClass = /Mac|iPhone|iPad|iPod/i.test(ua)
       ? "is-linux"
       : "is-unknown"; // no platform-specific chrome applied — safe default
 document.documentElement.classList.add(platformClass);
+
+// Run before any persisted-state hooks mount. A drive root in either folder
+// key otherwise falls back through the other key and starts a recursive watch.
+clearUnsafeFolderRestoreState(window.localStorage);
 
 const params = new URLSearchParams(window.location.search);
 const Root = params.get("window") === "preview" ? PreviewWindow : App;

@@ -38,6 +38,7 @@ import {
   getWritingDisplayVars,
   getContextBundleStats,
   getWhatsNewToastMessage,
+  isFilesystemRoot,
   isSupportedTextPath,
   markdownInsertion,
   normalizeProseFontFamily,
@@ -628,9 +629,13 @@ export function App() {
   const handleOpenFolder = useCallback(async () => {
     const folder = await pickFolder();
     if (!folder) return;
+    if (isFilesystemRoot(folder)) {
+      setLoadError({ message: t("app.folderRootUnsupported") });
+      return;
+    }
     setFolders((prev) => (prev.includes(folder) ? prev : [...prev, folder]));
     setSidebarOpen(true);
-  }, [setFolders, setSidebarOpen]);
+  }, [setFolders, setLoadError, setSidebarOpen, t]);
 
   const handleOpenFile = useCallback(async () => {
     const file = await pickMarkdownFile();

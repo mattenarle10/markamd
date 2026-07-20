@@ -9,6 +9,7 @@
   "app.openFile": "打开文件",
   "app.openFileShortcut": "打开文件 (⌘O)",
   "app.openFolder": "打开文件夹",
+  "app.folderRootUnsupported": "请选择一个子文件夹，不能直接打开文件系统根目录",
   "app.openFolderShortcut": "打开文件夹 (⌘⇧O)",
   "app.close": "关闭",
   "app.closeEsc": "关闭 (esc)",

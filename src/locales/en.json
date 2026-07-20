@@ -9,6 +9,7 @@
   "app.openFile": "open file",
   "app.openFileShortcut": "open file (⌘O)",
   "app.openFolder": "open folder",
+  "app.folderRootUnsupported": "choose a subfolder; filesystem roots cannot be opened",
   "app.openFolderShortcut": "open folder (⌘⇧O)",
   "app.close": "close",
   "app.closeEsc": "close (esc)",
