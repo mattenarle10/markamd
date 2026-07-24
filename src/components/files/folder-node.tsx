@@ -195,6 +195,7 @@ export function FileNode({
         onClick={handleClick}
         onContextMenu={onCtx}
         onDragStart={onDragStart}
+        data-mdv-tree-path={entry.path}
         title={entry.path}
       >
         <span className="mdv-tree__icon">

@@ -3,7 +3,7 @@ import type { EditorView } from "@codemirror/view";
 import { Breadcrumb, StatusBar, TitleBar, type VimMode } from "@/components/chrome";
 import { Editor, OpenTabs, Preview, ReadingFind, Splitter, TocPanel } from "@/components/editor";
 import { ContextMenu, Sidebar, type ContextMenuItem } from "@/components/files";
-import { AboutOverlay, CommandPalette, DropOverlay, HelpOverlay, Toast, WelcomeOverlay } from "@/components/overlays";
+import { AboutOverlay, CommandPalette, DropOverlay, FilePreviewOverlay, HelpOverlay, Toast, WelcomeOverlay } from "@/components/overlays";
 import { TooltipRoot } from "@/components/primitives";
 import {
   useContextMenu,
@@ -155,15 +155,55 @@ export function App() {
     });
   }, []);
 
-  const handleOpenFileRequest = useCallback(async (request: OpenFileRequest) => {
-    if (typeof request === "string") {
-      if (request.length > 0) await loadFile(request);
-      return;
-    }
-    if (request?.path) {
-      await loadFile(request.path, { waitMarker: request.waitMarker });
-    }
-  }, [loadFile]);
+  const [previewPath, setPreviewPath] = useState<string | null>(null);
+  const openPreview = useCallback((path: string) => setPreviewPath(path), []);
+  const closePreview = useCallback(() => setPreviewPath(null), []);
+
+  // .md/.csv open in the editor; every other file opens the quick-preview overlay.
+  const handleSelectFile = useCallback(
+    (path: string) => {
+      if (isSupportedTextPath(path)) {
+        void loadFile(path);
+      } else {
+        openPreview(path);
+      }
+    },
+    [loadFile, openPreview],
+  );
+
+  // Space previews the focused sidebar file (Finder Quick Look style).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== " " || e.metaKey || e.ctrlKey || e.altKey) return;
+      const row = (document.activeElement as HTMLElement | null)?.closest(
+        "[data-mdv-tree-path]",
+      ) as HTMLElement | null;
+      const p = row?.dataset.mdvTreePath;
+      // let Space activate the row (open in editor) for editable files; preview otherwise.
+      if (!p || isSupportedTextPath(p)) return;
+      e.preventDefault();
+      openPreview(p);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [openPreview]);
+
+  const handleOpenFileRequest = useCallback(
+    async (request: OpenFileRequest) => {
+      const reqPath = typeof request === "string" ? request : request?.path;
+      if (!reqPath) return;
+      if (isSupportedTextPath(reqPath)) {
+        const waitMarker = typeof request === "string" ? null : request.waitMarker ?? null;
+        await loadFile(reqPath, waitMarker ? { waitMarker } : {});
+      } else {
+        // preview isn't an editing session — release any --wait client at once.
+        openPreview(reqPath);
+        const waitMarker = typeof request === "string" ? null : request.waitMarker ?? null;
+        if (waitMarker) completeWaitSessions([waitMarker]);
+      }
+    },
+    [loadFile, openPreview, completeWaitSessions],
+  );
 
   useEffect(() => {
     waitMarkersRef.current = tabs.flatMap((tab) => tab.waitMarkers);
@@ -657,27 +697,33 @@ export function App() {
   const contextItems = useMemo<ContextMenuItem[]>(() => {
     if (!contextMenu) return [];
     const { path, isDir } = contextMenu;
-    const items: ContextMenuItem[] = [
-      {
-        label: t("menu.rename"),
-        onSelect: () => setEditingPath(path),
+    const items: ContextMenuItem[] = [];
+    if (!isDir && !isSupportedTextPath(path)) {
+      items.push({
+        label: t("menu.quickPreview"),
+        onSelect: () => openPreview(path),
+      });
+      items.push("divider");
+    }
+    items.push({
+      label: t("menu.rename"),
+      onSelect: () => setEditingPath(path),
+    });
+    items.push("divider");
+    items.push({
+      label: t("menu.copyPath"),
+      onSelect: () => {
+        void navigator.clipboard.writeText(path);
+        showSaveAsToast(t("menu.pathCopied"));
       },
-      "divider",
-      {
-        label: t("menu.copyPath"),
-        onSelect: () => {
-          void navigator.clipboard.writeText(path);
-          showSaveAsToast(t("menu.pathCopied"));
-        },
+    });
+    items.push({
+      label: t("menu.copyRelativePath"),
+      onSelect: () => {
+        void navigator.clipboard.writeText(relativePath(path, rootPath));
+        showSaveAsToast(t("menu.pathCopied"));
       },
-      {
-        label: t("menu.copyRelativePath"),
-        onSelect: () => {
-          void navigator.clipboard.writeText(relativePath(path, rootPath));
-          showSaveAsToast(t("menu.pathCopied"));
-        },
-      },
-    ];
+    });
     items.push("divider");
     items.push({
       label: t("menu.revealExplorer"),
@@ -729,7 +775,7 @@ export function App() {
       },
     });
     return items;
-  }, [contextMenu, activePath, setActivePath, bumpTree, t]);
+  }, [contextMenu, activePath, setActivePath, bumpTree, openPreview, t]);
 
   // OS "Open With → marka.md" and CLI launches — Rust emits marka:open-file.
   useEffect(() => {
@@ -1097,7 +1143,7 @@ export function App() {
               onWidthChange={setSidebarWidth}
               onAddFolder={handleOpenFolder}
               onCloseFolder={handleCloseFolder}
-              onSelectFile={(path) => void loadFile(path)}
+              onSelectFile={handleSelectFile}
               onMove={handleMove}
               onContextMenu={handleContextMenu}
               stagedPaths={stagedPaths}
@@ -1280,6 +1326,15 @@ export function App() {
       />
 
       <DropOverlay active={dragActive} />
+
+      <FilePreviewOverlay
+        path={previewPath}
+        onClose={closePreview}
+        onOpenAsText={(p) => {
+          closePreview();
+          void loadPlainTextFile(p);
+        }}
+      />
       <TooltipRoot />
 
       <ContextMenu
