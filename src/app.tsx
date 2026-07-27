@@ -6,6 +6,7 @@ import { ContextMenu, Sidebar, type ContextMenuItem } from "@/components/files";
 import { AboutOverlay, CommandPalette, DropOverlay, HelpOverlay, Toast, WelcomeOverlay } from "@/components/overlays";
 import { TooltipRoot } from "@/components/primitives";
 import {
+  useAppZoom,
   useContextMenu,
   useDebouncedValue,
   useFileOps,
@@ -393,6 +394,8 @@ export function App() {
   const toggleEditorOnly = useCallback(() => {
     setViewMode((current) => (current === "editor" ? "split" : "editor"));
   }, [setViewMode]);
+
+  useAppZoom();
 
   // Plain-text fallback files cannot render in preview, so they temporarily force editor-only
   // without changing the user's persisted default view mode.

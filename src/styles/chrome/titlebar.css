@@ -11,7 +11,10 @@
   user-select: none;
 }
 html.is-mac .mdv-titlebar {
-  padding: 0 12px 0 84px;
+  /* clears the native traffic-light buttons, which sit at fixed PHYSICAL
+     size — counter-scale by the app zoom level (set by use-app-zoom) so the
+     inset stays aligned with them at any zoom */
+  padding: 0 12px 0 calc(84px / var(--mdv-zoom, 1));
 }
 
 .mdv-titlebar__sep-v {

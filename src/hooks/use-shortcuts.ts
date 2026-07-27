@@ -6,20 +6,23 @@ const IS_MAC =
   typeof navigator !== "undefined" && /Mac|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 // Maps a literal shifted-symbol char in a shortcut (e.g. "." in "mod+shift+.")
-// to its physical KeyboardEvent.code. Needed because shift+. produces e.key=">"
-// on US layouts — falling back to e.code makes the matcher layout-independent.
-const SHIFTED_KEY_CODES: Record<string, string> = {
-  ".": "Period",
-  ",": "Comma",
-  "/": "Slash",
-  ";": "Semicolon",
-  "'": "Quote",
-  "[": "BracketLeft",
-  "]": "BracketRight",
-  "\\": "Backslash",
-  "`": "Backquote",
-  "-": "Minus",
-  "=": "Equal",
+// to its physical KeyboardEvent.code(s). Needed because shift+. produces
+// e.key=">" on US layouts — falling back to e.code makes the matcher
+// layout-independent. "=" and "-" also accept the numeric-keypad codes so
+// browser-style zoom works from the keypad (NumpadAdd reports e.key="+",
+// which would otherwise never match "=").
+const SHIFTED_KEY_CODES: Record<string, readonly string[]> = {
+  ".": ["Period"],
+  ",": ["Comma"],
+  "/": ["Slash"],
+  ";": ["Semicolon"],
+  "'": ["Quote"],
+  "[": ["BracketLeft"],
+  "]": ["BracketRight"],
+  "\\": ["Backslash"],
+  "`": ["Backquote"],
+  "-": ["Minus", "NumpadSubtract"],
+  "=": ["Equal", "NumpadAdd"],
 };
 
 /**
@@ -57,11 +60,11 @@ export function useShortcuts(map: Record<string, ShortcutHandler>): void {
         const needsShift = parts.includes("shift");
         const needsAlt = parts.includes("alt") || parts.includes("option");
         const wantKey = parts[parts.length - 1];
-        const wantCode = SHIFTED_KEY_CODES[wantKey];
+        const wantCodes = SHIFTED_KEY_CODES[wantKey];
 
         // Match against e.key first; fall back to e.code for shifted symbols
         // (shift+. produces e.key=">", but e.code stays "Period" regardless).
-        if (key !== wantKey && !(wantCode && e.code === wantCode)) continue;
+        if (key !== wantKey && !(wantCodes && wantCodes.includes(e.code))) continue;
 
         // platform-aware modifier matching:
         //   "mod+x"        → primary modifier only; reject any extra ctrl on mac

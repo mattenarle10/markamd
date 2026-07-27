@@ -86,6 +86,8 @@ shortcuts shown with **macOS** modifiers below. on **Windows / Linux**, substitu
 | ⌘1…9 | switch to tab 1 through 9 |
 | ⌘. | toggle reading mode (preview only) |
 | ⌘⇧. | toggle editor-only mode (preview hidden) |
+| ⌘= / ⌘+ / ⌘- | zoom the whole app in / out (50%–300%, persisted) |
+| ⌘0 | reset zoom |
 | ⌘F | find / replace in editor · or find in reading mode |
 | ⌘G | find next match |
 | ⌘⌥Z | undo last sidebar file op (move / rename / new / delete) |

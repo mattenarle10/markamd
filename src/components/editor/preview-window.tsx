@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { emitTo, listen } from "@tauri-apps/api/event";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { useAppZoom } from "@/hooks/use-app-zoom";
 import { Preview } from "./preview";
 
 type PreviewWindowState = {
@@ -10,6 +11,7 @@ type PreviewWindowState = {
 };
 
 export function PreviewWindow() {
+  useAppZoom();
   const [state, setState] = useState<PreviewWindowState>({
     source: "",
     filePath: null,

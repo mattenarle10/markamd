@@ -7,6 +7,7 @@ export { useOverlays } from "./use-overlays";
 export { useUpdateFlow } from "./use-update-flow";
 export { useFileWatcher } from "./use-file-watcher";
 export { isDirectoryChangeEvent, useFolderWatcher } from "./use-folder-watcher";
+export { useAppZoom } from "./use-app-zoom";
 export { usePersistedState } from "./use-persisted-state";
 export { useShortcuts, type ShortcutHandler } from "./use-shortcuts";
 export { useSyncScroll } from "./use-sync-scroll";
