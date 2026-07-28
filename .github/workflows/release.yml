@@ -298,6 +298,46 @@ jobs:
     env:
       RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref_name }}
     steps:
+      - name: checkout release tooling
+        uses: actions/checkout@v7
+
+      - name: normalize updater manifest URLs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          WORK_DIR="$RUNNER_TEMP/latest-json"
+          mkdir -p "$WORK_DIR"
+
+          LATEST_ASSET_NAME=$(gh api "repos/${{ github.repository }}/releases/tags/${{ env.RELEASE_TAG }}" \
+            --jq '[.assets[] | select(.name == "latest.json") | .name][0] // ""')
+
+          if [ "$LATEST_ASSET_NAME" != "latest.json" ]; then
+            echo "no latest.json asset found for ${{ env.RELEASE_TAG }} — skipping updater manifest normalization"
+            exit 0
+          fi
+
+          gh release download "${{ env.RELEASE_TAG }}" \
+            --repo "${{ github.repository }}" \
+            --pattern latest.json \
+            --dir "$WORK_DIR"
+
+          gh api "repos/${{ github.repository }}/releases/tags/${{ env.RELEASE_TAG }}" \
+            --jq '.assets | map({ name, url, browser_download_url })' \
+            > "$WORK_DIR/release-assets.json"
+
+          node scripts/normalize-latest-json.mjs \
+            "$WORK_DIR/latest.json" \
+            "$WORK_DIR/release-assets.json" \
+            "$WORK_DIR/latest.normalized.json"
+
+          gh release upload "${{ env.RELEASE_TAG }}" \
+            "$WORK_DIR/latest.normalized.json#latest.json" \
+            --repo "${{ github.repository }}" \
+            --clobber
+
       - name: publish draft release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -18,6 +18,7 @@ Use this after the version bump commit is ready and before calling the release d
 - [ ] GitHub `release` workflow passes on the tag.
 - [ ] GitHub release is public, latest, and has macOS, Windows, Linux, signature, and `latest.json` assets.
 - [ ] Download `latest.json` and confirm the version, release notes, platform URLs, and signatures are present.
+- [ ] Confirm `latest.json` platform URLs use public `https://github.com/.../releases/download/...` links, not `https://api.github.com/.../releases/assets/...` REST API links.
 
 ## site refresh
 
