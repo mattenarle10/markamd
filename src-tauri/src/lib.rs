@@ -286,12 +286,86 @@ pub fn run() {
 
 #[cfg(target_os = "linux")]
 fn configure_linux_graphics() {
-    // WebKitGTK can fail to initialize EGL on some Wayland + Mesa setups.
-    // Keep an explicit user setting intact while using the software-backed
-    // path as the default for the affected session type.
-    if std::env::var_os("XDG_SESSION_TYPE").as_deref() == Some(std::ffi::OsStr::new("wayland"))
-        && std::env::var_os("WEBKIT_DISABLE_DMABUF_RENDERER").is_none()
-    {
+    let session_type = std::env::var_os("XDG_SESSION_TYPE");
+    let wayland_display = std::env::var_os("WAYLAND_DISPLAY");
+    let is_wayland = is_wayland_session(
+        session_type.as_deref().and_then(std::ffi::OsStr::to_str),
+        wayland_display.as_deref().and_then(std::ffi::OsStr::to_str),
+    );
+
+    if is_wayland && std::env::var_os("WEBKIT_DISABLE_DMABUF_RENDERER").is_none() {
         std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+    }
+
+    // Tauri's bundled GTK AppImage hook historically forces GDK_BACKEND=x11.
+    // That can make WebKitGTK fail before the app window is created on Wayland
+    // systems. Only replace that packaging default; preserve other user choices.
+    if should_override_appimage_gdk_backend(
+        is_wayland,
+        std::env::var_os("APPIMAGE").is_some(),
+        std::env::var_os("GDK_BACKEND")
+            .as_deref()
+            .and_then(std::ffi::OsStr::to_str),
+    ) {
+        std::env::set_var("GDK_BACKEND", "wayland,x11");
+    }
+}
+
+#[cfg(any(target_os = "linux", test))]
+fn is_wayland_session(session_type: Option<&str>, wayland_display: Option<&str>) -> bool {
+    session_type == Some("wayland") || wayland_display.is_some_and(|display| !display.is_empty())
+}
+
+#[cfg(any(target_os = "linux", test))]
+fn should_override_appimage_gdk_backend(
+    is_wayland: bool,
+    is_appimage: bool,
+    gdk_backend: Option<&str>,
+) -> bool {
+    is_wayland && is_appimage && gdk_backend == Some("x11")
+}
+
+#[cfg(test)]
+mod linux_graphics_tests {
+    use super::{is_wayland_session, should_override_appimage_gdk_backend};
+
+    #[test]
+    fn detects_wayland_from_session_type() {
+        assert!(is_wayland_session(Some("wayland"), None));
+    }
+
+    #[test]
+    fn detects_wayland_when_only_display_variable_is_available() {
+        assert!(is_wayland_session(None, Some("wayland-0")));
+    }
+
+    #[test]
+    fn does_not_treat_x11_as_wayland() {
+        assert!(!is_wayland_session(Some("x11"), None));
+        assert!(!is_wayland_session(None, Some("")));
+    }
+
+    #[test]
+    fn overrides_only_the_appimage_x11_default() {
+        assert!(should_override_appimage_gdk_backend(
+            true,
+            true,
+            Some("x11")
+        ));
+        assert!(!should_override_appimage_gdk_backend(
+            true,
+            false,
+            Some("x11")
+        ));
+        assert!(!should_override_appimage_gdk_backend(
+            true,
+            true,
+            Some("wayland")
+        ));
+        assert!(!should_override_appimage_gdk_backend(
+            false,
+            true,
+            Some("x11")
+        ));
     }
 }
