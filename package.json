@@ -32,7 +32,7 @@
     "codemirror": "^6.0.2",
     "i18next": "^26.3.0",
     "lucide-react": "^1.14.0",
-    "markdown-it": "^14.1.1",
+    "markdown-it": "^15.0.0",
     "markdown-it-mark": "^4.0.0",
     "markdown-it-task-lists": "^2.1.1",
     "mermaid": "^11.15.0",
