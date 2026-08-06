@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { readFile, readTextFile, stat } from "@tauri-apps/plugin-fs";
 import { openPath } from "@tauri-apps/plugin-opener";
 import { useI18n } from "@/lib";
-import { basename, isSupportedTextPath, previewKindForPath, previewMimeForPath, validatePlainTextFile } from "@/lib";
+import { basename, dirname, htmlDocWithBase, isSupportedTextPath, previewKindForPath, previewMimeForPath, validatePlainTextFile } from "@/lib";
 
 const CLOSE_ICON_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
 const EYE_ICON_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
@@ -54,6 +55,13 @@ export function FilePreviewOverlay({ path, onClose, onOpenAsText }: Props) {
   const [size, setSize] = useState<number | null>(null);
   const [errMsg, setErrMsg] = useState("");
 
+  // html previews get a <base> pointing at the file's directory (via the asset
+  // protocol) so relative images/css/scripts resolve.
+  const htmlDoc = useMemo(
+    () => (path && kind === "html" ? htmlDocWithBase(text, convertFileSrc(dirname(path))) : ""),
+    [path, kind, text],
+  );
+
   const urlRef = useRef<string | null>(null);
 
   const revokeUrl = useCallback(() => {
@@ -102,7 +110,7 @@ export function FilePreviewOverlay({ path, onClose, onOpenAsText }: Props) {
           return;
         }
 
-        if (kind === "text") {
+        if (kind === "text" || kind === "html") {
           const check = await validatePlainTextFile(path);
           if (cancelled) return;
           if (!check.ok) {
@@ -151,7 +159,7 @@ export function FilePreviewOverlay({ path, onClose, onOpenAsText }: Props) {
   if (!path) return null;
 
   const title = basename(path);
-  const showOpenAsText = kind === "text" && isSupportedTextPath(path) === false;
+  const showOpenAsText = (kind === "text" || kind === "html") && isSupportedTextPath(path) === false;
 
   return (
     <div
@@ -223,6 +231,13 @@ export function FilePreviewOverlay({ path, onClose, onOpenAsText }: Props) {
           </div>
         ) : kind === "pdf" && url ? (
           <iframe className="mdv-file-viewer__pdf" src={url} title={title} />
+        ) : kind === "html" ? (
+          <iframe
+            className="mdv-file-viewer__html"
+            sandbox="allow-scripts"
+            srcDoc={htmlDoc}
+            title={title}
+          />
         ) : kind === "text" ? (
           <pre className="mdv-file-viewer__text">{text}</pre>
         ) : (

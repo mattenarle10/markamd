@@ -78,7 +78,7 @@ export {
 } from "./context-bundle";
 export { startWindowDrag } from "./window-drag";
 export { exportPreviewToPdf, PdfExportError } from "./pdf-export";
-export { previewKindForPath, previewMimeForPath, type PreviewKind } from "./preview";
+export { previewKindForPath, previewMimeForPath, htmlDocWithBase, type PreviewKind } from "./preview";
 export { IS_MAC, IS_WINDOWS, IS_LINUX, displayKey, shortcutLabel } from "./platform";
 export {
   pickFolder,

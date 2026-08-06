@@ -3,8 +3,10 @@
  *
  * The sidebar opens `.md/.markdown/.mdx/.csv` in the editor; every other file
  * goes through the preview overlay. `previewKindForPath` decides which renderer
- * the overlay uses. Mime values are webview-native (no parsing library) so the
- * overlay can build blob/data URLs straight from `readFile` bytes.
+ * the overlay uses (`.html/.htm` render in a sandboxed iframe with a `<base>`
+ * pointing at the file's directory via the asset protocol). Mime values are
+ * webview-native (no parsing library) so the overlay can build blob/data URLs
+ * straight from `readFile` bytes.
  */
 
 export type PreviewKind =
@@ -12,6 +14,7 @@ export type PreviewKind =
   | "video"
   | "audio"
   | "pdf"
+  | "html"
   | "office"
   | "text"
   | "unsupported";
@@ -87,8 +90,6 @@ const TEXT_EXT = new Set([
   "properties",
   "env",
   "xml",
-  "html",
-  "htm",
   "css",
   "scss",
   "less",
@@ -170,6 +171,7 @@ export function previewKindForPath(path: string): PreviewKind {
   if (VIDEO_MIME[ext]) return "video";
   if (AUDIO_MIME[ext]) return "audio";
   if (ext === "pdf") return "pdf";
+  if (ext === "html" || ext === "htm") return "html";
   if (OFFICE_EXT.has(ext)) return "office";
   if (TEXT_EXT.has(ext)) return "text";
   if (TEXT_BASENAMES.has(basenameLower(path))) return "text";
@@ -181,4 +183,22 @@ export function previewMimeForPath(path: string): string {
   const ext = extOf(path);
   if (ext === "pdf") return "application/pdf";
   return IMAGE_MIME[ext] ?? VIDEO_MIME[ext] ?? AUDIO_MIME[ext] ?? "";
+}
+
+/**
+ * Inject a `<base href>` into an html document so the previewed file resolves
+ * relative resources (images, css, scripts) against its own directory.
+ * `baseHref` is a `convertFileSrc()` asset URL of that directory. An existing
+ * `<base>` in the document would lose (the first one wins), so local files
+ * keep working.
+ */
+export function htmlDocWithBase(html: string, baseHref: string): string {
+  const href = baseHref.endsWith("/") ? baseHref : `${baseHref}/`;
+  const base = `<base href="${href.replace(/"/g, "&quot;")}">`;
+  const head = /<head[^>]*>/i.exec(html);
+  if (head) {
+    const at = head.index + head[0].length;
+    return html.slice(0, at) + base + html.slice(at);
+  }
+  return base + html;
 }

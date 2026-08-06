@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { previewKindForPath, previewMimeForPath } from "../src/lib/preview";
+import { previewKindForPath, previewMimeForPath, htmlDocWithBase } from "../src/lib/preview";
 
 test("classifies images by extension", () => {
   expect(previewKindForPath("a.png")).toBe("image");
@@ -18,6 +18,19 @@ test("classifies video and audio", () => {
 test("classifies pdf", () => {
   expect(previewKindForPath("paper.pdf")).toBe("pdf");
   expect(previewKindForPath("PAPER.PDF")).toBe("pdf");
+});
+
+test("classifies html for rendered preview", () => {
+  expect(previewKindForPath("index.html")).toBe("html");
+  expect(previewKindForPath("docs/page.HTM")).toBe("html");
+});
+
+test("injects a base href for relative html resources", () => {
+  expect(htmlDocWithBase("<html><head><title>x</title></head></html>", "asset://localhost/a/b"))
+    .toBe('<html><head><base href="asset://localhost/a/b/"><title>x</title></head></html>');
+  // no <head> — prepend
+  expect(htmlDocWithBase("<p>hi</p>", "asset://localhost/a/b/"))
+    .toBe('<base href="asset://localhost/a/b/"><p>hi</p>');
 });
 
 test("classifies office documents as info-card", () => {

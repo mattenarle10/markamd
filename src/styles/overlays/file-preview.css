@@ -276,6 +276,16 @@ html.is-mac .mdv-file-viewer__toolbar {
   background: var(--surface);
 }
 
+/* html — pages assume a white canvas, so don't inherit the app theme. */
+.mdv-file-viewer__html {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #fff;
+}
+
 /* text */
 .mdv-file-viewer__text {
   position: absolute;
