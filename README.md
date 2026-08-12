@@ -60,8 +60,6 @@ pick what fits your distro:
 - **.rpm** (Fedora / RHEL / Rocky / openSUSE): `sudo dnf install marka.md-*.x86_64.rpm`
 - **AUR** (Arch and derivatives): `yay -S markamd-appimage` or `paru -S markamd-appimage`
 
-the community [`markamd-appimage`](https://aur.archlinux.org/packages/markamd-appimage) package is maintained in [`missing-aur`](https://github.com/Cleboost/missing-aur) and updated from upstream releases.
-
 ### from source
 
 requires bun, rust, and platform build tools. on Linux, install `libwebkit2gtk-4.1-dev libsoup-3.0-dev` and related Tauri deps.
