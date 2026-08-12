@@ -53,21 +53,14 @@ grab `marka.md_*-setup.exe` → run. Windows SmartScreen may ask for confirmatio
 
 ### Linux (x86_64)
 
-three flavors, pick what fits your distro:
+pick what fits your distro:
 
 - **AppImage** (works anywhere): `chmod +x marka.md_*.AppImage` → run. self-contained, no install step needed.
 - **.deb** (Debian / Ubuntu / Mint / Pop!_OS): `sudo dpkg -i marka.md_*_amd64.deb`
 - **.rpm** (Fedora / RHEL / Rocky / openSUSE): `sudo dnf install marka.md-*.x86_64.rpm`
+- **AUR** (Arch and derivatives): `yay -S markamd-appimage` or `paru -S markamd-appimage`
 
-### arch linux (aur)
-
-on arch linux and arch-based distros, marka.md is available on the [arch user repository](https://aur.archlinux.org/packages/markamd-appimage) as `markamd-appimage` for `x86_64`. the package is community-maintained in [`missing-aur`](https://github.com/Cleboost/missing-aur) and kept up to date with upstream releases.
-
-```sh
-yay -S markamd-appimage
-# or
-paru -S markamd-appimage
-```
+the community [`markamd-appimage`](https://aur.archlinux.org/packages/markamd-appimage) package is maintained in [`missing-aur`](https://github.com/Cleboost/missing-aur) and updated from upstream releases.
 
 ### from source
 
