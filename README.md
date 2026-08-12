@@ -59,6 +59,16 @@ three flavors, pick what fits your distro:
 - **.deb** (Debian / Ubuntu / Mint / Pop!_OS): `sudo dpkg -i marka.md_*_amd64.deb`
 - **.rpm** (Fedora / RHEL / Rocky / openSUSE): `sudo dnf install marka.md-*.x86_64.rpm`
 
+### arch linux (aur)
+
+on arch linux and arch-based distros, marka.md is available on the [arch user repository](https://aur.archlinux.org/packages/markamd-appimage) as `markamd-appimage` for `x86_64`. the package is community-maintained in [`missing-aur`](https://github.com/Cleboost/missing-aur) and kept up to date with upstream releases.
+
+```sh
+yay -S markamd-appimage
+# or
+paru -S markamd-appimage
+```
+
 ### from source
 
 requires bun, rust, and platform build tools. on Linux, install `libwebkit2gtk-4.1-dev libsoup-3.0-dev` and related Tauri deps.
