@@ -104,7 +104,7 @@ shortcuts shown with **macOS** modifiers below. on **Windows / Linux**, substitu
 | layer | choice |
 |---|---|
 | shell | tauri 2.11 (rust + webview), macOS universal (arm64 + x86_64) · Windows · Linux |
-| frontend | react 19 · vite 7 · typescript 5.9 · bun |
+| frontend | react 19 · vite 7 · typescript 7 · bun |
 | editor | codemirror 6 + `@codemirror/lang-markdown` + `@codemirror/search` · opt-in vim via `@replit/codemirror-vim` |
 | markdown | markdown-it + markdown-it-mark + markdown-it-task-lists + shiki (lazy themes + langs) + mermaid (lazy) |
 | icons | lucide-react |
@@ -120,6 +120,7 @@ Per-release detail lives on the [changelog](https://markamd.vercel.app/changelog
 - [x] v1.6.0 workflow: separate preview windows, command-palette markdown insertions, and Traditional Chinese localization
 - [x] v1.6.1 workflow: automatic folder monitoring, native file watching, and lazy markdown highlighting
 - [x] v1.7.1 workflow: quick file previews, app-wide zoom, and faster folder watching
+- [ ] v1.7.2 patch: public updater downloads, active-file reload reliability, and Linux Wayland AppImage startup
 - [ ] next: native/silent PDF generation
 - [ ] next: context handoff presets for bring-your-own-ai workflows, starting with markdown and XML-tag bundle formats
 
