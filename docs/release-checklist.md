@@ -10,6 +10,7 @@ Use this after the version bump commit is ready and before calling the release d
 - [ ] `bun run build` passes.
 - [ ] `cargo check --release` passes from `src-tauri`.
 - [ ] `git diff --check` is clean.
+- [ ] Linux AppImage smoke test passes on Wayland, including the reported Manjaro environment for #107.
 
 ## after tagging
 
