@@ -1,6 +1,6 @@
 [package]
 name = "marka"
-version = "1.7.1"
+version = "1.7.2"
 description = "marka.md — a local markdown editor for the notes you share with ai"
 authors = ["Matt Enarle"]
 edition = "2021"
