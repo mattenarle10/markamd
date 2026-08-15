@@ -342,8 +342,8 @@ jobs:
           WORK_DIR="$RUNNER_TEMP/latest-json"
           mkdir -p "$WORK_DIR"
 
-          LATEST_ASSET_NAME=$(gh api "repos/${{ github.repository }}/releases/tags/${{ env.RELEASE_TAG }}" \
-            --jq '[.assets[] | select(.name == "latest.json") | .name][0] // ""')
+          LATEST_ASSET_NAME=$(gh api "repos/${{ github.repository }}/releases" \
+            --jq '[.[] | select(.tag_name == "${{ env.RELEASE_TAG }}") | .assets[] | select(.name == "latest.json") | .name][0] // ""')
 
           if [ "$LATEST_ASSET_NAME" != "latest.json" ]; then
             echo "no latest.json asset found for ${{ env.RELEASE_TAG }} — skipping updater manifest normalization"
@@ -355,8 +355,8 @@ jobs:
             --pattern latest.json \
             --dir "$WORK_DIR"
 
-          gh api "repos/${{ github.repository }}/releases/tags/${{ env.RELEASE_TAG }}" \
-            --jq '.assets | map({ name, url, browser_download_url })' \
+          gh api "repos/${{ github.repository }}/releases" \
+            --jq '[.[] | select(.tag_name == "${{ env.RELEASE_TAG }}") | .assets | map({ name, url, browser_download_url })][0] // []' \
             > "$WORK_DIR/release-assets.json"
 
           node scripts/normalize-latest-json.mjs \
