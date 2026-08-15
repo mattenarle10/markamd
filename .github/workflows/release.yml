@@ -14,7 +14,38 @@ permissions:
   contents: write
 
 jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref_name }}
+    steps:
+      - name: checkout release notes
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+
+      - name: create draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "release $RELEASE_TAG already exists"
+            exit 0
+          fi
+
+          NOTES_FILE="docs/release-notes/${RELEASE_TAG}.md"
+          gh release create "$RELEASE_TAG" \
+            --repo "${{ github.repository }}" \
+            --draft \
+            --title "marka.md $RELEASE_TAG" \
+            --notes-file "$NOTES_FILE"
+
   build:
+    needs: prepare-release
     strategy:
       # don't kill the macOS build if Windows fails (or vice versa) — release
       # still ships partial artifacts for users on the platform that built ok.
