@@ -2,6 +2,7 @@ import MarkdownIt from "markdown-it";
 import mark from "markdown-it-mark";
 import taskLists from "markdown-it-task-lists";
 import type { Highlighter } from "shiki";
+import { maskYamlFrontmatter } from "./frontmatter";
 import { plantUmlUrl } from "./plantuml";
 import type { Theme } from "./theme";
 
@@ -171,7 +172,8 @@ export async function ensureMarkdownReady(): Promise<void> {
 }
 
 export async function renderMarkdown(src: string, theme: Theme): Promise<string> {
-  const langs = extractLangs(src);
+  const renderSource = maskYamlFrontmatter(src);
+  const langs = extractLangs(renderSource);
   if (langs.length > 0) {
     const h = await getHighlighter();
     const shikiTheme = THEMES[theme];
@@ -179,5 +181,5 @@ export async function renderMarkdown(src: string, theme: Theme): Promise<string>
     await ensureLangsLoaded(h, langs);
     activeShikiTheme = shikiTheme;
   }
-  return md.render(src);
+  return md.render(renderSource);
 }
