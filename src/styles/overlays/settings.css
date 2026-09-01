@@ -20,13 +20,20 @@
 }
 
 .mdv-settings__body {
-  padding: 18px;
+  padding: 4px 18px 18px;
+  overflow-y: auto;
 }
 
 .mdv-settings__section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 2px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.mdv-settings__section:last-child {
+  border-bottom: 0;
 }
 
 .mdv-settings__heading {
@@ -45,7 +52,99 @@
   justify-content: space-between;
   gap: 20px;
   min-width: 0;
-  padding: 10px 0;
+  padding: 8px 0;
+}
+
+.mdv-settings__control,
+.mdv-settings__toggle {
+  min-width: 0;
+  padding: 9px 0;
+  color: var(--fg);
+  font: inherit;
+  font-size: 12px;
+}
+
+.mdv-settings__control-head,
+.mdv-settings__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.mdv-settings__control-head > span:first-child,
+.mdv-settings__toggle > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.mdv-settings__control input[type="range"] {
+  display: block;
+  width: 100%;
+  margin: 9px 0 1px;
+  accent-color: var(--accent);
+}
+
+.mdv-settings__value {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.mdv-settings__toggle,
+.mdv-settings__reset {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.mdv-settings__toggle:hover,
+.mdv-settings__reset:hover {
+  color: var(--accent);
+}
+
+.mdv-settings__switch {
+  position: relative;
+  width: 26px;
+  height: 14px;
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface-hover);
+}
+
+.mdv-settings__switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: transform 120ms ease, background 120ms ease;
+}
+
+.mdv-settings__toggle.is-on .mdv-settings__switch {
+  border-color: var(--accent);
+}
+
+.mdv-settings__toggle.is-on .mdv-settings__switch::after {
+  transform: translateX(12px);
+  background: var(--accent);
+}
+
+.mdv-settings__reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 0 3px;
+  color: var(--muted);
+  font-size: 11px;
 }
 
 .mdv-settings__copy {
@@ -85,7 +184,7 @@
 }
 
 .mdv-settings__note {
-  margin: 0;
+  margin: 7px 0 0;
 }
 
 @media (max-width: 560px) {

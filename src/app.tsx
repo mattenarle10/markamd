@@ -966,6 +966,10 @@ export function App() {
         e.preventDefault();
         toggleEditorOnly();
       },
+      "mod+,": (e: KeyboardEvent) => {
+        e.preventDefault();
+        showSettings();
+      },
       escape: (e: KeyboardEvent) => {
         if (readingMode) {
           e.preventDefault();
@@ -1004,6 +1008,7 @@ export function App() {
       toggleReadingMode,
       exitReadingMode,
       toggleEditorOnly,
+      showSettings,
     ],
   );
   useShortcuts(shortcuts);
@@ -1092,18 +1097,8 @@ export function App() {
         onCopyMarkdown={activePath || source ? () => void copyMarkdown() : undefined}
         copyPulse={copyPulse}
         onExportPdf={exportToPdf}
-        vimOn={vimOn}
-        onToggleVim={() => setVimOn((v) => !v)}
-        writingDisplay={writingDisplay}
-        onWritingFontSizeChange={setWritingFontSize}
-        onWritingLineHeightChange={setWritingLineHeight}
-        onReadingFontSizeChange={setReadingFontSize}
-        onReadingWidthChange={setReadingWidth}
-        onProseFontFamilyChange={setProseFontFamily}
-        onResetWritingDisplay={resetWritingDisplay}
         tocVisible={tocVisible}
         onToggleToc={() => setTocVisible((v) => !v)}
-        onOpenSettings={showSettings}
       />
 
       <Breadcrumb
@@ -1122,16 +1117,6 @@ export function App() {
         onToggleTitlebar={handleToggleTitlebar}
         readingMode={readingMode}
         onToggleReading={toggleReadingMode}
-        vimOn={vimOn}
-        onToggleVim={() => setVimOn((v) => !v)}
-        writingDisplay={writingDisplay}
-        onWritingFontSizeChange={setWritingFontSize}
-        onWritingLineHeightChange={setWritingLineHeight}
-        onReadingFontSizeChange={setReadingFontSize}
-        onReadingWidthChange={setReadingWidth}
-        onProseFontFamilyChange={setProseFontFamily}
-        onResetWritingDisplay={resetWritingDisplay}
-        onOpenSettings={showSettings}
       />
 
       <main className="mdv-shell">
@@ -1340,6 +1325,15 @@ export function App() {
 
       <SettingsOverlay
         open={settingsOpen}
+        vimOn={vimOn}
+        onToggleVim={() => setVimOn((v) => !v)}
+        writingDisplay={writingDisplay}
+        onWritingFontSizeChange={setWritingFontSize}
+        onWritingLineHeightChange={setWritingLineHeight}
+        onReadingFontSizeChange={setReadingFontSize}
+        onReadingWidthChange={setReadingWidth}
+        onProseFontFamilyChange={setProseFontFamily}
+        onResetWritingDisplay={resetWritingDisplay}
         startupMode={startupMode}
         onStartupModeChange={setStartupModeStored}
         onClose={() => setSettingsOpen(false)}
@@ -1377,6 +1371,7 @@ export function App() {
         minutes={minutes}
         docTokens={docTokens}
         onShowHelp={() => setHelpOpen(true)}
+        onShowSettings={showSettings}
         vimMode={readingMode ? null : vimMode}
       />
     </div>

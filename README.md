@@ -97,6 +97,7 @@ shortcuts shown with **macOS** modifiers below. on **Windows / Linux**, substitu
 | ⌘P | export to pdf (also visible in the top file-action row) |
 | ⌃⌘F | toggle fullscreen (macOS) · F11 on Windows/Linux |
 | ⌘/ | help overlay |
+| ⌘, | settings |
 | esc | close any popup |
 
 ## stack

@@ -87,6 +87,7 @@ function getGroups(t: Translate): Group[] {
     title: t("help.help"),
     rows: [
       { keys: "⌘+/", label: t("help.openThis") },
+      { keys: "⌘+,", label: t("help.openSettings") },
       { keys: "esc", label: t("help.closeAny") },
     ],
   },
