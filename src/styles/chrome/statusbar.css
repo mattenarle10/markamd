@@ -24,6 +24,26 @@
   color: var(--muted);
 }
 
+.mdv-statusbar__utilities {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 4px;
+  padding-left: 6px;
+  border-left: 1px solid var(--border);
+}
+
+.mdv-statusbar__utility {
+  height: 18px;
+  padding: 0 5px;
+  color: var(--muted);
+}
+
+.mdv-statusbar__utility:hover {
+  color: var(--accent);
+  background: transparent;
+}
+
 .mdv-statusbar__help:hover {
   color: var(--accent);
   background: transparent;
@@ -62,4 +82,3 @@
   color: #e74c3c;
   border-color: color-mix(in srgb, #e74c3c 35%, transparent);
 }
-

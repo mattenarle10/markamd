@@ -25,6 +25,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Save,
+  Settings,
   Sparkles,
   Sun,
 } from "lucide-react";
@@ -32,7 +33,7 @@ import { basename, dirname } from "./files";
 import { setThemeMode, setTransparency, THEME_CHOICES, THEME_HINTS, type ThemeMode } from "./theme";
 import type { Translate } from "./i18n";
 
-export type CommandCategory = "recent" | "file" | "workspace" | "edit" | "share" | "theme" | "help";
+export type CommandCategory = "recent" | "file" | "workspace" | "edit" | "share" | "theme" | "settings" | "help";
 
 export type Command = {
   id: string;
@@ -57,6 +58,7 @@ export type CommandActions = {
   showHelp: () => void;
   showWelcome: () => void;
   showAbout: () => void;
+  showSettings: () => void;
   loadDemo: () => void;
   undoFileOp: () => void | Promise<void>;
   checkForUpdates: () => void | Promise<void>;
@@ -110,6 +112,7 @@ export const CATEGORY_ORDER: CommandCategory[] = [
   "edit",
   "share",
   "theme",
+  "settings",
   "help",
 ];
 
@@ -361,6 +364,15 @@ export function buildCommands(actions: CommandActions, t: Translate = defaultT):
       category: "theme",
       keywords: ["transparency", "solid", "opacity", "background"],
       action: () => setTransparency(100),
+    },
+    {
+      id: "settings",
+      label: t("command.settings"),
+      hint: t("command.settingsHint"),
+      icon: Settings,
+      category: "settings",
+      keywords: ["settings", "preferences", "startup", "configuration"],
+      action: actions.showSettings,
     },
     {
       id: "help",

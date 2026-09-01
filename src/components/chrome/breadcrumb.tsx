@@ -18,12 +18,6 @@ import {
   startWindowDrag,
   useI18n,
   type Translate,
-  type ProseFontFamily,
-  type ReadingFontSize,
-  type ReadingWidth,
-  type WritingDisplay,
-  type WritingFontSize,
-  type WritingLineHeight,
 } from "@/lib";
 import { ThemeButton } from "./theme-button";
 import exciteUrl from "@/assets/mascot/excite.png";
@@ -46,15 +40,6 @@ type BreadcrumbProps = {
   onToggleTitlebar: () => void;
   readingMode: boolean;
   onToggleReading: () => void;
-  vimOn?: boolean;
-  onToggleVim?: () => void;
-  writingDisplay: WritingDisplay;
-  onWritingFontSizeChange: (value: WritingFontSize) => void;
-  onWritingLineHeightChange: (value: WritingLineHeight) => void;
-  onReadingFontSizeChange: (value: ReadingFontSize) => void;
-  onReadingWidthChange: (value: ReadingWidth) => void;
-  onProseFontFamilyChange: (value: ProseFontFamily) => void;
-  onResetWritingDisplay: () => void;
 };
 
 const MAX_SEGMENTS = 4;
@@ -94,15 +79,6 @@ export function Breadcrumb({
   onToggleTitlebar,
   readingMode,
   onToggleReading,
-  vimOn,
-  onToggleVim,
-  writingDisplay,
-  onWritingFontSizeChange,
-  onWritingLineHeightChange,
-  onReadingFontSizeChange,
-  onReadingWidthChange,
-  onProseFontFamilyChange,
-  onResetWritingDisplay,
 }: BreadcrumbProps) {
   const { t } = useI18n();
   const path = activePath ?? rootPath;
@@ -190,17 +166,7 @@ export function Breadcrumb({
               onClick={onToggleReading}
               icon={<Icon icon={readingMode ? BookOpen : BookOpen} size={14} strokeWidth={1.5} />}
             />
-            <ThemeButton
-              vimOn={vimOn}
-              onToggleVim={onToggleVim}
-              writingDisplay={writingDisplay}
-              onWritingFontSizeChange={onWritingFontSizeChange}
-              onWritingLineHeightChange={onWritingLineHeightChange}
-              onReadingFontSizeChange={onReadingFontSizeChange}
-              onReadingWidthChange={onReadingWidthChange}
-              onProseFontFamilyChange={onProseFontFamilyChange}
-              onResetWritingDisplay={onResetWritingDisplay}
-            />
+            <ThemeButton />
 
             {/* file actions — border-left matches the status→actions separator */}
             <div className="mdv-breadcrumb__file-actions">

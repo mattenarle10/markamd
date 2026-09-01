@@ -20,6 +20,7 @@ function commandActions(
     showHelp: noop,
     showWelcome: noop,
     showAbout: noop,
+    showSettings: noop,
     loadDemo: noop,
     undoFileOp: noop,
     checkForUpdates: noop,
@@ -81,4 +82,12 @@ test("groups layout commands under workspace instead of view", () => {
   expect(commands.some((command) => String(command.category) === "view")).toBe(false);
   expect(commands.find((command) => command.id === "toggle-reading")?.category).toBe("workspace");
   expect(commands.find((command) => command.id === "toggle-sidebar")?.category).toBe("workspace");
+});
+
+test("exposes settings in its own command category", () => {
+  const commands = buildCommands(commandActions());
+  const settings = commands.find((command) => command.id === "settings");
+
+  expect(settings?.category).toBe("settings");
+  expect(settings?.keywords).toContain("startup");
 });

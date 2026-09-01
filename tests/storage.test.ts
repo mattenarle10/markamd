@@ -4,6 +4,7 @@ import {
   isFilesystemRoot,
   STORAGE_KEYS,
 } from "../src/lib/storage";
+import { normalizeStartupMode } from "../src/lib/startup";
 
 class MemoryStorage {
   readonly values = new Map<string, string>();
@@ -57,4 +58,11 @@ test("keeps a safe folder session unchanged", () => {
   expect(clearUnsafeFolderRestoreState(storage)).toBe(false);
   expect(storage.getItem(STORAGE_KEYS.folders)).toBe(folders);
   expect(storage.getItem(STORAGE_KEYS.lastFolder)).toBe(lastFolder);
+});
+
+test("normalizes persisted startup modes to supported values", () => {
+  expect(normalizeStartupMode("blank")).toBe("blank");
+  expect(normalizeStartupMode("welcome")).toBe("welcome");
+  expect(normalizeStartupMode("invalid")).toBe("welcome");
+  expect(normalizeStartupMode(null)).toBe("welcome");
 });

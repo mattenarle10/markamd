@@ -34,6 +34,7 @@
 .mdv-overlay--modal {
   width: 580px;
   top: 12vh;
+  max-height: 78vh;
 }
 
 @keyframes mdv-overlay-fade {
