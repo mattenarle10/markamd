@@ -70,8 +70,8 @@
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
   overflow-x: auto;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  white-space: pre;
+  overflow-wrap: normal;
   background: color-mix(in srgb, var(--bg-solid, var(--bg)) 80%, var(--muted) 12%);
   margin: 0;
 }
