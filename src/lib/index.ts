@@ -28,6 +28,12 @@ export {
   type StorageKey,
 } from "./storage";
 export {
+  DEFAULT_STARTUP_MODE,
+  normalizeStartupMode,
+  STARTUP_MODES,
+  type StartupMode,
+} from "./startup";
+export {
   I18nProvider,
   LANGUAGE_CHOICES,
   useI18n,

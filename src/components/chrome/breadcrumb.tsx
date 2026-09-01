@@ -11,6 +11,7 @@ import {
   PanelLeftOpen,
   PanelTopClose,
   PanelTopOpen,
+  Settings,
 } from "lucide-react";
 import { Button, Icon } from "@/components/primitives";
 import {
@@ -55,6 +56,7 @@ type BreadcrumbProps = {
   onReadingWidthChange: (value: ReadingWidth) => void;
   onProseFontFamilyChange: (value: ProseFontFamily) => void;
   onResetWritingDisplay: () => void;
+  onOpenSettings?: () => void;
 };
 
 const MAX_SEGMENTS = 4;
@@ -103,6 +105,7 @@ export function Breadcrumb({
   onReadingWidthChange,
   onProseFontFamilyChange,
   onResetWritingDisplay,
+  onOpenSettings,
 }: BreadcrumbProps) {
   const { t } = useI18n();
   const path = activePath ?? rootPath;
@@ -201,6 +204,14 @@ export function Breadcrumb({
               onProseFontFamilyChange={onProseFontFamilyChange}
               onResetWritingDisplay={onResetWritingDisplay}
             />
+            {onOpenSettings ? (
+              <Button
+                data-tooltip={t("title.settings")}
+                aria-label={t("title.settings")}
+                onClick={onOpenSettings}
+                icon={<Icon icon={Settings} size={14} strokeWidth={1.5} />}
+              />
+            ) : null}
 
             {/* file actions — border-left matches the status→actions separator */}
             <div className="mdv-breadcrumb__file-actions">

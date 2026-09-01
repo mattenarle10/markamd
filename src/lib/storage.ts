@@ -7,6 +7,7 @@ export const STORAGE_KEYS = {
   lastFolder: "mdview.lastFolder",
   lastFile: "mdview.lastFile",
   welcomed: "mdview.welcomed",
+  startupMode: "mdview.startup.mode",
   lastSeenVersion: "mdview.lastSeenVersion",
   recentFiles: "mdview.recent.files",
   vimMode: "mdview.vim",

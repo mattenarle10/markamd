@@ -17,6 +17,7 @@
 @import "./styles/overlays/drop.css";
 @import "./styles/overlays/about.css";
 @import "./styles/overlays/file-preview.css";
+@import "./styles/overlays/settings.css";
 
 /* shell layout */
 .mdv-app {

@@ -9,6 +9,7 @@ import {
   validatePlainTextFile,
   validateSupportedTextFile,
   writeMarkdown,
+  type StartupMode,
 } from "@/lib";
 import { DEMO_MARKDOWN } from "@/lib/demo";
 import type { SaveStatus } from "@/components/chrome";
@@ -35,6 +36,7 @@ export type LoadFileOptions = {
 
 type UseFileSessionArgs = {
   onLoadError?: (err: LoadError) => void;
+  startupMode?: StartupMode;
 };
 
 type UseFileSessionResult = {
@@ -71,9 +73,10 @@ type UseFileSessionResult = {
   dirty: boolean;
 };
 
-export function useFileSession({ onLoadError }: UseFileSessionArgs = {}): UseFileSessionResult {
-  const [source, setSource] = useState<string>(DEMO_MARKDOWN);
-  const [savedContent, setSavedContent] = useState<string>(DEMO_MARKDOWN);
+export function useFileSession({ onLoadError, startupMode = "welcome" }: UseFileSessionArgs = {}): UseFileSessionResult {
+  const initialContent = startupMode === "blank" ? "" : DEMO_MARKDOWN;
+  const [source, setSource] = useState<string>(initialContent);
+  const [savedContent, setSavedContent] = useState<string>(initialContent);
   const [activePath, setActivePath] = usePersistedState<string | null>(
     STORAGE_KEYS.lastFile,
     null,
@@ -97,8 +100,8 @@ export function useFileSession({ onLoadError }: UseFileSessionArgs = {}): UseFil
       id: INITIAL_TAB_ID,
       path: null,
       title: UNTITLED_TITLE,
-      source: DEMO_MARKDOWN,
-      savedContent: DEMO_MARKDOWN,
+      source: initialContent,
+      savedContent: initialContent,
       waitMarkers: [],
     },
   ]);
