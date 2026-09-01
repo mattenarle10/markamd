@@ -55,7 +55,7 @@
   padding: 8px 0;
 }
 
-.mdv-settings__control,
+.mdv-settings__options,
 .mdv-settings__toggle {
   min-width: 0;
   padding: 9px 0;
@@ -72,6 +72,10 @@
   gap: 14px;
 }
 
+.mdv-settings__options {
+  padding: 9px 0;
+}
+
 .mdv-settings__control-head > span:first-child,
 .mdv-settings__toggle > span:first-child {
   display: inline-flex;
@@ -79,11 +83,32 @@
   gap: 7px;
 }
 
-.mdv-settings__control input[type="range"] {
-  display: block;
-  width: 100%;
-  margin: 9px 0 1px;
-  accent-color: var(--accent);
+.mdv-settings__option-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.mdv-settings__option-list button {
+  min-width: 42px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-align: center;
+}
+
+.mdv-settings__option-list button:hover,
+.mdv-settings__option-list button.is-selected {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .mdv-settings__value {
@@ -100,6 +125,10 @@
   background: transparent;
   cursor: pointer;
   text-align: left;
+}
+
+.mdv-settings__toggle {
+  padding: 9px 0;
 }
 
 .mdv-settings__toggle:hover,

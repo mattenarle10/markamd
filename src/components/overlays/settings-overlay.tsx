@@ -53,31 +53,32 @@ export function SettingsOverlay({
   const { language, setLanguage, t } = useI18n();
   const { opacity, on: transparent, set: setTransparency } = useTransparency();
 
-  const slider = <T extends string>(
+  const options = <T extends string>(
     label: string,
     value: T,
     options: readonly T[],
     labelFor: (option: T) => string,
     onChange: (value: T) => void,
   ) => {
-    const valueIndex = Math.max(0, options.indexOf(value));
-    const valueLabel = labelFor(value);
     return (
-      <div className="mdv-settings__control">
+      <div className="mdv-settings__options">
         <div className="mdv-settings__control-head">
           <span>{label}</span>
-          <span className="mdv-settings__value">{valueLabel}</span>
+          <span className="mdv-settings__value">{labelFor(value)}</span>
         </div>
-        <input
-          type="range"
-          min={0}
-          max={options.length - 1}
-          step={1}
-          value={valueIndex}
-          onChange={(event) => onChange(options[Number(event.target.value)] ?? value)}
-          aria-label={label}
-          aria-valuetext={valueLabel}
-        />
+        <div className="mdv-settings__option-list" role="group" aria-label={label}>
+          {options.map((option) => (
+            <button
+              key={option}
+              type="button"
+              className={option === value ? "is-selected" : ""}
+              aria-pressed={option === value}
+              onClick={() => onChange(option)}
+            >
+              {labelFor(option)}
+            </button>
+          ))}
+        </div>
       </div>
     );
   };
@@ -120,20 +121,18 @@ export function SettingsOverlay({
       <div className="mdv-settings__body">
         <section className="mdv-settings__section">
           <h3 className="mdv-settings__heading">{t("settings.appearance")}</h3>
-          <div className={`mdv-settings__control${transparent ? " is-active" : ""}`}>
+          <button
+            type="button"
+            className={`mdv-settings__toggle${transparent ? " is-on" : ""}`}
+            onClick={() => setTransparency(transparent ? 100 : 74)}
+            aria-pressed={transparent}
+          >
             <div className="mdv-settings__control-head">
               <span><Icon icon={Sparkles} size={13} strokeWidth={1.5} />{t("settings.transparency")}</span>
               <span className="mdv-settings__value">{opacity >= 100 ? t("settings.off") : `${100 - opacity}%`}</span>
             </div>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={100 - opacity}
-              onChange={(event) => setTransparency(100 - Number(event.target.value))}
-              aria-label={t("settings.transparency")}
-            />
-          </div>
+            <span className="mdv-settings__switch" aria-hidden />
+          </button>
           {select(t("settings.language"), language, LANGUAGE_CHOICES.map(({ value }) => value), (value) => LANGUAGE_CHOICES.find((choice) => choice.value === value)?.nativeLabel ?? value, (value) => setLanguage(value as Language))}
         </section>
 
@@ -143,14 +142,14 @@ export function SettingsOverlay({
             <span><Icon icon={Terminal} size={13} strokeWidth={1.5} />{t("settings.vimMode")}</span>
             <span className="mdv-settings__switch" aria-hidden />
           </button>
-          {slider(t("settings.writingFont"), writingDisplay.fontSize, WRITING_FONT_SIZE_OPTIONS, (value) => t(`writing.font.${value}`), onWritingFontSizeChange)}
-          {slider(t("settings.writingSpacing"), writingDisplay.lineHeight, WRITING_LINE_HEIGHT_OPTIONS, (value) => t(`writing.spacing.${value}`), onWritingLineHeightChange)}
+          {options(t("settings.writingFont"), writingDisplay.fontSize, WRITING_FONT_SIZE_OPTIONS, (value) => t(`writing.font.${value}`), onWritingFontSizeChange)}
+          {options(t("settings.writingSpacing"), writingDisplay.lineHeight, WRITING_LINE_HEIGHT_OPTIONS, (value) => t(`writing.spacing.${value}`), onWritingLineHeightChange)}
         </section>
 
         <section className="mdv-settings__section">
           <h3 className="mdv-settings__heading">{t("settings.reading")}</h3>
-          {slider(t("settings.readingSize"), writingDisplay.readingFontSize, READING_FONT_SIZE_OPTIONS, (value) => t(`writing.font.${value}`), onReadingFontSizeChange)}
-          {slider(t("settings.readingWidth"), writingDisplay.readingWidth, READING_WIDTH_OPTIONS, (value) => t(`reading.width.${value}`), onReadingWidthChange)}
+          {options(t("settings.readingSize"), writingDisplay.readingFontSize, READING_FONT_SIZE_OPTIONS, (value) => t(`writing.font.${value}`), onReadingFontSizeChange)}
+          {options(t("settings.readingWidth"), writingDisplay.readingWidth, READING_WIDTH_OPTIONS, (value) => t(`reading.width.${value}`), onReadingWidthChange)}
           {select(t("settings.previewFont"), writingDisplay.proseFontFamily, PROSE_FONT_FAMILY_OPTIONS, (value) => t(`prose.font.${value}`), onProseFontFamilyChange)}
           <button type="button" className="mdv-settings__reset" onClick={onResetWritingDisplay}>
             <Icon icon={RotateCcw} size={13} strokeWidth={1.5} />{t("settings.resetText")}
