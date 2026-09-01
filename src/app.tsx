@@ -3,7 +3,7 @@ import type { EditorView } from "@codemirror/view";
 import { Breadcrumb, StatusBar, TitleBar, type VimMode } from "@/components/chrome";
 import { Editor, OpenTabs, Preview, ReadingFind, Splitter, TocPanel } from "@/components/editor";
 import { ContextMenu, Sidebar, type ContextMenuItem } from "@/components/files";
-import { AboutOverlay, CommandPalette, DropOverlay, FilePreviewOverlay, HelpOverlay, Toast, WelcomeOverlay } from "@/components/overlays";
+import { AboutOverlay, CommandPalette, DropOverlay, FilePreviewOverlay, HelpOverlay, SettingsOverlay, Toast, WelcomeOverlay } from "@/components/overlays";
 import { TooltipRoot } from "@/components/primitives";
 import {
   useAppZoom,
@@ -33,6 +33,7 @@ import {
   buildCommands,
   CHANGELOG_URL,
   DEFAULT_WRITING_DISPLAY,
+  DEFAULT_STARTUP_MODE,
   estimateTokens,
   exportPreviewToPdf,
   formatContextBundle,
@@ -45,6 +46,7 @@ import {
   normalizeProseFontFamily,
   normalizeReadingFontSize,
   normalizeReadingWidth,
+  normalizeStartupMode,
   normalizeWritingFontSize,
   normalizeWritingLineHeight,
   PdfExportError,
@@ -59,6 +61,7 @@ import {
   type ProseFontFamily,
   type ReadingFontSize,
   type ReadingWidth,
+  type StartupMode,
   type WritingDisplay,
   type WritingFontSize,
   type WritingLineHeight,
@@ -90,6 +93,12 @@ export function App() {
   const extPrefs = useRef<Map<string, "text" | "default">>(new Map());
   const loadPlainTextFileRef = useRef<((path: string) => Promise<void>) | undefined>(undefined);
   const waitMarkersRef = useRef<string[]>([]);
+
+  const [startupModeStored, setStartupModeStored] = usePersistedState<StartupMode>(
+    STORAGE_KEYS.startupMode,
+    DEFAULT_STARTUP_MODE,
+  );
+  const startupMode = normalizeStartupMode(startupModeStored);
 
   const getExt = useCallback((path: string) => {
     const dot = path.lastIndexOf(".");
@@ -144,7 +153,7 @@ export function App() {
     startNewBuffer,
     loadPlainTextFile,
     dirty,
-  } = useFileSession({ onLoadError: handleLoadError });
+  } = useFileSession({ onLoadError: handleLoadError, startupMode });
 
   useEffect(() => { loadPlainTextFileRef.current = loadPlainTextFile; }, [loadPlainTextFile]);
 
@@ -321,12 +330,15 @@ export function App() {
     setHelpOpen,
     aboutOpen,
     setAboutOpen,
+    settingsOpen,
+    setSettingsOpen,
     welcomeOpen,
     dismissWelcome,
     showWelcome,
     showHelp,
     showAbout,
-  } = useOverlays();
+    showSettings,
+  } = useOverlays({ startupMode });
 
   const { contextMenu, handleContextMenu, closeContextMenu } = useContextMenu();
 
@@ -1012,6 +1024,7 @@ export function App() {
         showHelp,
         showWelcome,
         showAbout,
+        showSettings,
         loadDemo,
         undoFileOp: handleUndoFileOp,
         checkForUpdates: handleManualUpdateCheck,
@@ -1047,6 +1060,7 @@ export function App() {
       showHelp,
       showWelcome,
       showAbout,
+      showSettings,
       loadDemo,
       handleUndoFileOp,
       handleManualUpdateCheck,
@@ -1089,6 +1103,7 @@ export function App() {
         onResetWritingDisplay={resetWritingDisplay}
         tocVisible={tocVisible}
         onToggleToc={() => setTocVisible((v) => !v)}
+        onOpenSettings={showSettings}
       />
 
       <Breadcrumb
@@ -1116,6 +1131,7 @@ export function App() {
         onReadingWidthChange={setReadingWidth}
         onProseFontFamilyChange={setProseFontFamily}
         onResetWritingDisplay={resetWritingDisplay}
+        onOpenSettings={showSettings}
       />
 
       <main className="mdv-shell">
@@ -1320,6 +1336,13 @@ export function App() {
         open={aboutOpen}
         onClose={() => setAboutOpen(false)}
         onCheckForUpdates={handleManualUpdateCheck}
+      />
+
+      <SettingsOverlay
+        open={settingsOpen}
+        startupMode={startupMode}
+        onStartupModeChange={setStartupModeStored}
+        onClose={() => setSettingsOpen(false)}
       />
 
       <WelcomeOverlay
