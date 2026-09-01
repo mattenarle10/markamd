@@ -11,7 +11,18 @@
 - `bun test` runs focused unit tests.
 - `bun run build` runs TypeScript and Vite build.
 - `cargo check --manifest-path src-tauri/Cargo.toml` checks the Rust shell.
+- `cargo check --release --manifest-path src-tauri/Cargo.toml` checks the release profile used by CI.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml --check` checks Rust formatting without changing files.
 - `bun run tauri dev` starts the desktop app during UI testing.
+
+## local github workflow
+
+- Keep the user's primary checkout available. Use a separate clean checkout for branch, PR, and release work.
+- Keep one focused branch per behavior change and run the app from that checkout so screenshots test the branch being changed.
+- If another dev server occupies port `1420`, use a temporary Vite/Tauri port override and record the port used for testing.
+- Before merging, verify the PR author and active GitHub account, inspect comments and reviews, and wait for both `typecheck` and `rust-check` to pass.
+- For a release, merge the feature PR first, merge a separate version-bump PR, tag the exact merged `origin/main` commit, and watch the tag's `release` workflow through publication. Confirm the GitHub release is public and latest with signed platform assets and `latest.json`.
+- Check `https://markamd.vercel.app/` and `/changelog/` after publishing. The site fetches release data at build time; if it is stale, use the site repository's normal Vercel deploy path rather than changing app release metadata.
 
 ## release/update notes
 

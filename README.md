@@ -122,6 +122,7 @@ Per-release detail lives on the [changelog](https://markamd.vercel.app/changelog
 - [x] v1.6.1 workflow: automatic folder monitoring, native file watching, and lazy markdown highlighting
 - [x] v1.7.1 workflow: quick file previews, app-wide zoom, and faster folder watching
 - [x] [v1.7.2 patch](docs/release-notes/v1.7.2.md): public updater downloads, active-file reload reliability, and Linux Wayland AppImage startup
+- [x] [v1.7.3 settings](docs/release-notes/v1.7.3.md): dedicated preferences surface, keyboard access, and smooth writing/reading controls
 - [ ] next: native/silent PDF generation
 - [ ] next: context handoff presets for bring-your-own-ai workflows, starting with markdown and XML-tag bundle formats
 
