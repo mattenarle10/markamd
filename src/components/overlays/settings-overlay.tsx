@@ -6,6 +6,7 @@ import {
   PROSE_FONT_FAMILY_OPTIONS,
   READING_FONT_SIZE_OPTIONS,
   READING_WIDTH_OPTIONS,
+  TEXT_DIRECTION_OPTIONS,
   WRITING_FONT_SIZE_OPTIONS,
   WRITING_LINE_HEIGHT_OPTIONS,
   useI18n,
@@ -15,6 +16,7 @@ import {
   type ReadingFontSize,
   type ReadingWidth,
   type StartupMode,
+  type TextDirection,
   type WritingDisplay,
   type WritingFontSize,
   type WritingLineHeight,
@@ -33,6 +35,8 @@ type SettingsOverlayProps = {
   onResetWritingDisplay: () => void;
   startupMode: StartupMode;
   onStartupModeChange: (value: StartupMode) => void;
+  textDirection: TextDirection;
+  onTextDirectionChange: (value: TextDirection) => void;
   onClose: () => void;
 };
 
@@ -104,6 +108,8 @@ export function SettingsOverlay({
   onResetWritingDisplay,
   startupMode,
   onStartupModeChange,
+  textDirection,
+  onTextDirectionChange,
   onClose,
 }: SettingsOverlayProps) {
   const { language, setLanguage, t } = useI18n();
@@ -176,6 +182,7 @@ export function SettingsOverlay({
           <h3 className="mdv-settings__heading">{t("settings.reading")}</h3>
           <OptionSlider label={t("settings.readingSize")} value={writingDisplay.readingFontSize} values={READING_FONT_SIZE_OPTIONS} labelFor={(value) => t(`writing.font.${value}`)} onChange={onReadingFontSizeChange} />
           <OptionSlider label={t("settings.readingWidth")} value={writingDisplay.readingWidth} values={READING_WIDTH_OPTIONS} labelFor={(value) => t(`reading.width.${value}`)} onChange={onReadingWidthChange} />
+          {select(t("settings.textDirection"), textDirection, TEXT_DIRECTION_OPTIONS, (value) => t(`settings.direction.${value}`), onTextDirectionChange)}
           {select(t("settings.previewFont"), writingDisplay.proseFontFamily, PROSE_FONT_FAMILY_OPTIONS, (value) => t(`prose.font.${value}`), onProseFontFamilyChange)}
           <button type="button" className="mdv-settings__reset" onClick={onResetWritingDisplay}>
             <Icon icon={RotateCcw} size={13} strokeWidth={1.5} />{t("settings.resetText")}

@@ -60,6 +60,13 @@ export {
   type WritingFontSize,
   type WritingLineHeight,
 } from "./writing-display";
+export {
+  applyTextDirection,
+  DEFAULT_TEXT_DIRECTION,
+  normalizeTextDirection,
+  TEXT_DIRECTION_OPTIONS,
+  type TextDirection,
+} from "./text-direction";
 export { CHANGELOG_URL, getWhatsNewToastMessage } from "./release-notes";
 export { buildCommands, type Command, type CommandActions } from "./commands";
 export { filterAndRankCommands } from "./command-search";

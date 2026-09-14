@@ -4,6 +4,7 @@ import { basename, writeMarkdown } from "./files";
 import { renderMarkdown } from "./markdown";
 import { renderMermaidInHtml } from "./mermaid";
 import { renderPlantUmlInHtml } from "./plantuml";
+import { applyTextDirection, type TextDirection } from "./text-direction";
 
 // Tauri 2's WKWebView no-ops window.print(). We render a standalone html doc,
 // write to OS temp, then open in the default browser. Browser auto-prints on
@@ -100,24 +101,24 @@ export const PRINT_STYLES = `
   /* shiki spans carry inline color from the latte render — strip backgrounds for clean print */
   .shiki, .shiki span { background-color: transparent !important; }
   blockquote {
-    border-left: 3px solid var(--paccent);
-    padding-left: 16px;
+    border-inline-start: 3px solid var(--paccent);
+    padding-inline-start: 16px;
     color: var(--pmuted);
     font-style: italic;
   }
   hr { border: none; border-top: 1px solid var(--pborder); margin: 2em 0; }
-  ul, ol { padding-left: 24px; }
+  ul, ol { padding-inline-start: 24px; }
   li { margin: 0.25em 0; }
-  .task-list-item { list-style: none; margin-left: -1.4em; }
+  .task-list-item { list-style: none; margin-inline-start: -1.4em; }
   .task-list-item input[type="checkbox"] {
-    margin-right: 0.5em;
+    margin-inline-end: 0.5em;
     accent-color: var(--paccent);
     width: 0.95em;
     height: 0.95em;
     vertical-align: -0.1em;
   }
   table { border-collapse: collapse; width: 100%; }
-  th, td { border: 1px solid var(--pborder); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th, td { border: 1px solid var(--pborder); padding: 8px 12px; text-align: start; vertical-align: top; }
   th { background: rgba(0, 0, 0, 0.03); font-weight: 600; }
   .mdv-mermaid { background: transparent; border: 0; padding: 0; text-align: center; }
   .mdv-mermaid svg { max-width: 100%; height: auto; }
@@ -125,6 +126,7 @@ export const PRINT_STYLES = `
   .mdv-plantuml figcaption { display: none; }
   .mdv-plantuml__img { display: block; max-width: 100%; height: auto; margin: 0 auto; }
   .mdv-copy, .mdv-codeblock > .mdv-copy { display: none !important; }
+  :where(code, kbd, samp, pre, .mdv-codeblock, .mdv-mermaid, .mdv-plantuml) { direction: ltr; unicode-bidi: isolate; }
   @page { margin: 0; size: auto; }
   @media print {
     body { margin: 0; padding: 0; }
@@ -147,10 +149,11 @@ type ExportOpts = {
   activePath: string | null;
   /** active tab title — drives the PDF document name (browser save-as default) */
   documentName?: string;
+  textDirection?: TextDirection;
 };
 
 /** Export markdown as self-contained print HTML and open in browser to save as PDF. */
-export async function exportPreviewToPdf({ source, activePath, documentName }: ExportOpts): Promise<void> {
+export async function exportPreviewToPdf({ source, activePath, documentName, textDirection = "auto" }: ExportOpts): Promise<void> {
   if (!source.trim()) {
     throw new PdfExportError("empty", "nothing to export. open or write some markdown first.");
   }
@@ -166,6 +169,11 @@ export async function exportPreviewToPdf({ source, activePath, documentName }: E
   const renderedHtml = await renderMarkdown(source, "latte");
   const diagramHtml = renderPlantUmlInHtml(renderedHtml);
   const latteHtml = await renderMermaidInHtml(diagramHtml, "default");
+  const article = document.createElement("article");
+  article.className = "mdv-prose";
+  article.dataset.theme = "latte";
+  article.innerHTML = latteHtml;
+  applyTextDirection(article, textDirection);
 
   const html = `<!doctype html>
 <html lang="en">
@@ -177,7 +185,7 @@ export async function exportPreviewToPdf({ source, activePath, documentName }: E
 </head>
 <body>
   <main class="doc">
-    <article class="mdv-prose" data-theme="latte">${latteHtml}</article>
+    ${article.outerHTML}
   </main>
   <script>
     window.addEventListener("load", () => {

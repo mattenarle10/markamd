@@ -46,6 +46,7 @@ import {
   normalizeProseFontFamily,
   normalizeReadingFontSize,
   normalizeReadingWidth,
+  normalizeTextDirection,
   normalizeStartupMode,
   normalizeWritingFontSize,
   normalizeWritingLineHeight,
@@ -62,6 +63,7 @@ import {
   type ReadingFontSize,
   type ReadingWidth,
   type StartupMode,
+  type TextDirection,
   type WritingDisplay,
   type WritingFontSize,
   type WritingLineHeight,
@@ -374,6 +376,11 @@ export function App() {
     STORAGE_KEYS.proseFontFamily,
     DEFAULT_WRITING_DISPLAY.proseFontFamily,
   );
+  const [textDirectionRaw, setTextDirection] = usePersistedState<TextDirection>(
+    STORAGE_KEYS.textDirection,
+    "auto",
+  );
+  const textDirection = normalizeTextDirection(textDirectionRaw);
   const [dragActive, setDragActive] = useState(false);
   const [stagedPaths, setStagedPaths] = useState<string[]>([]);
   const [stagedTokenLabel, setStagedTokenLabel] = useState("0");
@@ -410,7 +417,7 @@ export function App() {
   const exportToPdf = useCallback(async () => {
     try {
       const documentName = tabs.find((tab) => tab.id === activeTabId)?.title;
-      await exportPreviewToPdf({ source, activePath, documentName });
+      await exportPreviewToPdf({ source, activePath, documentName, textDirection });
     } catch (err) {
       const message = err instanceof PdfExportError
         ? err.message
@@ -418,7 +425,7 @@ export function App() {
       console.error("marka.md: pdf export failed", err);
       setLoadError({ message });
     }
-  }, [source, activePath, tabs, activeTabId, setLoadError, t]);
+  }, [source, activePath, tabs, activeTabId, setLoadError, textDirection, t]);
 
 
   const toggleFullscreen = useCallback(async () => {
@@ -494,8 +501,9 @@ export function App() {
       source,
       filePath: activePath,
       title: previewWindowTitle,
+      textDirection,
     });
-  }, [activePath, previewWindowTitle, source]);
+  }, [activePath, previewWindowTitle, source, textDirection]);
 
   const openPreviewWindow = useCallback(async () => {
     try {
@@ -1122,7 +1130,7 @@ export function App() {
       <main className="mdv-shell">
         {readingMode ? (
           <>
-            <Preview source={debouncedPreview} filePath={activePath} onOpenPreviewWindow={openPreviewWindow} />
+            <Preview source={debouncedPreview} filePath={activePath} onOpenPreviewWindow={openPreviewWindow} textDirection={textDirection} />
             <TocPanel
               open={tocVisible}
               scope={proseEl}
@@ -1182,7 +1190,7 @@ export function App() {
               ) : (
                 <Splitter
                   left={<Editor value={source} onChange={setSource} vimOn={vimOn} onVimMode={setVimMode} viewRef={editorViewRef} />}
-                  right={<Preview source={debouncedPreview} filePath={activePath} onOpenPreviewWindow={openPreviewWindow} />}
+                  right={<Preview source={debouncedPreview} filePath={activePath} onOpenPreviewWindow={openPreviewWindow} textDirection={textDirection} />}
                 />
               )}
             </div>
@@ -1336,6 +1344,8 @@ export function App() {
         onResetWritingDisplay={resetWritingDisplay}
         startupMode={startupMode}
         onStartupModeChange={setStartupModeStored}
+        textDirection={textDirection}
+        onTextDirectionChange={setTextDirection}
         onClose={() => setSettingsOpen(false)}
       />
 
