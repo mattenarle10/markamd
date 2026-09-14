@@ -3,7 +3,7 @@ import { readFile } from "@tauri-apps/plugin-fs";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { ExternalLink } from "lucide-react";
 import { Button, Icon } from "@/components/primitives";
-import { renderMarkdown, useI18n, useTheme } from "@/lib";
+import { applyTextDirection, renderMarkdown, useI18n, useTheme, type TextDirection } from "@/lib";
 import { extensionFromMarkdownAssetSrc, markdownMediaAssetForExtension } from "@/lib/media-assets";
 import inspectUrl from "@/assets/mascot/inspect.png";
 import { renderMermaidBlocks } from "@/lib/mermaid";
@@ -24,6 +24,7 @@ type PreviewProps = {
   source: string;
   filePath?: string | null;
   onOpenPreviewWindow?: () => void;
+  textDirection?: TextDirection;
 };
 
 // hand-written lucide copy + check icons so we don't drag in react-dom/server
@@ -144,7 +145,7 @@ function decorateCodeBlocks(root: HTMLElement): () => void {
   return () => cleanups.forEach((fn) => fn());
 }
 
-export function Preview({ source, filePath, onOpenPreviewWindow }: PreviewProps) {
+export function Preview({ source, filePath, onOpenPreviewWindow, textDirection = "auto" }: PreviewProps) {
   const theme = useTheme();
   const { t } = useI18n();
   const [viewer, setViewer] = useState<DiagramViewer | null>(null);
@@ -186,9 +187,10 @@ export function Preview({ source, filePath, onOpenPreviewWindow }: PreviewProps)
   // rendered DOM with media resolution, diagram viewers, and code copy buttons.
   useEffect(() => {
     if (!articleRef.current || csvPreview) return;
+    applyTextDirection(articleRef.current, textDirection);
     replaceRemoteMediaImages(articleRef.current);
     if (filePath) void resolveMarkdownMediaAssets(articleRef.current, filePath);
-  }, [html, filePath, csvPreview]);
+  }, [html, filePath, csvPreview, textDirection]);
 
   useEffect(() => {
     if (!articleRef.current || csvPreview) return;

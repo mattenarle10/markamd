@@ -5,6 +5,7 @@
   font-size: var(--mdv-prose-font-size);
   line-height: var(--mdv-prose-line-height);
   color: var(--fg);
+  unicode-bidi: plaintext;
 }
 
 .mdv-prose > * + * {
@@ -32,7 +33,7 @@
 .mdv-prose h1::after {
   content: "";
   position: absolute;
-  left: 0;
+  inset-inline-start: 0;
   bottom: -1px;
   width: 36px;
   height: 1px;
@@ -92,7 +93,7 @@
 .mdv-copy {
   position: absolute;
   top: 8px;
-  right: 8px;
+  inset-inline-end: 8px;
   display: inline-flex;
   align-items: center;
   font-family: var(--font-mono);
@@ -189,7 +190,7 @@
 .mdv-mermaid__open {
   position: absolute;
   top: 8px;
-  right: 8px;
+  inset-inline-end: 8px;
   width: 28px;
   height: 28px;
   display: grid;
@@ -284,7 +285,7 @@
 .mdv-plantuml__open {
   position: absolute;
   top: 10px;
-  right: 10px;
+  inset-inline-end: 10px;
   width: 28px;
   height: 28px;
   display: grid;
@@ -479,15 +480,16 @@
 }
 
 .mdv-prose blockquote {
-  border-left: 2px solid var(--accent);
-  padding: 2px 0 2px 14px;
+  border-inline-start: 2px solid var(--accent);
+  padding-block: 2px;
+  padding-inline-start: 14px;
   color: var(--muted);
   font-style: italic;
 }
 
 .mdv-prose ul,
 .mdv-prose ol {
-  padding-left: 1.4em;
+  padding-inline-start: 1.4em;
 }
 
 .mdv-prose li + li {
@@ -499,15 +501,20 @@
    broken. (#21) */
 .mdv-prose .task-list-item {
   list-style: none;
-  margin-left: -1.4em;
+  margin-inline-start: -1.4em;
 }
 .mdv-prose .task-list-item input[type="checkbox"] {
-  margin-right: 0.5em;
+  margin-inline-end: 0.5em;
   accent-color: var(--accent);
   width: 0.95em;
   height: 0.95em;
   vertical-align: -0.1em;
   cursor: default;
+}
+
+.mdv-prose :where(code, kbd, samp, pre, .mdv-codeblock, .mdv-mermaid, .mdv-plantuml) {
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .mdv-prose hr {

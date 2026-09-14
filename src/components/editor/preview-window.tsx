@@ -3,11 +3,13 @@ import { emitTo, listen } from "@tauri-apps/api/event";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useAppZoom } from "@/hooks/use-app-zoom";
 import { Preview } from "./preview";
+import type { TextDirection } from "@/lib";
 
 type PreviewWindowState = {
   source: string;
   filePath?: string | null;
   title?: string;
+  textDirection?: TextDirection;
 };
 
 export function PreviewWindow() {
@@ -16,6 +18,7 @@ export function PreviewWindow() {
     source: "",
     filePath: null,
     title: "preview",
+    textDirection: "auto",
   });
 
   useEffect(() => {
@@ -43,7 +46,7 @@ export function PreviewWindow() {
 
   return (
     <div className="mdv-preview-window">
-      <Preview source={state.source} filePath={state.filePath ?? null} />
+    <Preview source={state.source} filePath={state.filePath ?? null} textDirection={state.textDirection} />
     </div>
   );
 }

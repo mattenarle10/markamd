@@ -23,6 +23,7 @@ export const STORAGE_KEYS = {
   viewMode: "mdview.viewMode",
   tocVisible: "mdview.toc.visible",
   zoomLevel: "mdview.zoomLevel",
+  textDirection: "mdview.textDirection",
 } as const;
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];
