@@ -137,6 +137,18 @@ const md = new MarkdownIt({
 md.use(taskLists, { enabled: false, label: true });
 md.use(mark);
 
+// raw html stays off, but bare <br> is the only way to break lines inside
+// GFM table cells — allow exactly that tag, no attributes.
+const BR_RE = /^<br\s*\/?>/i;
+md.inline.ruler.before("html_inline", "br_tag", (state, silent) => {
+  if (state.src.charCodeAt(state.pos) !== 0x3c /* < */) return false;
+  const match = BR_RE.exec(state.src.slice(state.pos));
+  if (!match) return false;
+  if (!silent) state.push("hardbreak", "br", 0);
+  state.pos += match[0].length;
+  return true;
+});
+
 // stamp block tokens with their source line range so the preview DOM can be
 // mapped back to exact positions in the markdown source (selection sync)
 md.core.ruler.push("source_lines", (state) => {
