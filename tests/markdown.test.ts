@@ -38,3 +38,23 @@ test("leaves an unterminated opening delimiter as ordinary markdown", async () =
   expect(html).toContain("<hr");
   expect(html).toContain("key: value");
 });
+
+test("renders <br> tags as line breaks inside table cells", async () => {
+  const source = [
+    "| name | desc |",
+    "| --- | --- |",
+    "| code | 0=success<br>other=failed<br/>x<br />y |",
+  ].join("\n");
+
+  const html = await renderMarkdown(source, "latte");
+
+  expect(html).toContain("<td>0=success<br>\nother=failed<br>\nx<br>\ny</td>");
+});
+
+test("keeps other raw html escaped", async () => {
+  const html = await renderMarkdown("a<br>b <script>alert(1)</script> <br onclick=x>", "latte");
+
+  expect(html).toContain("a<br>\nb");
+  expect(html).toContain("&lt;script&gt;");
+  expect(html).toContain("&lt;br onclick=x&gt;");
+});
