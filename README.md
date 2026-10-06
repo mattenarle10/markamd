@@ -31,7 +31,7 @@ works with claude, chatgpt, gemini, local agents, and anything that reads plain 
 |---|---|
 | writing | live preview, shiki highlighting, mermaid diagrams, media previews, task lists, mark/strike syntax, reading mode, editor-only mode, opt-in vim |
 | ai context | stage sidebar files, see file/token counts, copy one AI-ready bundle with relative paths |
-| files | tabs, folder sidebar, favorites, search, drag-to-move, undo file ops, copy paths, reveal in file manager, useful dot-tool folders |
+| files | tabs, folder sidebar, favorites, search, manual refresh, drag-to-move, undo file ops, copy paths, reveal in file manager, useful dot-tool folders |
 | data + export | capped CSV preview, rendered code copy buttons, mermaid-aware PDF export, stable print margins |
 | desktop polish | grouped themes, transparency controls, platform-aware shortcuts, session restore, external file watching, signed updates |
 
@@ -104,7 +104,7 @@ shortcuts shown with **macOS** modifiers below. on **Windows / Linux**, substitu
 
 | layer | choice |
 |---|---|
-| shell | tauri 2.11 (rust + webview), macOS universal (arm64 + x86_64) · Windows · Linux |
+| shell | tauri 2.12 (rust + webview), macOS universal (arm64 + x86_64) · Windows · Linux |
 | frontend | react 19 · vite 7 · typescript 7 · bun |
 | editor | codemirror 6 + `@codemirror/lang-markdown` + `@codemirror/search` · opt-in vim via `@replit/codemirror-vim` |
 | markdown | markdown-it + markdown-it-mark + markdown-it-task-lists + shiki (lazy themes + langs) + mermaid (lazy) |
@@ -122,6 +122,7 @@ Per-release detail lives on the [changelog](https://markamd.vercel.app/changelog
 - [x] v1.6.1 workflow: automatic folder monitoring, native file watching, and lazy markdown highlighting
 - [x] v1.7.1 workflow: quick file previews, app-wide zoom, and faster folder watching
 - [x] [v1.7.2 patch](docs/release-notes/v1.7.2.md): public updater downloads, active-file reload reliability, and Linux Wayland AppImage startup
+- [x] [v1.7.6 patch](docs/release-notes/v1.7.6.md): manual explorer refresh and Tauri 2.12
 - [ ] next: native/silent PDF generation
 - [ ] next: context handoff presets for bring-your-own-ai workflows, starting with markdown and XML-tag bundle formats
 
