@@ -332,6 +332,18 @@ jobs:
       - name: checkout release tooling
         uses: actions/checkout@v7
 
+      - name: publish draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "publishing draft release for ${{ env.RELEASE_TAG }}"
+          gh release edit "${{ env.RELEASE_TAG }}" \
+            --repo "${{ github.repository }}" \
+            --draft=false \
+            --latest
+
+      # runs after publishing: a draft's asset download URLs use a temporary
+      # untagged-… path that stops resolving once the release is public.
       - name: normalize updater manifest URLs
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -359,25 +371,18 @@ jobs:
             --jq '[.[] | select(.tag_name == "${{ env.RELEASE_TAG }}") | .assets | map({ name, url, browser_download_url })][0] // []' \
             > "$WORK_DIR/release-assets.json"
 
+          # the uploaded file must itself be named latest.json: `path#label`
+          # only sets a display label and would add a second asset instead.
+          mkdir -p "$WORK_DIR/out"
           node scripts/normalize-latest-json.mjs \
             "$WORK_DIR/latest.json" \
             "$WORK_DIR/release-assets.json" \
-            "$WORK_DIR/latest.normalized.json"
+            "$WORK_DIR/out/latest.json"
 
           gh release upload "${{ env.RELEASE_TAG }}" \
-            "$WORK_DIR/latest.normalized.json#latest.json" \
+            "$WORK_DIR/out/latest.json" \
             --repo "${{ github.repository }}" \
             --clobber
-
-      - name: publish draft release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "publishing draft release for ${{ env.RELEASE_TAG }}"
-          gh release edit "${{ env.RELEASE_TAG }}" \
-            --repo "${{ github.repository }}" \
-            --draft=false \
-            --latest
 
   # fires a Vercel deploy hook after a release publishes so markamd.vercel.app
   # rebuilds and picks up the new version automatically (no manual empty
