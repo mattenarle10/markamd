@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Copy, FolderPlus, Search, Trash2, X } from "lucide-react";
+import { Copy, FolderPlus, RefreshCw, Search, Trash2, X } from "lucide-react";
 import { Button, Icon } from "@/components/primitives";
 import { startWindowDrag, useI18n, type FileEntry } from "@/lib";
 import emptyTowerUrl from "@/assets/mascot/empty-m.png";
@@ -16,6 +16,7 @@ type SidebarProps = {
   width: number;
   onWidthChange: (next: number) => void;
   onAddFolder: () => void;
+  onRefresh?: () => void;
   onCloseFolder: (path: string) => void;
   onSelectFile: (path: string) => void;
   onMove?: (src: string, dstParent: string) => void;
@@ -38,6 +39,7 @@ type SidebarProps = {
 };
 
 const MIN_WIDTH = 180;
+const REFRESH_SPIN_MS = 600;
 
 export function Sidebar({
   open,
@@ -47,6 +49,7 @@ export function Sidebar({
   width,
   onWidthChange,
   onAddFolder,
+  onRefresh,
   onCloseFolder,
   onSelectFile,
   onMove,
@@ -145,6 +148,25 @@ export function Sidebar({
     setQuery("");
   }, []);
 
+  // brief spin so a refresh reads as handled even when nothing changed on disk
+  const [refreshing, setRefreshing] = useState(false);
+  const refreshTimerRef = useRef<number | null>(null);
+  const handleRefresh = useCallback(() => {
+    onRefresh?.();
+    setRefreshing(true);
+    if (refreshTimerRef.current != null) window.clearTimeout(refreshTimerRef.current);
+    refreshTimerRef.current = window.setTimeout(() => {
+      refreshTimerRef.current = null;
+      setRefreshing(false);
+    }, REFRESH_SPIN_MS);
+  }, [onRefresh]);
+
+  useEffect(() => {
+    return () => {
+      if (refreshTimerRef.current != null) window.clearTimeout(refreshTimerRef.current);
+    };
+  }, []);
+
   return (
     <aside
       className={`mdv-sidebar${open ? " is-open" : ""}`}
@@ -164,6 +186,18 @@ export function Sidebar({
                 aria-pressed={searchOpen}
                 onClick={() => (searchOpen ? closeSearch() : setSearchOpen(true))}
                 icon={<Icon icon={Search} size={12} strokeWidth={1.5} />}
+              />
+            ) : null}
+            {folders.length > 0 && onRefresh ? (
+              <Button
+                data-tooltip={t("sidebar.refresh")}
+                aria-label={t("sidebar.refresh")}
+                onClick={handleRefresh}
+                icon={
+                  <span className={`mdv-sidebar__refresh-icon${refreshing ? " is-spinning" : ""}`}>
+                    <Icon icon={RefreshCw} size={12} strokeWidth={1.5} />
+                  </span>
+                }
               />
             ) : null}
             <Button

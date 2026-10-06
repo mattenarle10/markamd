@@ -15,6 +15,7 @@ function commandActions(
     openFolder: noop,
     save: noop,
     toggleSidebar: noop,
+    refreshExplorer: noop,
     toggleReading: noop,
     toggleEditorOnly: noop,
     showHelp: noop,
@@ -34,6 +35,7 @@ function commandActions(
     recentFiles: [],
     hasActivePath: true,
     sidebarOpen: false,
+    hasFolder: false,
     readingMode: false,
     editorOnly: false,
     tocVisible: false,
@@ -82,6 +84,14 @@ test("groups layout commands under workspace instead of view", () => {
   expect(commands.some((command) => String(command.category) === "view")).toBe(false);
   expect(commands.find((command) => command.id === "toggle-reading")?.category).toBe("workspace");
   expect(commands.find((command) => command.id === "toggle-sidebar")?.category).toBe("workspace");
+});
+
+test("offers explorer refresh only while a folder is open", () => {
+  const withoutFolder = buildCommands(commandActions());
+  const withFolder = buildCommands(commandActions({ hasFolder: true }));
+
+  expect(withoutFolder.some((command) => command.id === "refresh-explorer")).toBe(false);
+  expect(withFolder.find((command) => command.id === "refresh-explorer")?.category).toBe("workspace");
 });
 
 test("exposes settings in its own command category", () => {

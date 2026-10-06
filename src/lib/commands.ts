@@ -24,6 +24,7 @@ import {
   Moon,
   PanelLeftClose,
   PanelLeftOpen,
+  RefreshCw,
   Save,
   Settings,
   Sparkles,
@@ -53,6 +54,7 @@ export type CommandActions = {
   openFolder: () => void | Promise<void>;
   save: () => void;
   toggleSidebar: () => void;
+  refreshExplorer: () => void;
   toggleReading: () => void;
   toggleEditorOnly: () => void;
   showHelp: () => void;
@@ -72,6 +74,7 @@ export type CommandActions = {
   recentFiles: readonly string[];
   hasActivePath: boolean;
   sidebarOpen: boolean;
+  hasFolder: boolean;
   readingMode: boolean;
   editorOnly: boolean;
   tocVisible: boolean;
@@ -148,6 +151,17 @@ export function buildCommands(actions: CommandActions, t: Translate = defaultT):
         action: actions.toggleToc,
       }]
     : [];
+  const explorerCommands: Command[] = actions.hasFolder
+    ? [{
+        id: "refresh-explorer",
+        label: t("command.refreshExplorer"),
+        hint: t("command.refreshExplorerHint"),
+        icon: RefreshCw,
+        category: "workspace",
+        keywords: ["refresh", "reload", "explorer", "tree", "files"],
+        action: actions.refreshExplorer,
+      }]
+    : [];
 
   return [
     ...recent,
@@ -211,6 +225,7 @@ export function buildCommands(actions: CommandActions, t: Translate = defaultT):
       keywords: ["sidebar", "explorer", "tree", "files"],
       action: actions.toggleSidebar,
     },
+    ...explorerCommands,
     {
       id: "toggle-reading",
       label: actions.readingMode ? t("command.exitReading") : t("command.enterReading"),

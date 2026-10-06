@@ -69,6 +69,26 @@
   flex-shrink: 0;
 }
 
+.mdv-sidebar__refresh-icon {
+  display: inline-flex;
+}
+
+.mdv-sidebar__refresh-icon.is-spinning {
+  animation: mdv-sidebar-refresh-spin 600ms var(--easing);
+}
+
+@keyframes mdv-sidebar-refresh-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mdv-sidebar__refresh-icon.is-spinning {
+    animation: none;
+  }
+}
+
 .mdv-sidebar__body {
   flex: 1;
   min-height: 0;

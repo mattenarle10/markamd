@@ -1033,6 +1033,7 @@ export function App() {
           }
         },
         toggleSidebar: handleToggleSidebar,
+        refreshExplorer: bumpTree,
         toggleReading: toggleReadingMode,
         showHelp,
         showWelcome,
@@ -1051,6 +1052,7 @@ export function App() {
         recentFiles,
         hasActivePath: activePath != null,
         sidebarOpen,
+        hasFolder: folders.length > 0,
         readingMode,
         editorOnly,
         toggleEditorOnly,
@@ -1081,6 +1083,8 @@ export function App() {
       insertMarkdown,
       toggleFullscreen,
       handleToggleSidebar,
+      bumpTree,
+      folders.length,
       loadFile,
       recentFiles,
       stagedPaths.length,
@@ -1154,6 +1158,7 @@ export function App() {
               width={sidebarWidth}
               onWidthChange={setSidebarWidth}
               onAddFolder={handleOpenFolder}
+              onRefresh={bumpTree}
               onCloseFolder={handleCloseFolder}
               onSelectFile={handleSelectFile}
               onMove={handleMove}
