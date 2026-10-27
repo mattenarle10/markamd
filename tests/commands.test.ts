@@ -3,6 +3,7 @@ import {
   buildCommands,
   type CommandActions,
 } from "../src/lib/commands";
+import { FULLSCREEN_SHORTCUT } from "../src/lib/shortcuts";
 
 const noop = () => undefined;
 
@@ -65,6 +66,12 @@ test("keeps the separate preview window out of the command palette", () => {
   const commands = buildCommands(commandActions());
 
   expect(commands.some((command) => command.id === "open-preview-window")).toBe(false);
+});
+
+test("shows the platform fullscreen shortcut in the command palette", () => {
+  const commands = buildCommands(commandActions());
+
+  expect(commands.find((command) => command.id === "fullscreen")?.shortcut).toBe(FULLSCREEN_SHORTCUT.label);
 });
 
 test("includes markdown insertion commands", () => {

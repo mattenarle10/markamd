@@ -33,6 +33,7 @@ import {
 import { basename, dirname } from "./files";
 import { setThemeMode, setTransparency, THEME_CHOICES, THEME_HINTS, type ThemeMode } from "./theme";
 import type { Translate } from "./i18n";
+import { FULLSCREEN_SHORTCUT } from "./shortcuts";
 
 export type CommandCategory = "recent" | "file" | "workspace" | "edit" | "share" | "theme" | "settings" | "help";
 
@@ -300,7 +301,7 @@ export function buildCommands(actions: CommandActions, t: Translate = defaultT):
       id: "fullscreen",
       label: t("command.fullscreen"),
       hint: t("command.fullscreenHint"),
-      shortcut: "⌃⌘F",
+      shortcut: FULLSCREEN_SHORTCUT.label,
       icon: Maximize2,
       category: "workspace",
       keywords: ["fullscreen", "window", "native"],

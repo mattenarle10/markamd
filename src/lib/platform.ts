@@ -30,8 +30,8 @@ export function displayKey(macGlyph: string): string {
 //                                 win → "reading mode (Ctrl+.)"
 //   "copy markdown (⌘⇧C)"         mac → "copy markdown (⌘⇧C)"
 //                                 win → "copy markdown (Ctrl+Shift+C)"
-//   "fullscreen (⌃⌘F)"           mac → "fullscreen (⌃⌘F)"
-//                                 win → "fullscreen (Ctrl+F)" (no extra Ctrl)
+// Platform-specific bindings such as fullscreen must select their own label;
+// glyph translation alone cannot choose a different shortcut such as F11.
 // Use this for any string passed to `data-tooltip` or button `aria-label`.
 export function shortcutLabel(label: string): string {
   if (IS_MAC) return label;
