@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Download, FileText, Layers3, Palette, Sparkles, Table2, X } from "lucide-react";
 import { Button, Icon, Kbd, Overlay, Shortcut } from "@/components/primitives";
-import { shortcutLabel, useI18n, type Translate } from "@/lib";
+import { FULLSCREEN_SHORTCUT, shortcutLabel, useI18n, type Translate } from "@/lib";
 import writeUrl from "@/assets/mascot/write.png";
 
 type HelpOverlayProps = {
@@ -65,7 +65,7 @@ function getGroups(t: Translate): Group[] {
       { keys: "⌘+=", label: t("help.zoomIn") },
       { keys: "⌘+-", label: t("help.zoomOut") },
       { keys: "⌘+0", label: t("help.zoomReset") },
-      { keys: "⌃+⌘+F", label: t("help.toggleFullscreen") },
+      { keys: FULLSCREEN_SHORTCUT.keys, label: t("help.toggleFullscreen") },
     ],
   },
   {

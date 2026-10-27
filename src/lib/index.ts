@@ -93,6 +93,7 @@ export { startWindowDrag } from "./window-drag";
 export { exportPreviewToPdf, PdfExportError } from "./pdf-export";
 export { previewKindForPath, previewMimeForPath, htmlDocWithBase, type PreviewKind } from "./preview";
 export { IS_MAC, IS_WINDOWS, IS_LINUX, displayKey, shortcutLabel } from "./platform";
+export { FULLSCREEN_SHORTCUT } from "./shortcuts";
 export {
   pickFolder,
   pickMarkdownFile,

@@ -37,6 +37,7 @@ import {
   estimateTokens,
   exportPreviewToPdf,
   formatContextBundle,
+  FULLSCREEN_SHORTCUT,
   getWritingDisplayVars,
   getContextBundleStats,
   getWhatsNewToastMessage,
@@ -962,7 +963,7 @@ export function App() {
         e.preventDefault();
         exportToPdf();
       },
-      "mod+ctrl+f": (e: KeyboardEvent) => {
+      [FULLSCREEN_SHORTCUT.binding]: (e: KeyboardEvent) => {
         e.preventDefault();
         void toggleFullscreen();
       },
