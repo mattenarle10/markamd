@@ -149,6 +149,7 @@ export function App() {
     dismissExternalReload,
     externalConflict,
     setExternalConflict,
+    acceptExternalChange,
     loadFile,
     loadDemo,
     saveNow,
@@ -1311,7 +1312,7 @@ export function App() {
           label: t("app.reloadDiscard"),
           onClick: () => {
             if (externalConflict != null) {
-              setSource(externalConflict);
+              acceptExternalChange(externalConflict);
             }
             setExternalConflict(null);
           },

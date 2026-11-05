@@ -296,5 +296,9 @@
   "diagram.actualSize": "actual size",
   "tabs.openFiles": "open files",
   "tabs.close": "close {name}",
-  "tabs.closeUnsaved": "Close \"{name}\" with unsaved changes?"
+  "tabs.closeUnsaved": "Close \"{name}\" with unsaved changes?",
+  "app.draftBackupFailed": "couldn't back up unsaved changes. Save your work before closing the app.",
+  "app.draftRecoveryFailed": "couldn't restore draft backups. The backup was left untouched. Save your work before closing the app.",
+  "app.draftFileMissing": "\"{name}\" is missing. Your recovered draft is still here; use Save As to keep it.",
+  "app.draftFileReadFailed": "couldn't check the original file. Your recovered draft is still here."
 }
