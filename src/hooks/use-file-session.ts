@@ -6,12 +6,14 @@ import {
   pickSaveMarkdown,
   readMarkdown,
   STORAGE_KEYS,
+  useI18n,
   validatePlainTextFile,
   validateSupportedTextFile,
   writeMarkdown,
   type StartupMode,
 } from "@/lib";
 import { DEMO_MARKDOWN } from "@/lib/demo";
+import { captureDraftSession, readDraftSession, reconcileRecoveredDraft, writeDraftSession } from "@/lib/drafts";
 import type { SaveStatus } from "@/components/chrome";
 import { usePersistedState } from "./use-persisted-state";
 import { useFileWatcher } from "./use-file-watcher";
@@ -74,18 +76,30 @@ type UseFileSessionResult = {
 };
 
 export function useFileSession({ onLoadError, startupMode = "welcome" }: UseFileSessionArgs = {}): UseFileSessionResult {
+  const { t } = useI18n();
+  const [recovery] = useState(() => {
+    try {
+      return { session: typeof window === "undefined" ? null : readDraftSession(window.localStorage), failed: false };
+    } catch {
+      // Preserve an unreadable backup rather than overwriting it with a new session.
+      return { session: null, failed: true };
+    }
+  });
+  const recoveredActive = recovery.session?.drafts.find((tab) => tab.id === recovery.session?.activeTabId);
   const initialContent = startupMode === "blank" ? "" : DEMO_MARKDOWN;
-  const [source, setSource] = useState<string>(initialContent);
-  const [savedContent, setSavedContent] = useState<string>(initialContent);
-  const [activePath, setActivePath] = usePersistedState<string | null>(
+  const [source, setSource] = useState<string>(recoveredActive?.source ?? initialContent);
+  const [savedContent, setSavedContent] = useState<string>(recoveredActive?.savedContent ?? initialContent);
+  const [lastFile, setLastFile] = usePersistedState<string | null>(
     STORAGE_KEYS.lastFile,
     null,
   );
+  const [activePath, setActivePath] = useState<string | null>(recoveredActive ? recoveredActive.path : lastFile);
+  useEffect(() => setLastFile(activePath), [activePath, setLastFile]);
   const [rootPath, setRootPath] = usePersistedState<string | null>(
     STORAGE_KEYS.lastFolder,
     null,
   );
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>(recoveredActive ? "dirty" : "idle");
   const [recentFiles, setRecentFiles] = usePersistedState<string[]>(
     STORAGE_KEYS.recentFiles,
     [],
@@ -94,17 +108,31 @@ export function useFileSession({ onLoadError, startupMode = "welcome" }: UseFile
   const [externalConflict, setExternalConflict] = useState<string | null>(null);
   const loadSeq = useRef(0);
   const tabSeq = useRef(1);
-  const [activeTabId, setActiveTabId] = useState(INITIAL_TAB_ID);
-  const [tabs, setTabs] = useState<FileTab[]>([
-    {
-      id: INITIAL_TAB_ID,
-      path: null,
-      title: UNTITLED_TITLE,
-      source: initialContent,
-      savedContent: initialContent,
-      waitMarkers: [],
-    },
-  ]);
+  const recoveredIds = useRef(new Set(recovery.session?.drafts.map((tab) => tab.id)));
+  const [activeTabId, updateActiveTabId] = useState(recoveredActive?.id ?? INITIAL_TAB_ID);
+  const activeTabIdRef = useRef(activeTabId);
+  const setActiveTabId = useCallback((id: string) => {
+    // A pending save must see a tab switch before React commits the next render.
+    activeTabIdRef.current = id;
+    updateActiveTabId(id);
+  }, []);
+  useEffect(() => setExternalConflict(null), [activePath, activeTabId]);
+  const [tabs, setTabs] = useState<FileTab[]>(() => recovery.session
+    ? recovery.session.drafts.map((draft) => ({
+        ...draft,
+        title: draft.path ? basename(draft.path) : UNTITLED_TITLE,
+        waitMarkers: [],
+      }))
+    : [
+        {
+          id: INITIAL_TAB_ID,
+          path: null,
+          title: UNTITLED_TITLE,
+          source: initialContent,
+          savedContent: initialContent,
+          waitMarkers: [],
+        },
+      ]);
 
   const sourceRef = useRef(source);
   const savedRef = useRef(savedContent);
@@ -158,6 +186,7 @@ export function useFileSession({ onLoadError, startupMode = "welcome" }: UseFile
     )), [activeTabId, titleForPath]);
 
   const setSourceAndTab = useCallback((next: string) => {
+    sourceRef.current = next;
     setSource(next);
     setTabs((prev) => prev.map((tab) => (
       tab.id === activeTabId ? { ...tab, source: next } : tab
@@ -167,6 +196,7 @@ export function useFileSession({ onLoadError, startupMode = "welcome" }: UseFile
   const dismissExternalReload = useCallback(() => setExternalReloadToast(false), []);
 
   const acceptExternalChange = useCallback((fresh: string) => {
+    recoveredIds.current.delete(activeTabId);
     setSource(fresh);
     setSavedContent(fresh);
     setTabs((prev) => prev.map((tab) => (
@@ -316,11 +346,11 @@ export function useFileSession({ onLoadError, startupMode = "welcome" }: UseFile
       path: null,
       title: UNTITLED_TITLE,
       source: initial,
-      savedContent: initial,
+      savedContent: "",
       waitMarkers: [],
     };
     setSource(initial);
-    setSavedContent(initial);
+    setSavedContent("");
     setActivePath(null);
     setTabs((prev) => [...snapshotActiveTab(prev), tab]);
     setActiveTabId(tab.id);
@@ -332,22 +362,27 @@ export function useFileSession({ onLoadError, startupMode = "welcome" }: UseFile
   }, [makeTabId, setActivePath, snapshotActiveTab]);
 
   const saveNow = useCallback(async (path: string, content: string) => {
+    const savingTabId = activeTabId;
     setSaveStatus("saving");
     try {
       await writeMarkdown(path, content);
-      setSavedContent(content);
+      recoveredIds.current.delete(savingTabId);
       setTabs((prev) => prev.map((tab) => (
-        tab.id === activeTabId
-          ? { ...tab, path, title: titleForPath(path), source: content, savedContent: content }
+        tab.id === savingTabId
+          ? { ...tab, path, title: titleForPath(path), savedContent: content }
           : tab
       )));
-      setSaveStatus("saved");
+      if (activeTabIdRef.current !== savingTabId) return;
+      savedRef.current = content;
+      setSavedContent(content);
+      setActivePath(path);
+      setSaveStatus(sourceRef.current === content ? "saved" : "dirty");
       window.setTimeout(() => {
         setSaveStatus((s) => (s === "saved" ? "idle" : s));
       }, SAVED_FLASH_MS);
     } catch (err) {
       console.error("marka.md: writeMarkdown failed", err);
-      setSaveStatus("dirty");
+      if (activeTabIdRef.current === savingTabId) setSaveStatus("dirty");
     }
   }, [activeTabId, titleForPath]);
 
@@ -394,15 +429,15 @@ export function useFileSession({ onLoadError, startupMode = "welcome" }: UseFile
     const target = await pickSaveMarkdown(defaultPath);
     if (!target) return null;
     await saveNow(target, source);
-    setActivePath(target);
     return target;
-  }, [activePath, rootPath, source, saveNow, setActivePath]);
+  }, [activePath, rootPath, source, saveNow]);
 
   const handleExternalChange = useCallback(async () => {
     if (!activePath) return;
     try {
       const fresh = await readMarkdown(activePath);
-      if (fresh === sourceRef.current) return;
+      if (activeTabIdRef.current !== activeTabId || activePathRef.current !== activePath) return;
+      if (fresh === sourceRef.current || fresh === savedRef.current) return;
       const isDirty = sourceRef.current !== savedRef.current;
       if (!isDirty) {
         setSource(fresh);
@@ -413,6 +448,7 @@ export function useFileSession({ onLoadError, startupMode = "welcome" }: UseFile
         setExternalReloadToast(true);
         window.setTimeout(() => setExternalReloadToast(false), 2400);
       } else {
+        recoveredIds.current.add(activeTabId);
         setExternalConflict(fresh);
       }
     } catch (err) {
@@ -423,7 +459,7 @@ export function useFileSession({ onLoadError, startupMode = "welcome" }: UseFile
 
   // mount-only: restore last open file from persisted activePath.
   useEffect(() => {
-    if (!activePath) return;
+    if (recovery.session || !activePath) return;
     let cancelled = false;
     void (async () => {
       try {
@@ -445,10 +481,68 @@ export function useFileSession({ onLoadError, startupMode = "welcome" }: UseFile
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Keep checking recovered files on activation until saved or explicitly discarded.
+  useEffect(() => {
+    if (!recoveredIds.current.has(activeTabId) || !activePath) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const exists = await pathExists(activePath);
+        const fresh = exists ? await readMarkdown(activePath) : null;
+        if (cancelled || activeTabIdRef.current !== activeTabId) return;
+        const result = reconcileRecoveredDraft({
+          id: activeTabId, path: activePath, source: sourceRef.current, savedContent: savedRef.current,
+        }, fresh);
+        if (result.missing) {
+          recoveredIds.current.delete(activeTabId);
+          setActivePath(null);
+          onLoadError?.({ message: t("app.draftFileMissing", { name: basename(activePath) }) });
+        } else if (result.conflict !== null) {
+          setExternalConflict(result.conflict);
+        } else if (result.savedContent !== savedRef.current) {
+          acceptExternalChange(result.savedContent);
+        }
+      } catch {
+        if (!cancelled) onLoadError?.({ message: t("app.draftFileReadFailed") });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTabId, activePath, acceptExternalChange, onLoadError, t]);
+
+  const backupFailed = useRef(false);
+  const flushDrafts = useRef(() => {});
+  flushDrafts.current = () => {
+    if (recovery.failed) return;
+    try {
+      const current = tabs.map((tab) => tab.id === activeTabId
+        ? { ...tab, path: activePathRef.current, source: sourceRef.current, savedContent: savedRef.current }
+        : tab);
+      writeDraftSession(window.localStorage, captureDraftSession(current, activeTabId));
+      backupFailed.current = false;
+    } catch {
+      if (!backupFailed.current) onLoadError?.({ message: t("app.draftBackupFailed") });
+      backupFailed.current = true;
+    }
+  };
+  useEffect(() => { flushDrafts.current(); }, [tabs, activeTabId, source, savedContent, activePath]);
+  useEffect(() => {
+    if (recovery.failed) onLoadError?.({ message: t("app.draftRecoveryFailed") });
+  }, [recovery.failed, onLoadError, t]);
+  useEffect(() => {
+    const flush = () => flushDrafts.current();
+    window.addEventListener("pagehide", flush);
+    window.addEventListener("beforeunload", flush);
+    return () => {
+      flush();
+      window.removeEventListener("pagehide", flush);
+      window.removeEventListener("beforeunload", flush);
+    };
+  }, []);
+
   // mark dirty as soon as content diverges from disk
   useEffect(() => {
     if (!activePath) {
-      setSaveStatus("idle");
+      setSaveStatus(source === savedContent ? "idle" : "dirty");
       return;
     }
     if (source !== savedContent) {
