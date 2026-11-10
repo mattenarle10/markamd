@@ -5,6 +5,7 @@ import { renderMarkdown } from "./markdown";
 import { renderMermaidInHtml } from "./mermaid";
 import { renderPlantUmlInHtml } from "./plantuml";
 import { applyTextDirection, type TextDirection } from "./text-direction";
+import { DEFAULT_WRITING_DISPLAY, normalizeProseFontFamily, type ProseFontFamily } from "./writing-display";
 
 // Tauri 2's WKWebView no-ops window.print(). We render a standalone html doc,
 // write to OS temp, then open in the default browser. Browser auto-prints on
@@ -19,9 +20,17 @@ function escapeHtml(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
+const PRINT_FONT_FAMILIES: Record<ProseFontFamily, string> = {
+  inter: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  system: '-apple-system, BlinkMacSystemFont, system-ui, sans-serif',
+  mono: '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+};
+
 // Light-theme print stylesheet. PDF is a "document" — force catppuccin-latte
 // palette regardless of app theme so colors are consistent on white.
-export const PRINT_STYLES = `
+export function getPrintStyles(proseFontFamily: ProseFontFamily = DEFAULT_WRITING_DISPLAY.proseFontFamily): string {
+  const fontFamily = PRINT_FONT_FAMILIES[normalizeProseFontFamily(proseFontFamily)];
+  return `
   *, *::before, *::after { box-sizing: border-box; }
   :root {
     --pfg: #1d1d1f;
@@ -37,7 +46,7 @@ export const PRINT_STYLES = `
   body {
     background: #fff;
     color: var(--pfg);
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+    font-family: ${fontFamily};
     font-size: 15px;
     line-height: 1.65;
     margin: 0;
@@ -50,6 +59,7 @@ export const PRINT_STYLES = `
     max-width: 720px;
     margin: 0 auto;
     padding: 16mm 20mm 34mm;
+    overflow-wrap: anywhere;
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
   }
@@ -71,14 +81,14 @@ export const PRINT_STYLES = `
     border-bottom: 1px solid color-mix(in srgb, var(--paccent) 30%, transparent);
   }
   code {
-    font-family: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
+    font-family: ${PRINT_FONT_FAMILIES.mono};
     font-size: 0.88em;
     background: rgba(0, 0, 0, 0.045);
     padding: 1px 6px;
     border-radius: 4px;
   }
   pre {
-    font-family: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
+    font-family: ${PRINT_FONT_FAMILIES.mono};
     font-size: 12.5px;
     line-height: 1.55;
     background: #fafafa;
@@ -97,7 +107,7 @@ export const PRINT_STYLES = `
   }
   img { max-width: 100%; height: auto; border-radius: 6px; break-inside: avoid; }
   pre code { background: transparent; padding: 0; font-size: inherit; border-radius: 0; white-space: inherit; }
-  pre.shiki, pre.shiki * { font-family: inherit; }
+  pre.shiki * { font-family: inherit; }
   /* shiki spans carry inline color from the latte render — strip backgrounds for clean print */
   .shiki, .shiki span { background-color: transparent !important; }
   blockquote {
@@ -133,6 +143,7 @@ export const PRINT_STYLES = `
     .doc { max-width: none; padding: 16mm 20mm 34mm; }
   }
 `;
+}
 
 export class PdfExportError extends Error {
   constructor(
@@ -150,10 +161,11 @@ type ExportOpts = {
   /** active tab title — drives the PDF document name (browser save-as default) */
   documentName?: string;
   textDirection?: TextDirection;
+  proseFontFamily?: ProseFontFamily;
 };
 
 /** Export markdown as self-contained print HTML and open in browser to save as PDF. */
-export async function exportPreviewToPdf({ source, activePath, documentName, textDirection = "auto" }: ExportOpts): Promise<void> {
+export async function exportPreviewToPdf({ source, activePath, documentName, textDirection = "auto", proseFontFamily }: ExportOpts): Promise<void> {
   if (!source.trim()) {
     throw new PdfExportError("empty", "nothing to export. open or write some markdown first.");
   }
@@ -174,6 +186,8 @@ export async function exportPreviewToPdf({ source, activePath, documentName, tex
   article.dataset.theme = "latte";
   article.innerHTML = latteHtml;
   applyTextDirection(article, textDirection);
+  const { getPrintFontFaces } = await import("./pdf-fonts");
+  const fontFaces = getPrintFontFaces(normalizeProseFontFamily(proseFontFamily));
 
   const html = `<!doctype html>
 <html lang="en">
@@ -181,14 +195,15 @@ export async function exportPreviewToPdf({ source, activePath, documentName, tex
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(title)}</title>
-  <style>${PRINT_STYLES}</style>
+  <style>${fontFaces}\n${getPrintStyles(proseFontFamily)}</style>
 </head>
 <body>
   <main class="doc">
     ${article.outerHTML}
   </main>
   <script>
-    window.addEventListener("load", () => {
+    window.addEventListener("load", async () => {
+      await document.fonts.ready;
       setTimeout(() => window.print(), 350);
     });
   </script>
@@ -201,7 +216,8 @@ export async function exportPreviewToPdf({ source, activePath, documentName, tex
       .replace(/\.md$/i, "")
       .replace(/[^\w.-]+/g, "-")
       .slice(0, 60) || "export";
-    const tempPath = `${dir}/marka-${safeName}.html`;
+    const suffix = crypto.getRandomValues(new Uint32Array(4)).join("-");
+    const tempPath = `${dir}/marka-${safeName}-${suffix}.html`;
     await writeMarkdown(tempPath, html);
     await openPath(tempPath);
   } catch {

@@ -1,6 +1,25 @@
 import { expect, test } from "bun:test";
-import { PRINT_STYLES } from "../src/lib/pdf-export";
+import { getPrintStyles } from "../src/lib/pdf-export";
 import { renderMermaidInHtml } from "../src/lib/mermaid";
+import type { ProseFontFamily } from "../src/lib/writing-display";
+
+const PRINT_STYLES = getPrintStyles();
+
+test.each([
+  ["inter", /"Inter"/],
+  ["system", /system-ui/],
+  ["mono", /monospace/],
+] as const)("uses the selected %s font for printed prose", (font, family) => {
+  const bodyStyles = getPrintStyles(font).match(/body\s*\{([^}]+)\}/)?.[1];
+  expect(bodyStyles).toMatch(family);
+  expect(getPrintStyles(font).match(/\n  code\s*\{([^}]+)\}/)?.[1]).toBe(
+    PRINT_STYLES.match(/\n  code\s*\{([^}]+)\}/)?.[1],
+  );
+});
+
+test("falls back to the default font for invalid persisted values", () => {
+  expect(getPrintStyles('mono; } body { color: red' as ProseFontFamily)).toBe(getPrintStyles("inter"));
+});
 
 test("suppresses browser print header and footer space", () => {
   expect(PRINT_STYLES).toContain("@page { margin: 0; size: auto; }");
