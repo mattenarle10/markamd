@@ -101,6 +101,7 @@
   "prose.font.inter": "Inter",
   "prose.font.system": "系統字型",
   "prose.font.mono": "等寬字型",
+  "settings.previewFont": "預覽與列印字型",
   "theme.group.neutral": "中性",
   "theme.group.catppuccin": "Catppuccin",
   "theme.group.ai": "AI",

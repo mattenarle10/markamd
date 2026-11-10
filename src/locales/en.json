@@ -216,7 +216,7 @@
   "settings.direction.auto": "auto",
   "settings.direction.ltr": "left to right",
   "settings.direction.rtl": "right to left",
-  "settings.previewFont": "preview font",
+  "settings.previewFont": "preview and print font",
   "settings.resetText": "reset text settings",
   "settings.startup": "startup",
   "settings.startupLabel": "open marka.md with",
