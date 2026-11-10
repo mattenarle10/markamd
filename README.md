@@ -124,6 +124,7 @@ Per-release detail lives on the [changelog](https://markamd.vercel.app/changelog
 - [x] [v1.7.2 patch](docs/release-notes/v1.7.2.md): public updater downloads, active-file reload reliability, and Linux Wayland AppImage startup
 - [x] [v1.7.6 patch](docs/release-notes/v1.7.6.md): manual explorer refresh and Tauri 2.12
 - [x] [v1.7.7 patch](docs/release-notes/v1.7.7.md): TLS security update for the updater and public updater download links
+- [x] [v1.7.10 patch](docs/release-notes/v1.7.10.md): faster large previews, selectable PDF fonts, and export fixes
 - [ ] next: native/silent PDF generation
 - [ ] next: context handoff presets for bring-your-own-ai workflows, starting with markdown and XML-tag bundle formats
 
