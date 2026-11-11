@@ -27,6 +27,7 @@ import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { getVersion } from "@tauri-apps/api/app";
 import { emitTo, listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
+import { confirm } from "@tauri-apps/plugin-dialog";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import {
   basename,
@@ -42,6 +43,7 @@ import {
   getContextBundleStats,
   getWhatsNewToastMessage,
   isFilesystemRoot,
+  IS_MAC,
   isSupportedTextPath,
   markdownInsertion,
   normalizeProseFontFamily,
@@ -96,6 +98,10 @@ export function App() {
   const extPrefs = useRef<Map<string, "text" | "default">>(new Map());
   const loadPlainTextFileRef = useRef<((path: string) => Promise<void>) | undefined>(undefined);
   const waitMarkersRef = useRef<string[]>([]);
+  const closingTabsRef = useRef(new Set<string>());
+  const [terminalResult, setTerminalResult] = useState<{ path: string } | null>(null);
+  const [terminalError, setTerminalError] = useState<string | null>(null);
+  const [terminalInstalling, setTerminalInstalling] = useState(false);
 
   const [startupModeStored, setStartupModeStored] = usePersistedState<StartupMode>(
     STORAGE_KEYS.startupMode,
@@ -208,7 +214,14 @@ export function App() {
       if (!reqPath) return;
       if (isSupportedTextPath(reqPath)) {
         const waitMarker = typeof request === "string" ? null : request.waitMarker ?? null;
-        await loadFile(reqPath, waitMarker ? { waitMarker } : {});
+        let opened = false;
+        try { opened = await loadFile(reqPath, waitMarker ? { waitMarker } : {}); }
+        finally {
+          if (waitMarker) {
+            if (opened) await invoke("acknowledge_wait_session", { marker: waitMarker });
+            else await invoke("complete_wait_sessions", { markers: [waitMarker], failed: true });
+          }
+        }
       } else {
         // preview isn't an editing session — release any --wait client at once.
         openPreview(reqPath);
@@ -220,8 +233,10 @@ export function App() {
   );
 
   useEffect(() => {
-    waitMarkersRef.current = tabs.flatMap((tab) => tab.waitMarkers);
-  }, [tabs]);
+    const current = tabs.flatMap((tab) => tab.waitMarkers);
+    completeWaitSessions(waitMarkersRef.current.filter((marker) => !current.includes(marker)));
+    waitMarkersRef.current = current;
+  }, [tabs, completeWaitSessions]);
 
   useEffect(() => {
     const onBeforeUnload = () => {
@@ -802,27 +817,31 @@ export function App() {
     return items;
   }, [contextMenu, activePath, setActivePath, bumpTree, openPreview, t]);
 
+  const openFileRequestRef = useRef(handleOpenFileRequest);
+  useEffect(() => { openFileRequestRef.current = handleOpenFileRequest; }, [handleOpenFileRequest]);
+
   // OS "Open With → marka.md" and CLI launches — Rust emits marka:open-file.
   useEffect(() => {
     let unlisten: (() => void) | undefined;
-    void listen<OpenFileRequest>("marka:open-file", (event) => {
-      void handleOpenFileRequest(event.payload);
-    }).then((un) => {
+    let disposed = false;
+    const drain = async () => {
+      const requests = await invoke<OpenFileRequest[]>("take_pending_open_files");
+      for (const request of requests) await openFileRequestRef.current(request);
+    };
+    let pending = Promise.resolve();
+    const schedule = () => {
+      pending = pending.then(drain).catch((err) => console.warn("marka.md: open-file request failed", err));
+    };
+    void listen("marka:open-file", schedule).then((un) => {
+      if (disposed) { un(); return; }
       unlisten = un;
-      void invoke<OpenFileRequest[]>("take_pending_open_files")
-        .then(async (requests) => {
-          for (const request of requests) {
-            await handleOpenFileRequest(request);
-          }
-        })
-        .catch((err) => {
-          console.warn("marka.md: pending open-file check failed", err);
-        });
+      schedule();
     });
     return () => {
+      disposed = true;
       unlisten?.();
     };
-  }, [handleOpenFileRequest]);
+  }, []);
 
   // OS drop via Tauri events (dragDropEnabled: true).
   // Tauri intercepts file drags before the browser sees them, giving us real file paths.
@@ -859,15 +878,23 @@ export function App() {
     };
   }, [loadFile, setLoadError, t]);
 
-  const handleCloseTab = useCallback((id: string) => {
+  const handleCloseTab = useCallback(async (id: string) => {
     const tab = tabs.find((item) => item.id === id);
-    if (!tab) return;
-    if (tab.source !== tab.savedContent && !window.confirm(t("tabs.closeUnsaved", { name: tab.title }))) {
-      return;
+    if (!tab || closingTabsRef.current.has(id)) return;
+    closingTabsRef.current.add(id);
+    try {
+      if (tab.source !== tab.savedContent && !await confirm(t("tabs.closeUnsaved", { name: tab.title }), {
+        title: "marka.md", kind: "warning",
+        okLabel: t("terminal.discard"), cancelLabel: t("terminal.cancel"),
+      })) return;
+      completeWaitSessions(tab.waitMarkers);
+      closeTab(id);
+    } catch (error) {
+      setLoadError({ message: String(error) });
+    } finally {
+      closingTabsRef.current.delete(id);
     }
-    completeWaitSessions(tab.waitMarkers);
-    closeTab(id);
-  }, [closeTab, completeWaitSessions, tabs, t]);
+  }, [closeTab, completeWaitSessions, tabs, t, setLoadError]);
 
   const shortcuts = useMemo(
     () => ({
@@ -1023,6 +1050,18 @@ export function App() {
   );
   useShortcuts(shortcuts);
 
+  const installTerminalCommand = useCallback(async () => {
+    setTerminalInstalling(true);
+    setTerminalError(null);
+    try {
+      setTerminalResult(await invoke<{ path: string }>("install_terminal_command"));
+    } catch (error) {
+      setTerminalError(String(error));
+    } finally {
+      setTerminalInstalling(false);
+    }
+  }, []);
+
   const commands = useMemo(
     () =>
       buildCommands({
@@ -1044,6 +1083,7 @@ export function App() {
         loadDemo,
         undoFileOp: handleUndoFileOp,
         checkForUpdates: handleManualUpdateCheck,
+        installTerminalCommand: IS_MAC ? installTerminalCommand : undefined,
         copyMarkdown,
         copyContextBundle,
         clearContextBundle,
@@ -1081,6 +1121,7 @@ export function App() {
       loadDemo,
       handleUndoFileOp,
       handleManualUpdateCheck,
+      installTerminalCommand,
       exportToPdf,
       insertMarkdown,
       toggleFullscreen,
@@ -1319,6 +1360,15 @@ export function App() {
         }}
       />
 
+      <Toast
+        open={terminalResult !== null || terminalError !== null}
+        message={terminalError ? t("terminal.failed", { error: terminalError }) : t("terminal.installed", { path: terminalResult?.path ?? "" })}
+        variant={terminalError ? "error" : "info"}
+        durationMs={terminalError ? null : 8000}
+        onDismiss={() => { setTerminalResult(null); setTerminalError(null); }}
+        action={{ label: t("terminal.docs"), onClick: () => void openUrl("https://markamd.vercel.app/docs/#terminal") }}
+      />
+
       <CommandPalette
         open={paletteOpen}
         onClose={() => setPaletteOpen(false)}
@@ -1329,6 +1379,8 @@ export function App() {
         open={helpOpen}
         onClose={() => setHelpOpen(false)}
         onReplayTutorial={showWelcome}
+        onInstallTerminalCommand={IS_MAC ? installTerminalCommand : undefined}
+        terminalInstalling={terminalInstalling}
         onCheckForUpdates={handleManualUpdateCheck}
       />
 

@@ -242,5 +242,13 @@
   "diagram.actualSize": "實際大小",
   "tabs.openFiles": "已開啟的檔案",
   "tabs.close": "關閉 {name}",
-  "tabs.closeUnsaved": "「{name}」有未儲存的變更，確定要關閉？"
+  "tabs.closeUnsaved": "「{name}」有未儲存的變更，確定要關閉？",
+  "terminal.install": "安裝 marka 指令",
+  "terminal.installing": "安裝中…",
+  "terminal.hint": "從 Ghostty、Codex 或任何終端機開啟 Markdown。",
+  "terminal.installed": "已安裝至 {path}。",
+  "terminal.failed": "無法安裝指令：{error}",
+  "terminal.discard": "捨棄變更",
+  "terminal.cancel": "取消",
+  "terminal.docs": "網站上的終端機設定說明"
 }

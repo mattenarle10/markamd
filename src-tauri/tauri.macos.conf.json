@@ -19,5 +19,11 @@
       }
     ],
     "macOSPrivateApi": true
+  },
+  "productName": "marka",
+  "bundle": {
+    "resources": {
+      "cli/marka": "cli/marka"
+    }
   }
 }

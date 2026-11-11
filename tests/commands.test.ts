@@ -7,6 +7,13 @@ import { FULLSCREEN_SHORTCUT } from "../src/lib/shortcuts";
 
 const noop = () => undefined;
 
+test("offers terminal installation only when the platform supplies the action", () => {
+  expect(buildCommands(commandActions()).some(c => c.id === "install-terminal-command")).toBe(false);
+  const command = buildCommands(commandActions({ installTerminalCommand: noop })).find(c => c.id === "install-terminal-command");
+  expect(command?.action).toBe(noop);
+  expect(command?.keywords).toContain("terminal");
+});
+
 function commandActions(
   overrides: Partial<CommandActions> = {},
 ): CommandActions {

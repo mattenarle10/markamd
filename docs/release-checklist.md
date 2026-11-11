@@ -40,3 +40,16 @@ The landing site reads the latest GitHub release and repository stats at build t
 - [ ] Check open issues and PRs after release.
 - [ ] Reply to contributors or reporters whose fixes shipped.
 - [ ] Note any regressions or follow-up items before marketing the release.
+
+## first release with the marka command
+
+- Verify macOS bundles are named `marka.app`, contain an executable
+  `Contents/Resources/cli/marka`, and retain `com.mattenarle.markamd`.
+- Keep public DMG filenames `marka.md.dmg` and `marka.md_intel.dmg` stable.
+- After publication, run `bun scripts/prepare-homebrew-cask.mjs vX.Y.Z` and review
+  its output in the Homebrew tap's `Casks/marka-md.rb`. Verify the DMG hashes,
+  renamed app stanza and binary stanza before publishing the tap update.
+- Publish the prepared terminal site docs and homepage announcement only after
+  the supporting app release is public.
+- Test an update from `marka.md.app`; the updater preserves that outer filename.
+  Verify the documented quit/rename/reopen migration and reinstall command step.

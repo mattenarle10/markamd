@@ -7,6 +7,8 @@ import writeUrl from "@/assets/mascot/write.png";
 type HelpOverlayProps = {
   open: boolean;
   onClose: () => void;
+  onInstallTerminalCommand?: () => void | Promise<void>;
+  terminalInstalling?: boolean;
   onReplayTutorial?: () => void;
   onCheckForUpdates?: () => void | Promise<void>;
 };
@@ -98,7 +100,7 @@ function getTips(t: Translate): string[] {
   return Array.from({ length: 8 }, (_, i) => t(`help.tip${i + 1}`));
 }
 
-export function HelpOverlay({ open, onClose, onReplayTutorial, onCheckForUpdates }: HelpOverlayProps) {
+export function HelpOverlay({ open, onClose, onReplayTutorial, onCheckForUpdates, onInstallTerminalCommand, terminalInstalling }: HelpOverlayProps) {
   const { t } = useI18n();
   const [checking, setChecking] = useState(false);
   const features = getFeatureCards(t);
@@ -208,6 +210,11 @@ export function HelpOverlay({ open, onClose, onReplayTutorial, onCheckForUpdates
       <footer className="mdv-help__footer">
         <span>marka.md · MIT · open source</span>
         <div className="mdv-help__actions">
+          {onInstallTerminalCommand ? (
+            <button type="button" className="mdv-help__action" onClick={() => void onInstallTerminalCommand()} disabled={terminalInstalling}>
+              {t(terminalInstalling ? "terminal.installing" : "terminal.install")}
+            </button>
+          ) : null}
           {onCheckForUpdates ? (
             <button
               type="button"
