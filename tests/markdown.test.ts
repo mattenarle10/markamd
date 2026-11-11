@@ -58,3 +58,18 @@ test("keeps other raw html escaped", async () => {
   expect(html).toContain("&lt;script&gt;");
   expect(html).toContain("&lt;br onclick=x&gt;");
 });
+
+for (const theme of ["latte", "mocha"] as const) {
+  test(`highlights asm instructions and comments in ${theme}`, async () => {
+    const source = "```asm\nmov ax, bx\nint 21h ; this is comment\n```";
+    const html = await renderMarkdown(source, theme);
+    const instructionStyle = html.match(/<span style="([^"]+)">mov<\/span>/)?.[1];
+    const commentStyle = html.match(/<span style="([^"]+)"> ; this is comment<\/span>/)?.[1];
+
+    expect(html).toContain('<pre class="shiki ');
+    expect(html).toContain(">int</span>");
+    expect(instructionStyle).toMatch(/color:/);
+    expect(commentStyle).toMatch(/color:/);
+    expect(commentStyle).not.toBe(instructionStyle);
+  });
+}

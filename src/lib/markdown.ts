@@ -25,7 +25,7 @@ function escapeAttr(value: string): string {
 // allowed langs — shiki chunks load on first use via ensureLangsLoaded.
 const LANGS = [
   "markdown", "ts", "tsx", "js", "jsx", "json", "rust", "bash", "css", "html", "python", "go",
-  "c", "cpp", "csharp", "objective-c",
+  "c", "cpp", "csharp", "objective-c", "asm",
   "java", "kotlin", "scala", "groovy",
   "swift",
   "ruby", "php", "lua", "perl", "r", "elixir", "haskell",
