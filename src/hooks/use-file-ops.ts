@@ -24,7 +24,7 @@ type UndoOp =
 type UseFileOpsArgs = {
   activePath: string | null;
   setActivePath: (v: string | null | ((p: string | null) => string | null)) => void;
-  loadFile: (path: string) => Promise<void>;
+  loadFile: (path: string) => Promise<void | boolean>;
   startNewBuffer: (initial?: string) => void;
   onError: (err: LoadError) => void;
 };

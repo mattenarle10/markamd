@@ -300,5 +300,13 @@
   "app.draftBackupFailed": "couldn't back up unsaved changes. Save your work before closing the app.",
   "app.draftRecoveryFailed": "couldn't restore draft backups. The backup was left untouched. Save your work before closing the app.",
   "app.draftFileMissing": "\"{name}\" is missing. Your recovered draft is still here; use Save As to keep it.",
-  "app.draftFileReadFailed": "couldn't check the original file. Your recovered draft is still here."
+  "app.draftFileReadFailed": "couldn't check the original file. Your recovered draft is still here.",
+  "terminal.install": "install marka command",
+  "terminal.installing": "installing…",
+  "terminal.hint": "Open Markdown from Ghostty, Codex, or any terminal.",
+  "terminal.installed": "Installed at {path}.",
+  "terminal.failed": "Could not install the command: {error}",
+  "terminal.discard": "discard changes",
+  "terminal.cancel": "cancel",
+  "terminal.docs": "terminal setup on the website"
 }

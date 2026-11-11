@@ -1,0 +1,67 @@
+#!/bin/sh
+# Installed as a symlink so app updates also update this launcher.
+set -u
+usage() {
+  printf '%s\n' 'marka — open Markdown in marka.md (macOS)' '' 'usage: marka open [--wait] [--] FILE' '       marka --help | --version' '' '--wait returns when the tab closes or the app quits, not when the file is saved.' 'A successful exit does not imply approval of the document.'
+}
+fail() { printf 'marka: %s\n' "$1" >&2; exit "${2:-1}"; }
+launcher=$0
+while [ -L "$launcher" ]; do
+  target=$(/usr/bin/readlink "$launcher") || exit 1
+  case $target in /*) launcher=$target ;; *) launcher=$(dirname "$launcher")/$target ;; esac
+done
+app=$(CDPATH= cd -P "$(dirname "$launcher")/../../.." && pwd) || fail 'cannot locate app; reinstall the marka command'
+case ${1:-} in
+  ''|--help|-h) usage; exit 0 ;;
+  --version) /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app/Contents/Info.plist"; exit $? ;;
+  open) shift ;;
+  *) usage >&2; exit 2 ;;
+esac
+waiting=false
+if [ "${1:-}" = --wait ]; then waiting=true; shift; fi
+literal=false
+if [ "${1:-}" = -- ]; then literal=true; shift; fi
+[ "$#" -eq 1 ] || { usage >&2; exit 2; }
+case $1 in -*) "$literal" || fail 'use -- before a filename beginning with a dash' 2 ;; esac
+# Prefix relative paths before invoking utilities, including names starting with '-'.
+case $1 in /*) file=$1 ;; *) file=$PWD/$1 ;; esac
+[ -f "$file" ] && [ -r "$file" ] || fail 'FILE must be an existing readable Markdown file' 2
+case $file in *.[mM][dD]|*.[mM][aA][rR][kK][dD][oO][wW][nN]|*.[mM][dD][xX]) ;; *) fail 'supported extensions: .md, .markdown, .mdx' 2 ;; esac
+file=$(CDPATH= cd -P "$(dirname "$file")" && printf '%s/%s' "$PWD" "$(basename "$file")") || exit 1
+if ! "$waiting"; then
+  /usr/bin/open -a "$app" "$file" || fail 'could not open marka'
+  exit 0
+fi
+umask 077
+session=$(/usr/bin/mktemp -d "${TMPDIR:-/tmp}/marka-wait.XXXXXXXX") || fail 'cannot create wait session'
+session=$(CDPATH= cd -P "$session" && pwd) || exit 1
+marker=$session/session
+cleanup() { /bin/rm -f "$marker"; /bin/rmdir "$session" 2>/dev/null || :; }
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM HUP
+printf waiting > "$marker"
+/usr/bin/open -n -a "$app" --args --wait-open "$marker" "$file" || fail 'could not launch marka'
+attempts=0
+while :; do
+  state=$(/bin/cat "$marker" 2>/dev/null) || fail 'wait session disappeared'
+  case $state in
+    closed) exit 0 ;;
+    failed) fail 'the app could not open the file' ;;
+    opened:*)
+      attempts=0
+      pid=${state#opened:}
+      case $pid in ''|*[!0-9]*) fail 'invalid app process response' ;; esac
+      if ! /bin/kill -0 "$pid" 2>/dev/null; then
+        [ "$(/bin/cat "$marker" 2>/dev/null)" = closed ] && exit 0
+        fail 'the app exited before completing the wait'
+      fi
+      ;;
+    waiting|'')
+      attempts=$((attempts + 1))
+      [ "$attempts" -lt 150 ] || fail 'app did not acknowledge the file within 30 seconds'
+      ;;
+    *) fail 'invalid wait response' ;;
+  esac
+  /bin/sleep 0.2
+done

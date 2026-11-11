@@ -63,7 +63,7 @@ type UseFileSessionResult = {
   setExternalConflict: (v: string | null) => void;
   /** Accept fresh content from disk (external-change reload, "discard mine"). */
   acceptExternalChange: (fresh: string) => void;
-  loadFile: (path: string, options?: LoadFileOptions) => Promise<void>;
+  loadFile: (path: string, options?: LoadFileOptions) => Promise<boolean>;
   loadDemo: () => void;
   saveNow: (path: string, content: string) => Promise<void>;
   /** Picks save location + writes. Returns the chosen path (or null if cancelled). */
@@ -273,21 +273,21 @@ export function useFileSession({ onLoadError, startupMode = "welcome" }: UseFile
           )));
         }
         if (activePathRef.current !== path) switchTab(existing.id);
-        return;
+        return true;
       }
       const check = await validateSupportedTextFile(path);
-      if (seq !== loadSeq.current) return;
+      if (seq !== loadSeq.current) return false;
       if (!check.ok) {
         // Check if it might be openable as plain text despite unsupported extension
         const plainCheck = await validatePlainTextFile(path);
         const canOpenAsText = plainCheck.ok;
         onLoadError?.({ message: check.reason, path, canOpenAsText });
         console.warn("marka.md: refused to open", path, "·", check.reason);
-        return;
+        return false;
       }
       try {
         const content = await readMarkdown(path);
-        if (seq !== loadSeq.current) return;
+        if (seq !== loadSeq.current) return false;
         setSource(content);
         setSavedContent(content);
         setActivePath(path);
@@ -303,9 +303,11 @@ export function useFileSession({ onLoadError, startupMode = "welcome" }: UseFile
         setActiveTabId(tab.id);
         setSaveStatus("idle");
         setRecentFiles((prev) => [path, ...prev.filter((p) => p !== path)].slice(0, 8));
+        return true;
       } catch (err) {
         console.error("marka.md: readMarkdown failed", err);
         onLoadError?.({ message: String(err), path });
+        return false;
       }
     },
     [

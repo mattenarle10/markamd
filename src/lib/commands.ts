@@ -29,6 +29,7 @@ import {
   Settings,
   Sparkles,
   Sun,
+  Terminal,
 } from "lucide-react";
 import { basename, dirname } from "./files";
 import { setThemeMode, setTransparency, THEME_CHOICES, THEME_HINTS, type ThemeMode } from "./theme";
@@ -65,6 +66,7 @@ export type CommandActions = {
   loadDemo: () => void;
   undoFileOp: () => void | Promise<void>;
   checkForUpdates: () => void | Promise<void>;
+  installTerminalCommand?: () => void | Promise<void>;
   copyMarkdown: () => void | Promise<void>;
   copyContextBundle: () => void | Promise<void>;
   clearContextBundle: () => void;
@@ -427,6 +429,15 @@ export function buildCommands(actions: CommandActions, t: Translate = defaultT):
       keywords: ["update", "download", "version", "release"],
       action: actions.checkForUpdates,
     },
+    ...(actions.installTerminalCommand ? [{
+      id: "install-terminal-command",
+      label: t("terminal.install"),
+      hint: t("terminal.hint"),
+      icon: Terminal,
+      category: "help" as const,
+      keywords: ["cli", "terminal", "shell", "marka", "install", "codex", "ghostty"],
+      action: actions.installTerminalCommand,
+    }] : []),
     {
       id: "about",
       label: t("command.about"),

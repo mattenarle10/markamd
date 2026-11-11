@@ -47,7 +47,26 @@ works with claude, chatgpt, gemini, local agents, and anything that reads plain 
 
 Homebrew users can update with `brew update && brew upgrade --cask marka-md`. The in-app signed updater still works too.
 
-### Windows (10+, x64)
+### terminal command (macOS)
+
+Use `marka open notes.md` or `marka open --wait notes.md`.
+In the app, use Help or the command palette's **install marka command**
+action. It installs a launcher at `~/.local/bin/marka` without changing shell settings.
+If needed, add `export PATH="$HOME/.local/bin:$PATH"` to your shell profile.
+
+`--wait` finishes when the tab closes or the app quits, not when the file is saved.
+Closing a tab is not an approval signal for an agent. Use `marka --help` for usage.
+The command accepts one existing `.md`, `.markdown`, or `.mdx` file, including
+quoted paths with spaces. Exit codes: `0` success, `1` launch/open failure,
+`2` invalid input, `130` cancelled with Ctrl-C.
+
+On macOS the new bundle is named **marka.app**; the product is still marka.md.
+An in-app update preserves the old folder name. To remove `.app` from the Finder
+label on an older installation, quit normally, rename `marka.md.app` to
+`marka.app` in Applications, then reopen it and reinstall the terminal command.
+Do not replace an existing destination or edit the signed bundle's contents.
+
+## Windows (10+, x64)
 
 grab `marka.md_*-setup.exe` → run. Windows SmartScreen may ask for confirmation because the Windows build is unsigned.
 

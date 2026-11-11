@@ -1,3 +1,7 @@
+mod terminal;
+use terminal::{
+    acknowledge_wait_session, complete_wait_sessions, install_terminal_command, WaitSessions,
+};
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial, NSVisualEffectState};
 
@@ -83,12 +87,22 @@ fn initial_open_requests_from_args() -> Vec<OpenFileRequest> {
     open_requests_from_args(std::env::args_os().skip(1))
 }
 
-fn wait_marker_path() -> std::path::PathBuf {
+fn wait_marker_path() -> std::io::Result<std::path::PathBuf> {
     let nanos = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
-        .map(|duration| duration.as_nanos())
-        .unwrap_or_default();
-    std::env::temp_dir().join(format!("marka-wait-{}-{nanos}.marker", std::process::id()))
+        .unwrap_or_default()
+        .as_nanos();
+    let dir = std::env::temp_dir()
+        .canonicalize()?
+        .join(format!("marka-wait.{}-{nanos}", std::process::id()));
+    let mut builder = std::fs::DirBuilder::new();
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::DirBuilderExt;
+        builder.mode(0o700);
+    }
+    builder.create(&dir)?;
+    Ok(dir.join("session"))
 }
 
 fn handle_wait_client() -> bool {
@@ -106,7 +120,10 @@ fn handle_wait_client() -> bool {
         std::process::exit(2);
     }
 
-    let marker = wait_marker_path();
+    let marker = wait_marker_path().unwrap_or_else(|err| {
+        eprintln!("marka.md: {err}");
+        std::process::exit(1)
+    });
     if let Err(err) = std::fs::write(&marker, b"waiting") {
         eprintln!("marka.md: failed to create wait marker: {err}");
         std::process::exit(1);
@@ -131,9 +148,21 @@ fn handle_wait_client() -> bool {
         std::process::exit(1);
     }
 
-    while marker.exists() {
-        std::thread::sleep(std::time::Duration::from_millis(200));
+    let started = std::time::Instant::now();
+    loop {
+        match std::fs::read_to_string(&marker).as_deref() {
+            Ok("closed") => break,
+            Ok("failed") | Err(_) => {
+                std::process::exit(1);
+            }
+            Ok("waiting") if started.elapsed().as_secs() >= 30 => {
+                std::process::exit(1);
+            }
+            _ => std::thread::sleep(std::time::Duration::from_millis(200)),
+        }
     }
+    let _ = std::fs::remove_file(&marker);
+    let _ = std::fs::remove_dir(marker.parent().unwrap());
     true
 }
 
@@ -182,18 +211,6 @@ fn take_pending_open_files(state: State<'_, PendingOpenFiles>) -> Vec<OpenFileRe
     std::mem::take(&mut *pending)
 }
 
-#[tauri::command]
-fn complete_wait_sessions(markers: Vec<String>) -> Result<(), String> {
-    for marker in markers {
-        match std::fs::remove_file(&marker) {
-            Ok(()) => {}
-            Err(err) if err.kind() == std::io::ErrorKind::NotFound => {}
-            Err(err) => return Err(format!("failed to complete wait session: {err}")),
-        }
-    }
-    Ok(())
-}
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     #[cfg(target_os = "linux")]
@@ -205,14 +222,29 @@ pub fn run() {
 
     let pending_open_files = initial_open_requests_from_args();
 
+    let waits = WaitSessions::default();
+    for request in &pending_open_files {
+        if let Some(marker) = &request.wait_marker {
+            terminal::register(&waits, marker);
+        }
+    }
     let app = tauri::Builder::default()
+        .manage(waits)
         .manage(PendingOpenFiles(Mutex::new(pending_open_files)))
         .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
             // A second instance was launched — forward any markdown file args
             // to the running instance, then bring its window to front.
             let requests = open_requests_from_args(args.into_iter().skip(1));
             for request in requests {
-                let _ = app.emit("marka:open-file", request);
+                if let Some(marker) = &request.wait_marker {
+                    terminal::register(&app.state::<WaitSessions>(), marker);
+                }
+                app.state::<PendingOpenFiles>()
+                    .0
+                    .lock()
+                    .unwrap_or_else(|e| e.into_inner())
+                    .push(request);
+                let _ = app.emit("marka:open-file", ());
             }
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.show();
@@ -227,6 +259,8 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![
             complete_wait_sessions,
+            acknowledge_wait_session,
+            install_terminal_command,
             take_pending_open_files,
             reveal_in_file_manager
         ])
@@ -251,6 +285,9 @@ pub fn run() {
         .expect("error while building tauri application");
 
     app.run(|_app_handle, _event| {
+        if matches!(_event, tauri::RunEvent::Exit) {
+            terminal::finish_all(&_app_handle.state::<WaitSessions>());
+        }
         // macOS Finder "Open With → marka.md" emits this event with file URLs.
         // `RunEvent::Opened` doesn't exist on Windows/Linux — gating the block
         // keeps non-mac compilation clean.
@@ -269,11 +306,7 @@ pub fn run() {
                             wait_marker: None,
                         });
                     }
-                    let request = OpenFileRequest {
-                        path: path_str.clone(),
-                        wait_marker: None,
-                    };
-                    if let Err(err) = _app_handle.emit("marka:open-file", request) {
+                    if let Err(err) = _app_handle.emit("marka:open-file", ()) {
                         eprintln!("marka.md: failed to emit open-file event: {err:?}");
                     } else {
                         eprintln!("marka.md: open-file requested: {path_str}");
