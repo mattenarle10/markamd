@@ -19,7 +19,7 @@
   <img src="https://img.shields.io/badge/notarized-Apple%20Developer-orange?style=flat-square" alt="notarized" />
 </p>
 
-a cross-platform (**macOS · Windows · Linux**) markdown editor specialized for **ai context management**. live editor, rendered preview, file tabs, csv preview, grouped themes, smarter command palette, and a context tray for staging multiple notes into one AI-ready bundle.
+a free, local-first markdown editor for **macOS · Windows · Linux**. write with live preview, open notes in tabs, and stage files in the context tray to copy one bundle for ai.
 
 > built around one loop: **collect notes → write → share with ai**. nothing leaves your machine until you copy.
 
@@ -37,7 +37,7 @@ works with claude, chatgpt, gemini, local agents, and anything that reads plain 
 
 ## install
 
-[download the latest release →](https://github.com/mattenarle10/markamd/releases/latest)
+[download the latest release →](https://github.com/mattenarle10/markamd/releases/latest) · [read the docs →](https://markamd.vercel.app/docs)
 
 ### macOS
 
@@ -66,7 +66,15 @@ label on an older installation, quit normally, rename `marka.md.app` to
 `marka.app` in Applications, then reopen it and reinstall the terminal command.
 Do not replace an existing destination or edit the signed bundle's contents.
 
-## Windows (10+, x64)
+### Windows (10+, x64)
+
+install from the WinGet community repository:
+
+```powershell
+winget install --id mattenarle10.markamd --exact --source winget
+```
+
+run `winget upgrade --id mattenarle10.markamd --exact --source winget` when an update is available. see the [winstall listing](https://winstall.app/apps/mattenarle10.markamd) and [WinGet manifests](https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/mattenarle10/markamd).
 
 grab `marka.md_*-setup.exe` → run. Windows SmartScreen may ask for confirmation because the Windows build is unsigned.
 
@@ -88,6 +96,12 @@ bun install
 bun run tauri dev      # native window with hmr
 bun run tauri build    # produces .dmg / .exe / .AppImage / .deb / .rpm under src-tauri/target/release/bundle/
 ```
+
+## app listings
+
+- [AlternativeTo](https://alternativeto.net/software/marka-md/about/) for reviews and alternatives.
+- [Made with React.js](https://madewithreactjs.com/markamd) for the project showcase.
+- [AppsXi](https://appsxi.com/apps/marka-md) for the macOS listing.
 
 ## keyboard
 
